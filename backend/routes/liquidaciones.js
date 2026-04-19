@@ -1,9 +1,11 @@
 const router = require('express').Router();
 const PDFDocument = require('pdfkit');
+const path = require('path');
+const fs = require('fs');
 const supabase = require('../utils/supabase');
 const { authMiddleware, adminOnly } = require('../middleware/auth');
 
-// GET /api/liquidaciones — el inversor ve las suyas
+// ── GET /api/liquidaciones ───────────────────────────────────────────────────
 router.get('/', authMiddleware, async (req, res) => {
   let query = supabase.from('liquidaciones')
     .select('*, propiedades(nombre,direccion), usuarios(nombre,apellido)');
@@ -12,18 +14,15 @@ router.get('/', authMiddleware, async (req, res) => {
   res.json(data || []);
 });
 
-// POST /api/liquidaciones/generar — generar liquidaciones para TODOS los inversores de un piso
-// El admin carga los datos del piso y el sistema crea una liquidación por cada inversor
+// ── POST /api/liquidaciones/generar ─────────────────────────────────────────
 router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
-  const { propiedad_id, precio_venta, fecha, fee_exito_pct = 0.15 } = req.body;
+  const { propiedad_id, precio_venta, fecha, fee_exito_pct = 0.15, alquileres = 0, destino = '' } = req.body;
   if (!propiedad_id || !precio_venta || !fecha)
     return res.status(400).json({ error: 'propiedad_id, precio_venta y fecha son requeridos' });
 
-  // 1. Obtener datos del piso
   const { data: prop } = await supabase.from('propiedades').select('*').eq('id', propiedad_id).single();
   if (!prop) return res.status(404).json({ error: 'Propiedad no encontrada' });
 
-  // 2. Obtener todos los participantes
   const { data: parts } = await supabase
     .from('participaciones')
     .select('*, usuarios(id,nombre,apellido,email)')
@@ -32,142 +31,248 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
 
   if (!parts?.length) return res.status(400).json({ error: 'No hay inversores asignados a esta propiedad' });
 
-  const costo_total = Number(prop.precio_compra || 0) + Number(prop.gastos_compra || 0);
+  const inversion_total = Number(prop.precio_compra || 0);
   const resultados = [];
 
   for (const part of parts) {
+    const user = part.usuarios;
     const aporte = Number(part.monto_invertido);
     const porcentaje = Number(part.porcentaje);
-    const ingresos_brutos = Number(precio_venta) * porcentaje;
-    const utilidad_bruta = ingresos_brutos - aporte;
-    const fee_monto = utilidad_bruta > 0 ? utilidad_bruta * Number(fee_exito_pct) : 0;
-    const utilidad_neta = utilidad_bruta - fee_monto;
-    const total_retorno = aporte + utilidad_neta;
 
-    // 3. Insertar liquidación
+    const ingresos_totales = Number(precio_venta) + Number(alquileres);
+    const utilidad_bruta_piso = ingresos_totales - inversion_total;
+    const utilidad_bruta_inv = utilidad_bruta_piso * porcentaje;
+    const fee_monto = utilidad_bruta_inv > 0 ? utilidad_bruta_inv * Number(fee_exito_pct) : 0;
+    const impuestos_monto = (utilidad_bruta_inv - fee_monto) * 0.25;
+    const utilidad_neta = utilidad_bruta_inv - fee_monto - impuestos_monto;
+    const total_retorno = aporte + utilidad_neta;
+    const rentabilidad_pct = aporte > 0 ? utilidad_neta / aporte : 0;
+
     const { data: liq } = await supabase.from('liquidaciones').insert([{
-      propiedad_id, usuario_id: part.usuarios.id, fecha,
+      propiedad_id, usuario_id: user.id, fecha,
       precio_venta, aporte_usuario: aporte, porcentaje,
-      utilidad_bruta, fee_exito_pct, fee_exito_monto: fee_monto,
-      utilidad_neta, total_retorno
+      utilidad_bruta: utilidad_bruta_inv, fee_exito_pct,
+      fee_exito_monto: fee_monto, utilidad_neta, total_retorno
     }]).select().single();
 
-    // 4. Generar PDF en memoria y subir a Supabase Storage
-    const pdfBuffer = await generarPDF({ prop, user: part.usuarios, liq: { ...liq, aporte, porcentaje, utilidad_bruta, fee_monto, utilidad_neta, total_retorno }, fecha, precio_venta, fee_exito_pct });
-    const pdfPath = `liquidaciones/${propiedad_id}/${part.usuarios.id}_${fecha}.pdf`;
+    const pdfBuffer = await generarPDFDIGSA({
+      prop, user, aporte, porcentaje, utilidad_bruta_inv,
+      fee_monto, impuestos_monto, utilidad_neta, total_retorno,
+      rentabilidad_pct, inversion_total,
+      precio_venta: Number(precio_venta),
+      alquileres: Number(alquileres),
+      fee_exito_pct: Number(fee_exito_pct),
+      fecha, destino
+    });
+
+    const pdfPath = `liquidaciones/${propiedad_id}/${user.id}_${fecha}.pdf`;
     const { error: uploadErr } = await supabase.storage
       .from('documentos').upload(pdfPath, pdfBuffer, { contentType: 'application/pdf', upsert: true });
 
     if (!uploadErr) {
       const { data: urlData } = supabase.storage.from('documentos').getPublicUrl(pdfPath);
       await supabase.from('liquidaciones').update({ pdf_url: urlData.publicUrl }).eq('id', liq.id);
-      // Crear documento descargable para el inversor
       await supabase.from('documentos').insert([{
-        usuario_id: part.usuarios.id, propiedad_id,
+        usuario_id: user.id, propiedad_id,
         nombre: `Liquidación ${prop.nombre} - ${fecha}`,
         tipo: 'liquidacion', url: urlData.publicUrl, fecha
       }]);
-      liq.pdf_url = urlData.publicUrl;
     }
 
-    // 5. Notificar al inversor
     await supabase.from('notificaciones').insert([{
-      usuario_id: part.usuarios.id,
+      usuario_id: user.id,
       titulo: `Liquidación disponible: ${prop.nombre}`,
-      mensaje: `Tu liquidación está lista. Retorno total: $${Math.round(total_retorno).toLocaleString('es-ES')} USD`,
+      mensaje: `Tu liquidación está lista. Retorno total: €${Math.round(total_retorno).toLocaleString('es-ES')}`,
       tipo: 'liquidacion'
     }]);
 
-    resultados.push({ usuario: part.usuarios, ...liq });
+    resultados.push({ usuario: `${user.nombre} ${user.apellido}`, total_retorno });
   }
 
-  // Actualizar estado del piso a vendido
-  await supabase.from('propiedades').update({ estado: 'vendido', precio_venta, fecha_venta: fecha }).eq('id', propiedad_id);
+  await supabase.from('propiedades').update({
+    estado: 'vendido', precio_venta, fecha_venta: fecha
+  }).eq('id', propiedad_id);
 
-  res.json({ ok: true, liquidaciones_generadas: resultados.length, resultados });
+  res.json({ ok: true, inversores_liquidados: resultados.length, resultados });
 });
 
-// GET /api/liquidaciones/:id/pdf — descargar PDF
+// ── GET /api/liquidaciones/:id/pdf ──────────────────────────────────────────
 router.get('/:id/pdf', authMiddleware, async (req, res) => {
-  const { data: liq } = await supabase.from('liquidaciones')
-    .select('*, propiedades(*), usuarios(nombre,apellido)')
-    .eq('id', req.params.id).single();
+  const { data: liq } = await supabase
+    .from('liquidaciones')
+    .select('*, propiedades(*), usuarios(*)')
+    .eq('id', req.params.id)
+    .single();
 
-  if (!liq) return res.status(404).json({ error: 'No encontrada' });
+  if (!liq) return res.status(404).json({ error: 'Liquidación no encontrada' });
   if (req.user.rol !== 'admin' && liq.usuario_id !== req.user.id)
-    return res.status(403).json({ error: 'Acceso denegado' });
+    return res.status(403).json({ error: 'Sin acceso' });
 
-  if (liq.pdf_url) return res.redirect(liq.pdf_url);
-  res.status(404).json({ error: 'PDF no disponible' });
+  const buf = await generarPDFDIGSA({
+    prop: liq.propiedades, user: liq.usuarios,
+    aporte: liq.aporte_usuario, porcentaje: liq.porcentaje,
+    utilidad_bruta_inv: liq.utilidad_bruta, fee_monto: liq.fee_exito_monto,
+    impuestos_monto: 0, utilidad_neta: liq.utilidad_neta,
+    total_retorno: liq.total_retorno,
+    rentabilidad_pct: liq.aporte_usuario > 0 ? liq.utilidad_neta / liq.aporte_usuario : 0,
+    inversion_total: liq.propiedades?.precio_compra || 0,
+    precio_venta: liq.precio_venta, alquileres: 0,
+    fee_exito_pct: liq.fee_exito_pct, fecha: liq.fecha, destino: ''
+  });
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="Liquidacion_${liq.propiedades?.nombre}_${liq.fecha}.pdf"`);
+  res.send(buf);
 });
 
-// ── Generador de PDF con pdfkit ──────────────────────────────
-function generarPDF({ prop, user, liq, fecha, precio_venta, fee_exito_pct }) {
+// ════════════════════════════════════════════════════════════════════════════
+//  GENERADOR PDF — DISEÑO DIGSA
+// ════════════════════════════════════════════════════════════════════════════
+function generarPDFDIGSA(p) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 60, size: 'A4' });
+    const { prop, user, aporte, porcentaje, utilidad_bruta_inv, fee_monto,
+            impuestos_monto, utilidad_neta, total_retorno, rentabilidad_pct,
+            inversion_total, precio_venta, alquileres, fee_exito_pct, fecha, destino } = p;
+
+    const AZUL  = '#006391';
+    const AZUL2 = '#3C78D8';
+    const GRIS  = '#F3F3F3';
+    const AZUF  = '#EEF4FB';
+    const ROJO  = '#CC0000';
+    const W = 595.28, H = 841.89, ML = 42, MR = 42, CW = W - ML - MR;
+
+    const fmtN = (n, d = 2) => {
+      if (n == null) return '';
+      const f = Math.abs(n).toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, 'X').replace('.', ',').replace(/X/g, '.');
+      return `€ ${n < 0 ? '-' : ''}${f}`;
+    };
+    const fmtP = p2 => `${(p2 * 100).toFixed(2).replace('.', ',')}%`;
+    const fmtD = d2 => {
+      if (!d2) return '';
+      const dt = new Date(d2);
+      const m = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+      return `${String(dt.getDate()).padStart(2,'0')}/${m[dt.getMonth()]}/${dt.getFullYear()}`;
+    };
+
+    const doc = new PDFDocument({ size: 'A4', margin: 0, autoFirstPage: true });
     const chunks = [];
     doc.on('data', c => chunks.push(c));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const fmt = n => `$${Number(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    const pct = n => `${(Number(n) * 100).toFixed(4)}%`;
+    // ── HEADER ──────────────────────────────────────────────────────────────
+    const HH = 200;
+    const bgPath = path.join(__dirname, '../assets/bg_header.png');
+    if (fs.existsSync(bgPath)) {
+      try { doc.image(bgPath, 0, 0, { width: W, height: HH }); } catch(e) {}
+    }
+    doc.save().rect(0, 0, W, HH).fill(AZUL).opacity(0.8).restore();
+    doc.opacity(1);
 
-    // Header
-    doc.fontSize(24).font('Helvetica-Bold').text('DIGSA', 60, 60);
-    doc.fontSize(10).font('Helvetica').fillColor('#666').text('digsa.es  ·  Inversiones Inmobiliarias  ·  Madrid', 60, 88);
-    doc.moveTo(60, 105).lineTo(535, 105).strokeColor('#B8943F').lineWidth(1.5).stroke();
+    doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(26)
+       .text('Liquidación de Inversiones', ML, 28);
+    doc.font('Helvetica').fontSize(12)
+       .text(fmtD(fecha), W - MR - 100, 35, { width: 100, align: 'right' });
+    doc.moveTo(ML, 65).lineTo(W - MR, 65).strokeColor('#FFFFFF').lineWidth(0.4).stroke();
 
-    doc.fillColor('#000').font('Helvetica-Bold').fontSize(18).text('Liquidación de Inversión', 60, 120);
-    doc.font('Helvetica').fontSize(11).fillColor('#444');
-    doc.text(`Propiedad: ${prop.nombre}`, 60, 148);
-    doc.text(`Dirección: ${prop.direccion}`, 60, 163);
-    doc.text(`Fecha de liquidación: ${fecha}`, 60, 178);
+    doc.font('Helvetica-Bold').fontSize(22)
+       .text(`${user.nombre} ${user.apellido}`, ML, 88);
 
-    // Inversor
-    doc.moveTo(60, 205).lineTo(535, 205).strokeColor('#ddd').lineWidth(0.5).stroke();
-    doc.font('Helvetica-Bold').fontSize(12).fillColor('#B8943F').text('INVERSOR', 60, 215);
-    doc.font('Helvetica').fontSize(11).fillColor('#000');
-    doc.text(`${user.nombre} ${user.apellido}`, 60, 232);
-    doc.text(`Participación: ${pct(liq.porcentaje)}`, 60, 247);
+    doc.font('Helvetica-Bold').fontSize(12)
+       .text('Argentina', W - MR - 200, 105, { width: 200, align: 'right' });
+    doc.font('Helvetica').fontSize(10)
+       .text('La Pampa 1517 3 "C", Buenos Aires', W - MR - 200, 120, { width: 200, align: 'right' });
+    doc.font('Helvetica-Bold').fontSize(12)
+       .text('España', W - MR - 200, 145, { width: 200, align: 'right' });
+    doc.font('Helvetica').fontSize(10)
+       .text('Villanueva 27, Madrid', W - MR - 200, 160, { width: 200, align: 'right' });
 
-    // Tabla de resultados
-    doc.moveTo(60, 275).lineTo(535, 275).strokeColor('#ddd').lineWidth(0.5).stroke();
-    doc.font('Helvetica-Bold').fontSize(12).fillColor('#B8943F').text('DETALLE FINANCIERO', 60, 285);
+    // ── BARRA ────────────────────────────────────────────────────────────────
+    const BY = HH + 4;
+    doc.rect(0, BY, W, 30).fill(AZUL2);
+    doc.font('Helvetica-Bold').fontSize(13).fillColor('#FFFFFF')
+       .text('LIQUIDACION POR VENTA', ML, BY + 9);
 
-    const filas = [
-      ['Precio de venta del inmueble', fmt(precio_venta)],
-      ['Tu aporte inicial', fmt(liq.aporte)],
-      ['Tu participación en la venta', fmt(Number(precio_venta) * Number(liq.porcentaje))],
-      ['Utilidad bruta', fmt(liq.utilidad_bruta)],
-      [`Fee de éxito (${(fee_exito_pct * 100).toFixed(0)}%)`, `- ${fmt(liq.fee_monto)}`],
-      ['Utilidad neta', fmt(liq.utilidad_neta)],
-    ];
+    // ── CABECERA TABLA ────────────────────────────────────────────────────────
+    const HY = BY + 30 + 2, HH2 = 28, RH = 24;
+    const COL = [ML, ML + 160, ML + 255, ML + 345, ML + 430];
+    const LABS = ['Inmueble', 'Fecha de inicio', 'Fecha de venta', 'Participación', 'Inversión total'];
 
-    let y = 308;
-    doc.font('Helvetica').fontSize(10).fillColor('#000');
-    for (const [label, val] of filas) {
-      doc.text(label, 60, y);
-      doc.text(val, 400, y, { align: 'right', width: 135 });
-      doc.moveTo(60, y + 14).lineTo(535, y + 14).strokeColor('#f0f0f0').lineWidth(0.5).stroke();
-      y += 22;
+    doc.rect(ML, HY, CW, HH2).fill(AZUL2);
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#FFFFFF');
+    LABS.forEach((l, i) => doc.text(l, COL[i] + 3, HY + 10, { width: (COL[i+1] || W-MR) - COL[i] - 6 }));
+
+    // Fila piso
+    const DY = HY + HH2;
+    doc.rect(ML, DY, CW, RH).fill(AZUF);
+    doc.font('Helvetica-Bold').fontSize(8).fillColor('#000')
+       .text((prop.nombre || '').toUpperCase(), COL[0]+3, DY+8, { width: 152 });
+    doc.font('Helvetica').fontSize(8);
+    doc.text(fmtD(prop.fecha_compra), COL[1]+3, DY+8);
+    doc.text(fmtD(fecha), COL[2]+3, DY+8);
+    doc.text(fmtN(aporte), COL[3]+3, DY+8, { width: 82, align: 'right' });
+    doc.text(fmtN(inversion_total, 0), COL[4]+3, DY+8, { width: W-MR-COL[4]-6, align: 'right' });
+
+    // ── FILAS DETALLE ─────────────────────────────────────────────────────────
+    let Y = DY + RH + 8;
+    const row = (label, pct2, amt, opts = {}) => {
+      const { bold = false, bg = null, ac = '#000' } = opts;
+      const rh = RH - 2;
+      if (bg) doc.rect(ML, Y, CW, rh).fill(bg);
+      const fn = bold ? 'Helvetica-Bold' : 'Helvetica';
+      doc.font(fn).fontSize(9).fillColor('#000').text(label, ML+6, Y+7, { width: 260 });
+      if (pct2) doc.font('Helvetica').fontSize(8).fillColor('#555').text(pct2, ML+250, Y+7, { width: 80, align: 'center' });
+      if (amt != null) doc.font(fn).fontSize(9).fillColor(ac).text(amt, W-MR-130, Y+7, { width: 124, align: 'right' });
+      doc.moveTo(ML, Y+rh).lineTo(W-MR, Y+rh).strokeColor('#E0E0E0').lineWidth(0.3).stroke();
+      Y += rh;
+    };
+
+    const ingresos_totales = precio_venta + alquileres;
+    const pct_part = inversion_total > 0 ? aporte / inversion_total : porcentaje;
+    const imp = impuestos_monto || Math.max(0, utilidad_bruta_inv - fee_monto - utilidad_neta);
+
+    row('PRECIO DE VENTA', null, fmtN(precio_venta, 0), { bold: true, bg: '#F7F7F7' });
+    row('ALQUILERES', null, fmtN(alquileres, 0), { bold: true });
+    row('INGRESOS TOTALES', null, fmtN(ingresos_totales, 0), { bold: true, bg: '#F7F7F7' });
+
+    Y += 4;
+    doc.moveTo(ML, Y).lineTo(W-MR, Y).strokeColor('#CCCCCC').lineWidth(0.5).stroke();
+    Y += 4;
+
+    row('APORTE', fmtP(pct_part), fmtN(aporte), { bold: true, bg: AZUF });
+    row('UTILIDAD BRUTA', fmtP(aporte > 0 ? utilidad_bruta_inv/aporte : 0), fmtN(utilidad_bruta_inv));
+    row('FEE DE ÉXITO', fmtP(fee_exito_pct), fmtN(-fee_monto), { bg: '#F7F7F7', ac: ROJO });
+    row('IMPUESTOS', '25,00%', fmtN(-imp), { ac: ROJO });
+    row('RENTABILIDAD NETA', fmtP(rentabilidad_pct), fmtN(utilidad_neta), { bold: true, bg: AZUF });
+    row('RENTABILIDAD ANUAL', fmtP(rentabilidad_pct), null, { bold: true });
+
+    // ── LIQUIDACIÓN TOTAL ─────────────────────────────────────────────────────
+    Y += 4;
+    doc.rect(ML, Y, CW, 32).fill(GRIS);
+    doc.moveTo(ML, Y).lineTo(W-MR, Y).strokeColor(AZUL).lineWidth(1.5).stroke();
+    doc.moveTo(ML, Y+32).lineTo(W-MR, Y+32).strokeColor(AZUL).lineWidth(1.5).stroke();
+    doc.font('Helvetica-Bold').fontSize(13).fillColor(AZUL)
+       .text('LIQUIDACIÓN', ML+6, Y+10);
+    doc.text(fmtN(total_retorno), W-MR-136, Y+10, { width: 130, align: 'right' });
+    Y += 32 + 20;
+
+    // ── DESTINO ───────────────────────────────────────────────────────────────
+    if (destino) {
+      doc.font('Helvetica-Bold').fontSize(9).fillColor('#333').text('DESTINO DE LOS FONDOS:', ML, Y);
+      doc.font('Helvetica').fontSize(9).fillColor('#333').text(destino, ML + 165, Y);
+      Y += 20;
     }
 
-    // Total
-    doc.rect(60, y + 5, 475, 32).fill('#1A1814');
-    doc.font('Helvetica-Bold').fontSize(13).fillColor('#FFFFFF');
-    doc.text('TOTAL RETORNO', 70, y + 13);
-    doc.text(fmt(liq.total_retorno), 400, y + 13, { align: 'right', width: 125 });
+    // ── NOTA ─────────────────────────────────────────────────────────────────
+    Y += 8;
+    doc.font('Helvetica-Oblique').fontSize(7.5).fillColor('#888')
+       .text('* La rentabilidad estimada es NETA (después de pagar impuestos y fee de éxito).', ML, Y);
 
-    // Rentabilidad
-    const rent = liq.aporte > 0 ? ((liq.total_retorno - liq.aporte) / liq.aporte * 100).toFixed(2) : 0;
-    doc.fillColor('#000').font('Helvetica').fontSize(10);
-    doc.text(`Rentabilidad neta: ${rent}%`, 60, y + 50);
-
-    // Footer
-    doc.moveTo(60, 730).lineTo(535, 730).strokeColor('#ddd').lineWidth(0.5).stroke();
-    doc.fontSize(8).fillColor('#999').text('Este documento es confidencial y ha sido generado automáticamente por el sistema de DIGSA.', 60, 740, { align: 'center', width: 475 });
-    doc.text('digsa.es  ·  Dorrego 1789 Of. 203, Buenos Aires  ·  Madrid', 60, 752, { align: 'center', width: 475 });
+    // ── PIE ───────────────────────────────────────────────────────────────────
+    doc.rect(0, H-50, W, 50).fill(AZUL);
+    doc.font('Helvetica').fontSize(8).fillColor('#FFFFFF');
+    doc.text('DIGSA Real Estate · digsa.es', ML, H-33);
+    doc.text(`Generado el ${fmtD(new Date())}`, W-MR-120, H-33, { width: 120, align: 'right' });
 
     doc.end();
   });
