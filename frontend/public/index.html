@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIGSA · Portal de Inversores</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --cream:#F8F6F1;--cream2:#EFECE5;--ink:#18160F;--ink2:#3A372E;--ink3:#7A7468;
+  --gold:#B8943F;--gold2:#D4AB4A;--gold-light:#F6EDD5;
+  --green:#2A6049;--green-light:#EAF4EE;
+  --red:#8B2525;--red-light:#F5EAEA;
+  --border:#E2DDD3;--white:#FFFFFF;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);font-size:14px;line-height:1.5}
+h1,h2,h3,h4{font-family:'Cormorant Garamond',serif;font-weight:500;line-height:1.2}
+input,select,textarea,button{font-family:'DM Sans',sans-serif;font-size:14px}
+a{color:inherit;text-decoration:none}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh}
+.screen.show{display:flex;flex-direction:column}
+
+/* ═══════════════════════════ LOGIN ══════════════════════════ */
+#screen-login{background:var(--ink);align-items:stretch}
+.login-wrap{display:flex;min-height:100vh}
+.login-left{
+  flex:1;background:linear-gradient(160deg,#1e1c13 0%,#0f0e09 100%);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:52px 56px;position:relative;overflow:hidden;
+}
+.login-left::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(184,148,63,.04) 40px,rgba(184,148,63,.04) 41px);
+}
+.login-left::after{
+  content:'';position:absolute;bottom:-80px;right:-80px;
+  width:400px;height:400px;border:1px solid rgba(184,148,63,.12);border-radius:50%;
+}
+.ll-logo{display:flex;align-items:center;gap:14px;position:relative;z-index:2}
+.ll-mark{
+  width:44px;height:44px;border:1.5px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold);letter-spacing:1px;
+}
+.ll-name{
+  font-family:'Cormorant Garamond',serif;font-size:26px;
+  color:#fff;letter-spacing:4px;font-weight:300;
+}
+.ll-content{position:relative;z-index:2}
+.ll-content h1{
+  font-size:52px;color:#fff;letter-spacing:-0.5px;
+  font-weight:300;line-height:1.1;margin-bottom:20px;
+}
+.ll-content h1 em{color:var(--gold);font-style:italic}
+.ll-content p{font-size:15px;color:rgba(255,255,255,.4);line-height:1.7;max-width:380px}
+.ll-bottom{position:relative;z-index:2}
+.ll-stats{display:flex;gap:40px}
+.ll-stat-val{font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold)}
+.ll-stat-label{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-top:2px}
+
+.login-right{
+  width:440px;background:var(--white);
+  display:flex;flex-direction:column;justify-content:center;padding:60px 52px;
+}
+.login-right h2{font-size:30px;color:var(--ink);margin-bottom:8px}
+.login-right>p{font-size:13px;color:var(--ink3);margin-bottom:36px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.field input{
+  width:100%;border:0.5px solid var(--border);background:var(--cream);
+  padding:12px 14px;color:var(--ink);outline:none;transition:border-color .2s;
+}
+.field input:focus{border-color:var(--gold);background:#fff}
+.login-btn{
+  width:100%;background:var(--ink);border:none;padding:14px;
+  font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:#fff;
+  cursor:pointer;transition:background .2s;margin-top:4px;font-weight:500;
+}
+.login-btn:hover{background:var(--gold)}
+.login-err{
+  background:var(--red-light);border:0.5px solid var(--red);
+  color:var(--red);font-size:12px;padding:10px 14px;margin-top:12px;display:none;
+}
+.login-footer-link{font-size:12px;color:var(--ink3);text-align:center;margin-top:24px}
+.login-footer-link a{color:var(--gold);border-bottom:1px solid transparent}
+.login-footer-link a:hover{border-bottom-color:var(--gold)}
+
+/* ═══════════════════════════ APP ════════════════════════════ */
+#screen-app{background:var(--cream)}
+.topnav{
+  background:var(--white);border-bottom:0.5px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 36px;height:60px;position:sticky;top:0;z-index:200;
+}
+.tn-logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.tn-mark{
+  width:28px;height:28px;border:1.5px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--gold);
+}
+.tn-name{font-family:'Cormorant Garamond',serif;font-size:17px;letter-spacing:3px;color:var(--ink)}
+.tn-nav{display:flex;gap:0}
+.tn-link{
+  font-size:13px;color:var(--ink3);padding:8px 16px;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;
+}
+.tn-link:hover{color:var(--ink)}
+.tn-link.active{color:var(--gold);border-bottom-color:var(--gold)}
+.tn-right{display:flex;align-items:center;gap:12px}
+.notif-btn{
+  position:relative;cursor:pointer;width:34px;height:34px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;transition:background .15s;
+}
+.notif-btn:hover{background:var(--cream2)}
+.notif-btn svg{width:18px;height:18px;stroke:var(--ink3);fill:none;stroke-width:1.5}
+.notif-badge{
+  position:absolute;top:4px;right:4px;width:16px;height:16px;
+  background:var(--gold);border-radius:50%;font-size:9px;
+  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;
+  display:none;
+}
+.user-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--cream);padding:5px 12px 5px 6px;border-radius:40px;cursor:pointer;
+}
+.user-ava{
+  width:26px;height:26px;border-radius:50%;background:var(--gold-light);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:600;color:var(--gold);
+}
+.user-info{font-size:12px;color:var(--ink2)}
+.logout-link{font-size:12px;color:var(--ink3);cursor:pointer;padding:4px 8px;border-radius:4px;transition:all .15s}
+.logout-link:hover{color:var(--red);background:var(--red-light)}
+
+main{max-width:1160px;margin:0 auto;padding:36px 36px 60px;width:100%}
+
+/* ── PANELS ── */
+.panel{display:none}
+.panel.show{display:block}
+
+/* ── STAT GRID ── */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px}
+.scard{background:var(--white);border:0.5px solid var(--border);padding:20px 22px}
+.scard-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink3);margin-bottom:10px}
+.scard-value{font-family:'Cormorant Garamond',serif;font-size:30px;color:var(--ink)}
+.scard-sub{font-size:11px;color:var(--ink3);margin-top:4px}
+.badge{display:inline-block;font-size:11px;padding:3px 9px;border-radius:3px;font-weight:500}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-gold{background:var(--gold-light);color:var(--gold)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-gray{background:var(--cream2);color:var(--ink3)}
+
+/* ── PAGE HEADER ── */
+.page-hd{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px}
+.page-hd h2{font-size:30px;color:var(--ink)}
+.page-hd p{font-size:13px;color:var(--ink3);margin-top:4px}
+
+/* ── NEXT INVESTMENT BANNER ── */
+.inv-banner{
+  background:var(--ink);padding:28px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
+}
+.inv-banner-title{font-family:'Cormorant Garamond',serif;font-size:22px;color:#fff;margin-bottom:4px}
+.inv-banner-sub{font-size:12px;color:rgba(255,255,255,.4)}
+.inv-banner-stats{display:flex;gap:36px}
+.inv-stat{text-align:center}
+.inv-stat-v{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold)}
+.inv-stat-l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-top:2px}
+
+/* ── GRID LAYOUTS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px}
+.card{background:var(--white);border:0.5px solid var(--border);padding:22px}
+.card-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;padding-bottom:12px;border-bottom:0.5px solid var(--border);
+}
+.card-hd h3{font-size:17px;color:var(--ink)}
+.card-hd-action{font-size:12px;color:var(--gold);cursor:pointer;border-bottom:1px solid transparent}
+.card-hd-action:hover{border-bottom-color:var(--gold)}
+
+/* ── DATA TABLE ── */
+.tbl-wrap{overflow-x:auto}
+table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
+.dtbl th{
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--ink3);padding:10px 12px;background:var(--cream);
+  border-bottom:0.5px solid var(--border);font-weight:400;text-align:left;white-space:nowrap;
+}
+.dtbl td{
+  padding:11px 12px;border-bottom:0.5px solid var(--cream2);
+  color:var(--ink2);vertical-align:middle;
+}
+.dtbl tr:last-child td{border-bottom:none}
+.dtbl tr:hover td{background:#fafaf7}
+.num{font-weight:500;color:var(--ink);text-align:right}
+.pos{color:var(--green);font-weight:500}
+.neg{color:var(--red)}
+
+/* ── STATUS DOTS ── */
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot-g{background:var(--green)}
+.dot-o{background:var(--gold)}
+.dot-r{background:var(--red)}
+.dot-gray{background:#bbb}
+
+/* ── PROP ROWS ── */
+.prop-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 0;border-bottom:0.5px solid var(--cream2);
+}
+.prop-row:last-child{border-bottom:none}
+.prop-name{font-size:13px;color:var(--ink);font-weight:500}
+.prop-meta{font-size:11px;color:var(--ink3);margin-top:2px}
+
+/* ── DOWNLOAD BTN ── */
+.dl-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  border:0.5px solid var(--border);background:var(--white);
+  padding:6px 12px;font-size:12px;color:var(--ink2);
+  cursor:pointer;transition:all .15s;border-radius:3px;
+}
+.dl-btn:hover{border-color:var(--gold);color:var(--gold)}
+.dl-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fld{margin-bottom:0}
+.fld label{display:block;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink3);margin-bottom:7px}
+.fld input,.fld select,.fld textarea{
+  width:100%;border:0.5px solid var(--border);background:var(--white);
+  padding:10px 12px;color:var(--ink);outline:none;transition:border-color .2s;
+}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--gold)}
+.fld-full{grid-column:1/-1}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 22px;font-size:12px;letter-spacing:1.5px;
+  text-transform:uppercase;cursor:pointer;transition:all .15s;border:none;font-weight:500;
+}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-dark:hover{background:var(--gold)}
+.btn-outline{background:transparent;border:0.5px solid var(--border);color:var(--ink2)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-gold{background:var(--gold);color:var(--ink)}
+.btn-gold:hover{background:var(--gold2)}
+.btn-danger{background:var(--red-light);color:var(--red);border:0.5px solid var(--red)}
+.btn-sm{padding:7px 14px;font-size:11px}
+
+/* ── MODAL ── */
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);
+  display:none;align-items:center;justify-content:center;z-index:1000;padding:20px;
+}
+.modal-backdrop.show{display:flex}
+.modal{
+  background:var(--white);width:100%;max-width:600px;
+  max-height:90vh;overflow-y:auto;
+}
+.modal-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px;border-bottom:0.5px solid var(--border);
+}
+.modal-hd h3{font-size:20px;color:var(--ink)}
+.modal-close{
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border-radius:50%;transition:background .15s;border:none;background:transparent;
+  font-size:20px;color:var(--ink3);
+}
+.modal-close:hover{background:var(--cream2)}
+.modal-body{padding:24px}
+.modal-foot{
+  display:flex;gap:10px;justify-content:flex-end;
+  padding:16px 24px;border-top:0.5px solid var(--border);
+}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:28px;right:28px;
+  background:var(--ink);color:#fff;padding:12px 20px;
+  font-size:13px;z-index:2000;opacity:0;transition:opacity .3s;
+  max-width:360px;pointer-events:none;
+}
+.toast.show{opacity:1}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
+
+/* ── ADMIN TABS ── */
+.admin-tabs{display:flex;gap:2px;margin-bottom:24px;border-bottom:0.5px solid var(--border)}
+.atab{
+  padding:10px 18px;font-size:13px;color:var(--ink3);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:all .15s;
+}
+.atab:hover{color:var(--ink)}
+.atab.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:500}
+.atab-panel{display:none}
+.atab-panel.show{display:block}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 24px;color:var(--ink3)}
+.empty svg{width:44px;height:44px;stroke:var(--border);fill:none;stroke-width:1;margin-bottom:12px}
+.empty p{font-size:13px}
+
+/* ── LOADING ── */
+.spinner{
+  display:inline-block;width:20px;height:20px;
+  border:2px solid var(--border);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay{
+  display:none;position:fixed;inset:0;background:rgba(248,246,241,.8);
+  align-items:center;justify-content:center;z-index:500;flex-direction:column;gap:12px;
+}
+.loading-overlay.show{display:flex}
+.loading-overlay p{font-size:13px;color:var(--ink3)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .login-left{display:none}
+  .login-right{width:100%}
+  .stat-row{grid-template-columns:1fr 1fr}
+  .g2,.g3{grid-template-columns:1fr}
+  .tn-nav{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN ══════════════════════════════════════════ -->
+<div id="screen-login" class="screen show">
+ <div class="login-wrap">
+  <div class="login-left">
+   <div class="ll-logo">
+    <div class="ll-mark">D</div>
+    <div class="ll-name">DIGSA</div>
+   </div>
+   <div class="ll-content">
+    <h1>Tu inversión,<br><em>siempre visible.</em></h1>
+    <p>Portal exclusivo para inversores de DIGSA. Seguí el rendimiento de tus activos, descargá liquidaciones y conocé las próximas oportunidades.</p>
+   </div>
+   <div class="ll-bottom">
+    <div class="ll-stats">
+     <div><div class="ll-stat-val">+11</div><div class="ll-stat-label">Propiedades</div></div>
+     <div><div class="ll-stat-val">Madrid</div><div class="ll-stat-label">Mercado</div></div>
+     <div><div class="ll-stat-val">digsa.es</div><div class="ll-stat-label">Web Pública</div></div>
+    </div>
+   </div>
+  </div>
+  <div class="login-right">
+   <h2>Acceder</h2>
+   <p>Ingresá con tu email y contraseña asignados por DIGSA.</p>
+   <div class="field">
+    <label>Email</label>
+    <input type="email" id="li-email" placeholder="tu@email.com" autocomplete="email">
+   </div>
+   <div class="field">
+    <label>Contraseña</label>
+    <input type="password" id="li-pass" placeholder="••••••••" autocomplete="current-password">
+   </div>
+   <button class="login-btn" id="li-btn" onclick="doLogin()">Ingresar</button>
+   <div class="login-err" id="li-err"></div>
+   <p class="login-footer-link">¿Problemas para acceder? <a href="mailto:admin@digsa.es">Contactá al administrador</a></p>
+  </div>
+ </div>
+</div>
+
+<!-- ═══════════ APP ════════════════════════════════════════════ -->
+<div id="screen-app" class="screen">
+ <!-- TopNav -->
+ <nav class="topnav">
+  <div class="tn-logo" onclick="nav('dashboard')">
+   <div class="tn-mark">D</div>
+   <div class="tn-name">DIGSA</div>
+  </div>
+  <div class="tn-nav" id="tn-nav">
+   <div class="tn-link active" onclick="nav('dashboard')" data-panel="dashboard">Dashboard</div>
+   <div class="tn-link" onclick="nav('portfolio')" data-panel="portfolio">Mi Portfolio</div>
+   <div class="tn-link" onclick="nav('historial')" data-panel="historial">Historial</div>
+   <div class="tn-link" onclick="nav('documentos')" data-panel="documentos">Documentos</div>
+   <div class="tn-link admin-only" onclick="nav('admin')" data-panel="admin" style="display:none">Admin</div>
+  </div>
+  <div class="tn-right">
+   <div class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
+    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+    <div class="notif-badge" id="notif-badge"></div>
+   </div>
+   <div class="user-chip">
+    <div class="user-ava" id="user-ava">--</div>
+    <div class="user-info" id="user-info">Cargando…</div>
+   </div>
+   <div class="logout-link" onclick="doLogout()">Salir</div>
+  </div>
+ </nav>
+
+ <main>
+
+  <!-- ── PANEL: DASHBOARD ── -->
+  <div class="panel show" id="panel-dashboard">
+   <div class="page-hd">
+    <div><h2 id="dash-title">Bienvenido</h2><p id="dash-sub">Panel de inversión personal · DIGSA</p></div>
+    <div style="text-align:right;font-size:12px;color:var(--ink3)" id="dash-date"></div>
+   </div>
+
+   <!-- Stats -->
+   <div class="stat-row" id="dash-stats">
+    <div class="scard"><div class="scard-label">Capital invertido</div><div class="scard-value" id="st-invertido">—</div></div>
+    <div class="scard"><div class="scard-label">Total retornado</div><div class="scard-value" id="st-retornado">—</div></div>
+    <div class="scard"><div class="scard-label">Rentabilidad</div><div class="scard-value" id="st-rent">—</div></div>
+    <div class="scard"><div class="scard-label">Propiedades activas</div><div class="scard-value" id="st-props">—</div></div>
+   </div>
+
+   <!-- Banner próxima inversión -->
+   <div class="inv-banner" id="next-inv-banner" style="display:none">
+    <div>
+     <div class="inv-banner-title" id="next-inv-name">—</div>
+     <div class="inv-banner-sub" id="next-inv-sub">Próxima oportunidad de inversión</div>
+    </div>
+    <div class="inv-banner-stats" id="next-inv-stats"></div>
+    <button class="btn btn-gold" onclick="window.open('https://digsa.es','_blank')">Ver en digsa.es →</button>
+   </div>
+
+   <div class="g2">
+    <!-- Mis propiedades activas -->
+    <div class="card">
+     <div class="card-hd"><h3>Mis propiedades</h3><span class="card-hd-action" onclick="nav('portfolio')">Ver todas →</span></div>
+     <div id="dash-props-list"><div class="empty"><p>Sin propiedades activas</p></div></div>
+    </div>
+    <!-- Últimos movimientos -->
+    <div class="card">
+     <div class="card-hd"><h3>Últimos movimientos</h3><span class="card-hd-action" onclick="nav('historial')">Ver historial →</span></div>
+     <div id="dash-movs-list"><div class="empty"><p>Sin movimientos</p></div></div>
+    </div>
+   </div>
+
+   <!-- Liquidaciones recientes -->
+   <div class="card">
+    <div class="card-hd"><h3>Liquidaciones</h3><span class="card-hd-action" onclick="nav('documentos')">Ver documentos →</span></div>
+    <div class="tbl-wrap">
+     <table class="dtbl" id="dash-liq-tbl">
+      <thead><tr><th>Propiedad</th><th>Fecha</th><th>Aporte</th><th>Retorno total</th><th>Rentabilidad</th><th>Documento</th></tr></thead>
+      <tbody id="dash-liq-body"><tr><td colspan="6" style="text-align:center;color:var(--ink3);padding:24px">Sin liquidaciones</td></tr></tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+
+  <!-- ── PANEL: PORTFOLIO ── -->
+  <div class="panel" id="panel-portfolio">
+   <div class="page-hd">
+    <div><h2>Mi Portfolio</h2><p>Estado actual de tus inversiones inmobiliarias</p></div>
+   </div>
+   <div class="tbl-wrap card" style="padding:0">
+    <table class="dtbl" id="port-tbl">
+     <thead><tr><th>Propiedad</th><th>Estado</th><th>Mi inversión</th><th>Participación</th><th>Tipo</th><th>Ingreso</th><th>Rentab. estimada</th></tr></thead>
+     <tbody id="port-body"></tbody>
+    </table>
+   </div>
+  </div>
+
+  <!-- ── PANEL: HISTORIAL ── -->
+  <div class="panel" id="panel-historial">
+   <div class="page-hd">
+    <div><h2>Historial de aportes</h2><p>Todos tus movimientos de capital</p></div>
+   </div>
+   <div class="card" style="padding:0">
+    <div class="tbl-wrap">
+     <table class="dtbl">
+      <thead><tr><th>Fecha</th><th>Tipo</th><th>Propiedad</th><th>Monto USD</th><th>T/C</th><th>Monto EUR</th><th>Descripción</th></tr></thead>
+      <tbody id="hist-body"></tbody>
+     </table>
+    </div>
+   </div>
+  </div>
+
+  <!-- ── PANEL: DOCUMENTOS ── -->
+  <div class="panel" id="panel-documentos">
+   <div class="page-hd">
+    <div><h2>Documentos</h2><p>Reportes y liquidaciones disponibles para descarga</p></div>
+   </div>
+   <div id="docs-grid" class="g3"></div>
+  </div>
+
+  <!-- ── PANEL: ADMIN ── -->
+  <div class="panel" id="panel-admin">
+   <div class="page-hd">
+    <div><h2>Panel de administración</h2><p>Gestión de inversores, propiedades y reportes</p></div>
+   </div>
+
+   <!-- Stats admin -->
+   <div class="stat-row" id="admin-stats-row" style="grid-template-columns:repeat(5,1fr)">
+    <div class="scard"><div class="scard-label">Inversores activos</div><div class="scard-value" id="ast-inv">—</div></div>
+    <div class="scard"><div class="scard-label">Propiedades</div><div class="scard-value" id="ast-prop">—</div></div>
+    <div class="scard"><div class="scard-label">Capital gestionado</div><div class="scard-value" id="ast-cap">—</div></div>
+    <div class="scard"><div class="scard-label">Total retornado</div><div class="scard-value" id="ast-ret">—</div></div>
+    <div class="scard"><div class="scard-label">Rentabilidad promedio</div><div class="scard-value" id="ast-rentprom">—</div></div>
+   </div>
+
+   <!-- Tabs -->
+   <div class="admin-tabs">
+    <div class="atab active" onclick="adminTab('inversores')">Inversores</div>
+    <div class="atab" onclick="adminTab('propiedades')">Propiedades</div>
+    <div class="atab" onclick="adminTab('aportes')">Aportes</div>
+    <div class="atab" onclick="adminTab('liquidar')">Liquidar piso</div>
+    <div class="atab" onclick="adminTab('docs')">Subir documentos</div>
+   </div>
+
+   <!-- TAB: inversores -->
+   <div class="atab-panel show" id="atab-inversores">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+     <button class="btn btn-dark" onclick="openModal('modal-inversor')">+ Nuevo inversor</button>
+    </div>
+    <div class="card" style="padding:0">
+     <table class="dtbl">
+      <thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody id="admin-inv-body"></tbody>
+     </table>
+    </div>
+   </div>
+
+   <!-- TAB: propiedades -->
+   <div class="atab-panel" id="atab-propiedades">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+     <button class="btn btn-dark" onclick="openModal('modal-propiedad')">+ Nueva propiedad</button>
+    </div>
+    <div class="card" style="padding:0">
+     <table class="dtbl">
+      <thead><tr><th>Nombre</th><th>Estado</th><th>Tipo</th><th>Precio compra</th><th>Precio venta</th><th>Acciones</th></tr></thead>
+      <tbody id="admin-prop-body"></tbody>
+     </table>
+    </div>
+   </div>
+
+   <!-- TAB: aportes -->
+   <div class="atab-panel" id="atab-aportes">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+     <button class="btn btn-dark" onclick="openModal('modal-aporte')">+ Registrar aporte</button>
+    </div>
+    <div class="card" style="padding:0">
+     <table class="dtbl">
+      <thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Monto USD</th><th>Tipo</th></tr></thead>
+      <tbody id="admin-aporte-body"></tbody>
+     </table>
+    </div>
+   </div>
+
+   <!-- TAB: liquidar -->
+   <div class="atab-panel" id="atab-liquidar">
+    <div class="card" style="max-width:600px">
+     <div class="card-hd"><h3>Generar liquidaciones</h3></div>
+     <p style="font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.7">
+      Seleccioná el piso, cargá el precio de venta final y hacé clic en <strong>Generar</strong>. 
+      El sistema calculará automáticamente la liquidación de cada inversor y generará un PDF descargable para cada uno.
+     </p>
+     <div class="form-grid">
+      <div class="fld fld-full">
+       <label>Propiedad</label>
+       <select id="liq-prop-sel"></select>
+      </div>
+      <div class="fld">
+       <label>Precio de venta final (USD)</label>
+       <input type="number" id="liq-precio" placeholder="280000">
+      </div>
+      <div class="fld">
+       <label>Fecha de liquidación</label>
+       <input type="date" id="liq-fecha">
+      </div>
+      <div class="fld">
+       <label>Fee de éxito (%)</label>
+       <input type="number" id="liq-fee" value="15" min="0" max="100">
+      </div>
+     </div>
+     <div style="margin-top:20px">
+      <button class="btn btn-gold" onclick="generarLiquidaciones()">⚡ Generar liquidaciones para todos los inversores</button>
+     </div>
+     <div id="liq-result" style="margin-top:20px;display:none"></div>
+    </div>
+   </div>
+
+   <!-- TAB: docs -->
+   <div class="atab-panel" id="atab-docs">
+    <div class="card" style="max-width:600px">
+     <div class="card-hd"><h3>Subir documento</h3></div>
+     <div class="form-grid">
+      <div class="fld fld-full">
+       <label>Inversor</label>
+       <select id="doc-inv-sel"></select>
+      </div>
+      <div class="fld fld-full">
+       <label>Propiedad (opcional)</label>
+       <select id="doc-prop-sel"><option value="">— Ninguna —</option></select>
+      </div>
+      <div class="fld">
+       <label>Nombre del documento</label>
+       <input type="text" id="doc-nombre" placeholder="Liquidación DRC 48 - Enero 2024">
+      </div>
+      <div class="fld">
+       <label>Tipo</label>
+       <select id="doc-tipo">
+        <option value="reporte">Reporte</option>
+        <option value="liquidacion">Liquidación</option>
+        <option value="contrato">Contrato</option>
+        <option value="otro">Otro</option>
+       </select>
+      </div>
+      <div class="fld">
+       <label>Fecha del documento</label>
+       <input type="date" id="doc-fecha">
+      </div>
+      <div class="fld fld-full">
+       <label>Archivo (PDF)</label>
+       <input type="file" id="doc-file" accept=".pdf,.xlsx,.docx">
+      </div>
+     </div>
+     <div style="margin-top:20px">
+      <button class="btn btn-dark" onclick="subirDocumento()">Subir documento</button>
+     </div>
+    </div>
+   </div>
+
+  </div><!-- /panel-admin -->
+
+ </main>
+</div><!-- /screen-app -->
+
+<!-- ═══════════ MODALS ════════════════════════════════════════ -->
+<!-- Modal: Nuevo inversor -->
+<div class="modal-backdrop" id="modal-inversor">
+ <div class="modal">
+  <div class="modal-hd">
+   <h3 id="inv-modal-title">Nuevo inversor</h3>
+   <button class="modal-close" onclick="closeModal('modal-inversor')">×</button>
+  </div>
+  <div class="modal-body">
+   <input type="hidden" id="inv-edit-id">
+   <div class="form-grid">
+    <div class="fld"><label>Nombre</label><input id="inv-nombre" placeholder="Juan"></div>
+    <div class="fld"><label>Apellido</label><input id="inv-apellido" placeholder="García"></div>
+    <div class="fld"><label>Email</label><input id="inv-email" type="email" placeholder="juan@email.com"></div>
+    <div class="fld"><label>Teléfono</label><input id="inv-tel" placeholder="+34 600 000 000"></div>
+    <div class="fld"><label>Contraseña</label><input id="inv-pass" type="password" placeholder="Mínimo 8 caracteres"></div>
+    <div class="fld"><label>Estado</label>
+     <select id="inv-activo"><option value="true">Activo</option><option value="false">Inactivo</option></select>
+    </div>
+   </div>
+  </div>
+  <div class="modal-foot">
+   <button class="btn btn-outline" onclick="closeModal('modal-inversor')">Cancelar</button>
+   <button class="btn btn-dark" onclick="saveInversor()">Guardar inversor</button>
+  </div>
+ </div>
+</div>
+
+<!-- Modal: Nueva propiedad -->
+<div class="modal-backdrop" id="modal-propiedad">
+ <div class="modal">
+  <div class="modal-hd">
+   <h3 id="prop-modal-title">Nueva propiedad</h3>
+   <button class="modal-close" onclick="closeModal('modal-propiedad')">×</button>
+  </div>
+  <div class="modal-body">
+   <input type="hidden" id="prop-edit-id">
+   <div class="form-grid">
+    <div class="fld"><label>Nombre</label><input id="prop-nombre" placeholder="Ayala 85"></div>
+    <div class="fld"><label>Dirección completa</label><input id="prop-dir" placeholder="Ayala 85, Madrid"></div>
+    <div class="fld"><label>Estado</label>
+     <select id="prop-estado">
+      <option value="en_obra">En obra</option>
+      <option value="disponible">Disponible</option>
+      <option value="reservado">Reservado</option>
+      <option value="vendido">Vendido</option>
+     </select>
+    </div>
+    <div class="fld"><label>Tipo</label>
+     <select id="prop-tipo">
+      <option value="flipping">Flipping</option>
+      <option value="renta">Renta</option>
+      <option value="mixto">Mixto</option>
+     </select>
+    </div>
+    <div class="fld"><label>Precio de compra (USD)</label><input id="prop-compra" type="number" placeholder="500000"></div>
+    <div class="fld"><label>Gastos de compra (USD)</label><input id="prop-gastos" type="number" placeholder="50000"></div>
+    <div class="fld"><label>Precio de venta (USD)</label><input id="prop-venta" type="number" placeholder="650000"></div>
+    <div class="fld"><label>Fecha de compra</label><input id="prop-fcompra" type="date"></div>
+    <div class="fld"><label>Fecha de venta</label><input id="prop-fventa" type="date"></div>
+    <div class="fld"><label>Renta mensual (USD)</label><input id="prop-renta" type="number" placeholder="2500"></div>
+    <div class="fld fld-full"><label>Descripción</label><textarea id="prop-desc" rows="3"></textarea></div>
+   </div>
+   <!-- Participantes -->
+   <div style="margin-top:20px;padding-top:16px;border-top:0.5px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+     <strong style="font-size:13px">Inversores participantes</strong>
+     <button class="btn btn-outline btn-sm" onclick="addPartRow()">+ Agregar</button>
+    </div>
+    <div id="part-rows"></div>
+   </div>
+  </div>
+  <div class="modal-foot">
+   <button class="btn btn-outline" onclick="closeModal('modal-propiedad')">Cancelar</button>
+   <button class="btn btn-dark" onclick="savePropiedad()">Guardar propiedad</button>
+  </div>
+ </div>
+</div>
+
+<!-- Modal: Registrar aporte -->
+<div class="modal-backdrop" id="modal-aporte">
+ <div class="modal">
+  <div class="modal-hd">
+   <h3>Registrar aporte</h3>
+   <button class="modal-close" onclick="closeModal('modal-aporte')">×</button>
+  </div>
+  <div class="modal-body">
+   <div class="form-grid">
+    <div class="fld fld-full"><label>Inversor</label><select id="ap-inv-sel"></select></div>
+    <div class="fld"><label>Propiedad (opcional)</label><select id="ap-prop-sel"><option value="">— Aporte general —</option></select></div>
+    <div class="fld"><label>Monto (USD)</label><input id="ap-monto" type="number" placeholder="50000"></div>
+    <div class="fld"><label>Tipo de cambio USD/EUR</label><input id="ap-tc" type="number" step="0.01" placeholder="1.08"></div>
+    <div class="fld"><label>Fecha</label><input id="ap-fecha" type="date"></div>
+    <div class="fld"><label>Tipo</label>
+     <select id="ap-tipo">
+      <option value="aporte">Aporte</option>
+      <option value="retiro">Retiro</option>
+      <option value="renta">Renta</option>
+     </select>
+    </div>
+    <div class="fld fld-full"><label>Descripción</label><input id="ap-desc" placeholder="Descripción opcional"></div>
+   </div>
+  </div>
+  <div class="modal-foot">
+   <button class="btn btn-outline" onclick="closeModal('modal-aporte')">Cancelar</button>
+   <button class="btn btn-dark" onclick="saveAporte()">Registrar</button>
+  </div>
+ </div>
+</div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading"><div class="spinner"></div><p id="loading-msg">Cargando…</p></div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════════
+const API = window.location.origin + '/api';
+let TOKEN = localStorage.getItem('digsa_token');
+let ME = null;
+let INVERSORES_CACHE = [];
+let PROPIEDADES_CACHE = [];
+
+// ═══════════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const usd = n => n == null ? '—' : '$' + Number(n).toLocaleString('es-ES', {minimumFractionDigits:0,maximumFractionDigits:0});
+const pct = n => n == null ? '—' : (Number(n)*100).toFixed(2) + '%';
+const fmt_date = d => d ? new Date(d).toLocaleDateString('es-ES') : '—';
+
+function showToast(msg, type='ok') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3200);
+}
+
+function showLoading(msg='Cargando…') { $('loading-msg').textContent = msg; $('loading').classList.add('show'); }
+function hideLoading() { $('loading').classList.remove('show'); }
+
+function openModal(id) { $(id).classList.add('show'); }
+function closeModal(id) { $(id).classList.remove('show'); }
+
+async function api(method, path, body=null, isForm=false) {
+  const opts = {
+    method,
+    headers: { Authorization: 'Bearer ' + TOKEN }
+  };
+  if (body && !isForm) {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
+  } else if (isForm) {
+    opts.body = body;
+  }
+  const res = await fetch(API + path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Error ' + res.status);
+  return data;
+}
+
+function statusBadge(s) {
+  const map = { en_obra:'badge-gold', disponible:'badge-green', reservado:'badge-gold', vendido:'badge-gray' };
+  const labels = { en_obra:'En obra', disponible:'Disponible', reservado:'Reservado', vendido:'Vendido' };
+  return `<span class="badge ${map[s]||'badge-gray'}">${labels[s]||s}</span>`;
+}
+function dot(estado) {
+  const m = { vendido:'dot-g', en_obra:'dot-o', reservado:'dot-o', disponible:'dot-g' };
+  return `<span class="dot ${m[estado]||'dot-gray'}"></span>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════════════════
+async function doLogin() {
+  const email = $('li-email').value.trim();
+  const pass = $('li-pass').value;
+  const err = $('li-err');
+  err.style.display = 'none';
+  if (!email || !pass) { err.textContent = 'Completá email y contraseña.'; err.style.display='block'; return; }
+  $('li-btn').textContent = 'Ingresando…';
+  try {
+    const r = await fetch(API+'/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, password:pass})
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    TOKEN = d.token;
+    localStorage.setItem('digsa_token', TOKEN);
+    ME = d.user;
+    startApp();
+  } catch(e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+  } finally { $('li-btn').textContent = 'Ingresar'; }
+}
+$('li-pass').addEventListener('keydown', e => e.key==='Enter' && doLogin());
+$('li-email').addEventListener('keydown', e => e.key==='Enter' && $('li-pass').focus());
+
+function doLogout() {
+  localStorage.removeItem('digsa_token');
+  TOKEN = null; ME = null;
+  $('screen-app').classList.remove('show');
+  $('screen-login').classList.add('show');
+  $('li-email').value=''; $('li-pass').value='';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════════════════════
+function nav(panel) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('show'));
+  document.querySelectorAll('.tn-link').forEach(l => l.classList.remove('active'));
+  const p = $('panel-' + panel); if(p) p.classList.add('show');
+  const l = document.querySelector(`[data-panel="${panel}"]`); if(l) l.classList.add('active');
+  if (panel === 'dashboard') loadDashboard();
+  if (panel === 'portfolio') loadPortfolio();
+  if (panel === 'historial') loadHistorial();
+  if (panel === 'documentos') loadDocumentos();
+  if (panel === 'admin' && ME?.rol === 'admin') loadAdmin();
+}
+
+function adminTab(tab) {
+  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.atab-panel').forEach(p=>p.classList.remove('show'));
+  const idx = ['inversores','propiedades','aportes','liquidar','docs'].indexOf(tab);
+  document.querySelectorAll('.atab')[idx]?.classList.add('active');
+  $('atab-' + tab)?.classList.add('show');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  START APP
+// ═══════════════════════════════════════════════════════════════
+async function startApp() {
+  if (!TOKEN) { $('screen-login').classList.add('show'); return; }
+  if (!ME) {
+    try { const r = await api('GET','/auth/me'); ME = r.user; } catch { doLogout(); return; }
+  }
+  $('screen-login').classList.remove('show');
+  $('screen-app').classList.add('show');
+  $('user-ava').textContent = (ME.nombre[0]+ME.apellido[0]).toUpperCase();
+  $('user-info').textContent = ME.nombre + ' ' + ME.apellido;
+  $('dash-title').textContent = 'Hola, ' + ME.nombre;
+  $('dash-date').textContent = new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+  if (ME.rol === 'admin') {
+    document.querySelectorAll('.admin-only').forEach(e => e.style.display='');
+  }
+
+  loadDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    const d = await api('GET', '/dashboard');
+    const r = d.resumen;
+
+    $('st-invertido').textContent = usd(r.total_invertido);
+    $('st-retornado').textContent = usd(r.total_retornado);
+    $('st-rent').textContent = (r.rentabilidad_total >= 0 ? '+' : '') + r.rentabilidad_total.toFixed(1) + '%';
+    $('st-props').textContent = r.propiedades_activas;
+
+    // Notificaciones
+    const notifs = d.notificaciones || [];
+    if (notifs.length) {
+      $('notif-badge').textContent = notifs.length;
+      $('notif-badge').style.display = 'flex';
+    }
+
+    // Props activas
+    const activas = (d.participaciones||[]).filter(p => p.propiedades?.estado !== 'vendido');
+    if (activas.length) {
+      $('dash-props-list').innerHTML = activas.slice(0,5).map(p => `
+        <div class="prop-row">
+          <div>
+            <div class="prop-name">${dot(p.propiedades.estado)}${p.propiedades.nombre}</div>
+            <div class="prop-meta">${pct(p.porcentaje)} participación · ${statusBadge(p.propiedades.estado)}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-weight:500">${usd(p.monto_invertido)}</div>
+            <div style="font-size:11px;color:var(--ink3)">invertido</div>
+          </div>
+        </div>`).join('');
+    }
+
+    // Últimos movimientos
+    const movs = (d.aportes||[]).slice(0,6);
+    if (movs.length) {
+      $('dash-movs-list').innerHTML = movs.map(a => `
+        <div class="prop-row">
+          <div>
+            <div class="prop-name">${a.propiedades?.nombre || 'Aporte general'}</div>
+            <div class="prop-meta">${fmt_date(a.fecha)} · ${a.tipo}</div>
+          </div>
+          <div class="${a.tipo==='retiro'?'neg':'pos'}" style="font-weight:500">
+            ${a.tipo==='retiro'?'-':'+'} ${usd(a.monto_usd)}
+          </div>
+        </div>`).join('');
+    }
+
+    // Liquidaciones
+    const liqs = d.liquidaciones || [];
+    if (liqs.length) {
+      $('dash-liq-body').innerHTML = liqs.map(l => {
+        const rent = l.aporte_usuario > 0 ? ((l.total_retorno - l.aporte_usuario) / l.aporte_usuario * 100).toFixed(1) : 0;
+        return `<tr>
+          <td>${l.propiedades?.nombre||'—'}</td>
+          <td>${fmt_date(l.fecha)}</td>
+          <td class="num">${usd(l.aporte_usuario)}</td>
+          <td class="num">${usd(l.total_retorno)}</td>
+          <td class="${rent>=0?'pos':'neg'}">${rent>=0?'+':''}${rent}%</td>
+          <td>${l.pdf_url ? `<a href="${l.pdf_url}" target="_blank" class="dl-btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>PDF</a>` : '<span style="color:var(--ink3);font-size:12px">—</span>'}</td>
+        </tr>`;
+      }).join('');
+    }
+  } catch(e) { showToast('Error al cargar el dashboard: ' + e.message, 'err'); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PORTFOLIO
+// ═══════════════════════════════════════════════════════════════
+async function loadPortfolio() {
+  const tbody = $('port-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px"><div class="spinner"></div></td></tr>';
+  try {
+    const props = await api('GET', '/propiedades');
+    if (!props.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--ink3)">Sin propiedades asignadas</td></tr>'; return; }
+    tbody.innerHTML = props.map(p => {
+      const rentEstimada = p.precio_compra && p.precio_venta
+        ? (((p.precio_venta - p.precio_compra) / p.precio_compra)*100).toFixed(1) + '%'
+        : '—';
+      return `<tr>
+        <td><strong>${p.nombre}</strong><br><span style="font-size:11px;color:var(--ink3)">${p.direccion||''}</span></td>
+        <td>${statusBadge(p.estado)}</td>
+        <td class="num">${usd(p.mi_inversion || p.precio_compra)}</td>
+        <td>${p.mi_porcentaje ? pct(p.mi_porcentaje) : '—'}</td>
+        <td><span class="badge badge-gray">${p.tipo||'—'}</span></td>
+        <td class="pos">${p.renta_mensual ? usd(p.renta_mensual)+'/mes' : '—'}</td>
+        <td class="${rentEstimada!=='—'?'pos':''}">${rentEstimada !== '—' ? '+'+rentEstimada : '—'}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="7" style="color:var(--red);text-align:center;padding:24px">' + e.message + '</td></tr>'; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HISTORIAL
+// ═══════════════════════════════════════════════════════════════
+async function loadHistorial() {
+  const tbody = $('hist-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px"><div class="spinner"></div></td></tr>';
+  try {
+    const aportes = await api('GET', '/aportes');
+    if (!aportes.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--ink3)">Sin movimientos</td></tr>'; return; }
+    tbody.innerHTML = aportes.map(a => `
+      <tr>
+        <td>${fmt_date(a.fecha)}</td>
+        <td><span class="badge ${a.tipo==='retiro'?'badge-red':'badge-green'}">${a.tipo}</span></td>
+        <td>${a.propiedades?.nombre || '<span style="color:var(--ink3)">General</span>'}</td>
+        <td class="num ${a.tipo==='retiro'?'neg':'pos'}">${a.tipo==='retiro'?'-':'+'} ${usd(a.monto_usd)}</td>
+        <td style="color:var(--ink3)">${a.tipo_cambio ? a.tipo_cambio : '—'}</td>
+        <td class="num">${a.monto_eur ? '$'+Number(a.monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2}) : '—'}</td>
+        <td style="color:var(--ink3);font-size:12px">${a.descripcion || '—'}</td>
+      </tr>`).join('');
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="7" style="color:var(--red);text-align:center;padding:24px">' + e.message + '</td></tr>'; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DOCUMENTOS
+// ═══════════════════════════════════════════════════════════════
+async function loadDocumentos() {
+  const grid = $('docs-grid');
+  grid.innerHTML = '<div style="padding:24px;color:var(--ink3)"><div class="spinner"></div></div>';
+  try {
+    const docs = await api('GET', '/documentos');
+    if (!docs.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>No hay documentos disponibles aún.</p></div>'; return; }
+    const iconMap = { reporte:'📊', liquidacion:'💰', contrato:'📝', otro:'📎' };
+    grid.innerHTML = docs.map(d => `
+      <div class="card" style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:28px">${iconMap[d.tipo]||'📄'}</div>
+        <div>
+          <div style="font-weight:500;font-size:13px;margin-bottom:4px">${d.nombre}</div>
+          <div style="font-size:11px;color:var(--ink3)">${d.propiedades?.nombre || '—'} · ${fmt_date(d.fecha)}</div>
+          <div style="margin-top:2px"><span class="badge badge-gold">${d.tipo}</span></div>
+        </div>
+        <a href="${d.url}" target="_blank" class="dl-btn" style="align-self:flex-start">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Descargar
+        </a>
+      </div>`).join('');
+  } catch(e) { grid.innerHTML = '<p style="color:var(--red);padding:24px">' + e.message + '</p>'; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ADMIN
+// ═══════════════════════════════════════════════════════════════
+async function loadAdmin() {
+  try {
+    const [stats, inversores, props] = await Promise.all([
+      api('GET', '/admin/estadisticas'),
+      api('GET', '/inversores'),
+      api('GET', '/propiedades')
+    ]);
+
+    INVERSORES_CACHE = inversores;
+    PROPIEDADES_CACHE = props;
+
+    // Stats
+    $('ast-inv').textContent = stats.inversores_activos;
+    $('ast-prop').textContent = stats.total_propiedades;
+    $('ast-cap').textContent = usd(stats.total_capital_gestionado);
+    $('ast-ret').textContent = usd(stats.total_retornado);
+    $('ast-rentprom').textContent = '+' + stats.rentabilidad_promedio.toFixed(1) + '%';
+
+    // Tabla inversores
+    $('admin-inv-body').innerHTML = inversores.map(inv => `
+      <tr>
+        <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
+        <td style="color:var(--ink3)">${inv.email}</td>
+        <td style="color:var(--ink3)">${inv.telefono||'—'}</td>
+        <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+        <td style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button>
+        </td>
+      </tr>`).join('');
+
+    // Tabla propiedades
+    $('admin-prop-body').innerHTML = props.map(p => `
+      <tr>
+        <td><strong>${p.nombre}</strong></td>
+        <td>${statusBadge(p.estado)}</td>
+        <td><span class="badge badge-gray">${p.tipo}</span></td>
+        <td class="num">${usd(p.precio_compra)}</td>
+        <td class="num">${usd(p.precio_venta)}</td>
+        <td style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="editPropiedad('${p.id}')">Editar</button>
+        </td>
+      </tr>`).join('');
+
+    // Poblar selects de liquidar/docs/aportes
+    const propOpts = props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('liq-prop-sel').innerHTML = propOpts;
+    $('doc-prop-sel').innerHTML = '<option value="">— Ninguna —</option>' + props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('ap-prop-sel').innerHTML = '<option value="">— Aporte general —</option>' + props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+
+    const invOpts = inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
+    $('doc-inv-sel').innerHTML = invOpts;
+    $('ap-inv-sel').innerHTML = invOpts;
+
+    // Últimos aportes
+    const act = await api('GET', '/admin/actividad');
+    $('admin-aporte-body').innerHTML = (act.ultimos_aportes||[]).map(a => `
+      <tr>
+        <td>${fmt_date(a.fecha)}</td>
+        <td>${a.usuarios?.nombre} ${a.usuarios?.apellido}</td>
+        <td>${a.propiedades?.nombre||'General'}</td>
+        <td class="num pos">${usd(a.monto_usd)}</td>
+        <td><span class="badge badge-green">${a.tipo}</span></td>
+      </tr>`).join('');
+
+    // Fecha default para aporte
+    $('ap-fecha').value = new Date().toISOString().split('T')[0];
+    $('liq-fecha').value = new Date().toISOString().split('T')[0];
+
+  } catch(e) { showToast('Error al cargar admin: ' + e.message, 'err'); }
+}
+
+// ── INVERSOR CRUD ──
+function openModal_newInversor() {
+  $('inv-modal-title').textContent = 'Nuevo inversor';
+  $('inv-edit-id').value = '';
+  ['inv-nombre','inv-apellido','inv-email','inv-tel','inv-pass'].forEach(id => $(id).value='');
+  $('inv-activo').value = 'true';
+  openModal('modal-inversor');
+}
+
+async function editInversor(id) {
+  const inv = INVERSORES_CACHE.find(i=>i.id===id);
+  if (!inv) return;
+  $('inv-modal-title').textContent = 'Editar inversor';
+  $('inv-edit-id').value = id;
+  $('inv-nombre').value = inv.nombre;
+  $('inv-apellido').value = inv.apellido;
+  $('inv-email').value = inv.email;
+  $('inv-tel').value = inv.telefono||'';
+  $('inv-pass').value = '';
+  $('inv-activo').value = String(inv.activo);
+  openModal('modal-inversor');
+}
+
+async function saveInversor() {
+  const id = $('inv-edit-id').value;
+  const body = {
+    nombre: $('inv-nombre').value, apellido: $('inv-apellido').value,
+    email: $('inv-email').value, telefono: $('inv-tel').value,
+    activo: $('inv-activo').value === 'true'
+  };
+  const pass = $('inv-pass').value;
+  if (pass) body.password = pass;
+  if (!id && !pass) return showToast('La contraseña es obligatoria para nuevos inversores', 'err');
+  try {
+    showLoading(id ? 'Actualizando…' : 'Creando inversor…');
+    if (id) await api('PUT', '/inversores/'+id, body);
+    else await api('POST', '/inversores', body);
+    closeModal('modal-inversor');
+    showToast(id ? 'Inversor actualizado' : 'Inversor creado correctamente');
+    loadAdmin();
+  } catch(e) { showToast(e.message, 'err'); }
+  finally { hideLoading(); }
+}
+
+// ── PROPIEDAD CRUD ──
+let partCount = 0;
+function openModal_newPropiedad() {
+  $('prop-modal-title').textContent = 'Nueva propiedad';
+  $('prop-edit-id').value = '';
+  ['prop-nombre','prop-dir','prop-compra','prop-gastos','prop-venta','prop-fcompra','prop-fventa','prop-renta','prop-desc'].forEach(id=>$(id).value='');
+  $('prop-estado').value='en_obra'; $('prop-tipo').value='flipping';
+  $('part-rows').innerHTML=''; partCount=0;
+  openModal('modal-propiedad');
+}
+
+async function editPropiedad(id) {
+  const prop = PROPIEDADES_CACHE.find(p=>p.id===id);
+  if (!prop) return;
+  $('prop-modal-title').textContent = 'Editar propiedad';
+  $('prop-edit-id').value = id;
+  $('prop-nombre').value = prop.nombre||'';
+  $('prop-dir').value = prop.direccion||'';
+  $('prop-estado').value = prop.estado||'en_obra';
+  $('prop-tipo').value = prop.tipo||'flipping';
+  $('prop-compra').value = prop.precio_compra||'';
+  $('prop-gastos').value = prop.gastos_compra||'';
+  $('prop-venta').value = prop.precio_venta||'';
+  $('prop-fcompra').value = prop.fecha_compra||'';
+  $('prop-fventa').value = prop.fecha_venta||'';
+  $('prop-renta').value = prop.renta_mensual||'';
+  $('prop-desc').value = prop.descripcion||'';
+  $('part-rows').innerHTML=''; partCount=0;
+  openModal('modal-propiedad');
+}
+
+function addPartRow() {
+  const row = document.createElement('div');
+  row.className='form-grid';row.style.marginBottom='10px';row.id='partrow-'+partCount;
+  const invOpts = INVERSORES_CACHE.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
+  row.innerHTML=`
+    <div class="fld"><label>Inversor</label><select class="part-inv">${invOpts}</select></div>
+    <div class="fld"><label>Monto USD</label><input type="number" class="part-monto" placeholder="50000"></div>
+    <div class="fld"><label>Porcentaje (0.05 = 5%)</label><input type="number" class="part-pct" placeholder="0.05" step="0.000001"></div>
+    <div class="fld"><label>Fecha entrada</label><input type="date" class="part-fecha" value="${new Date().toISOString().split('T')[0]}"></div>`;
+  $('part-rows').appendChild(row);
+  partCount++;
+}
+
+async function savePropiedad() {
+  const id = $('prop-edit-id').value;
+  const body = {
+    nombre: $('prop-nombre').value, direccion: $('prop-dir').value,
+    estado: $('prop-estado').value, tipo: $('prop-tipo').value,
+    precio_compra: $('prop-compra').value||null, gastos_compra: $('prop-gastos').value||null,
+    precio_venta: $('prop-venta').value||null,
+    fecha_compra: $('prop-fcompra').value||null, fecha_venta: $('prop-fventa').value||null,
+    renta_mensual: $('prop-renta').value||null, descripcion: $('prop-desc').value||null
+  };
+  if (!body.nombre) return showToast('El nombre es obligatorio', 'err');
+  try {
+    showLoading('Guardando propiedad…');
+    let propId;
+    if (id) { await api('PUT','/propiedades/'+id,body); propId=id; }
+    else { const r=await api('POST','/propiedades',body); propId=r.id; }
+
+    // Guardar participaciones nuevas
+    const rows = document.querySelectorAll('[id^="partrow-"]');
+    for (const row of rows) {
+      const uid = row.querySelector('.part-inv').value;
+      const monto = row.querySelector('.part-monto').value;
+      const pct = row.querySelector('.part-pct').value;
+      const fecha = row.querySelector('.part-fecha').value;
+      if (uid && monto && pct && fecha) {
+        await api('POST','/participaciones',{usuario_id:uid,propiedad_id:propId,monto_invertido:parseFloat(monto),porcentaje:parseFloat(pct),fecha_entrada:fecha}).catch(e=>showToast('Participación: '+e.message,'err'));
+      }
+    }
+
+    closeModal('modal-propiedad');
+    showToast('Propiedad guardada correctamente');
+    loadAdmin();
+  } catch(e) { showToast(e.message,'err'); }
+  finally { hideLoading(); }
+}
+
+// ── APORTE ──
+async function saveAporte() {
+  const body = {
+    usuario_id: $('ap-inv-sel').value,
+    propiedad_id: $('ap-prop-sel').value||null,
+    monto_usd: parseFloat($('ap-monto').value),
+    tipo_cambio: $('ap-tc').value ? parseFloat($('ap-tc').value) : null,
+    fecha: $('ap-fecha').value,
+    tipo: $('ap-tipo').value,
+    descripcion: $('ap-desc').value||null
+  };
+  if (!body.usuario_id||!body.monto_usd||!body.fecha) return showToast('Completá los campos obligatorios','err');
+  try {
+    showLoading('Registrando aporte…');
+    await api('POST','/aportes',body);
+    closeModal('modal-aporte');
+    showToast('Aporte registrado correctamente');
+    loadAdmin();
+  } catch(e) { showToast(e.message,'err'); }
+  finally { hideLoading(); }
+}
+
+// ── LIQUIDACIONES ──
+async function generarLiquidaciones() {
+  const body = {
+    propiedad_id: $('liq-prop-sel').value,
+    precio_venta: parseFloat($('liq-precio').value),
+    fecha: $('liq-fecha').value,
+    fee_exito_pct: parseFloat($('liq-fee').value)/100
+  };
+  if (!body.propiedad_id||!body.precio_venta||!body.fecha) return showToast('Completá todos los campos','err');
+  try {
+    showLoading('Generando liquidaciones y PDFs…');
+    const r = await api('POST','/liquidaciones/generar',body);
+    hideLoading();
+    const res = $('liq-result');
+    res.style.display='block';
+    res.innerHTML=`
+      <div style="background:var(--green-light);border:0.5px solid var(--green);padding:16px">
+        <strong style="color:var(--green)">✓ ${r.liquidaciones_generadas} liquidaciones generadas</strong>
+        <div style="margin-top:12px;font-size:13px">
+          ${r.resultados.map(l=>`
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid rgba(0,0,0,.05)">
+              <span>${l.usuario.nombre} ${l.usuario.apellido}</span>
+              <strong>${usd(l.total_retorno)}</strong>
+              ${l.pdf_url?`<a href="${l.pdf_url}" target="_blank" class="dl-btn">PDF</a>`:''}
+            </div>`).join('')}
+        </div>
+      </div>`;
+    showToast('Liquidaciones generadas y PDFs disponibles para descarga');
+  } catch(e) { hideLoading(); showToast(e.message,'err'); }
+}
+
+// ── SUBIR DOC MANUAL ──
+async function subirDocumento() {
+  const file = $('doc-file').files[0];
+  if (!file) return showToast('Seleccioná un archivo','err');
+  const form = new FormData();
+  form.append('archivo', file);
+  form.append('usuario_id', $('doc-inv-sel').value);
+  if ($('doc-prop-sel').value) form.append('propiedad_id', $('doc-prop-sel').value);
+  form.append('nombre', $('doc-nombre').value);
+  form.append('tipo', $('doc-tipo').value);
+  if ($('doc-fecha').value) form.append('fecha', $('doc-fecha').value);
+  if (!$('doc-inv-sel').value||!$('doc-nombre').value) return showToast('Inversor y nombre son obligatorios','err');
+  try {
+    showLoading('Subiendo documento…');
+    await api('POST','/documentos',form,true);
+    showToast('Documento subido correctamente');
+    $('doc-file').value=''; $('doc-nombre').value='';
+  } catch(e) { showToast(e.message,'err'); }
+  finally { hideLoading(); }
+}
+
+// ── NOTIFS PANEL (simple) ──
+function toggleNotifs() {
+  showToast('Próximamente: panel de notificaciones');
+}
+
+// ── Hacer los btn "Nueva propiedad" e "Inversor" usar las funciones correctas
+document.querySelector('#atab-propiedades .btn-dark').onclick = openModal_newPropiedad;
+document.querySelector('#atab-inversores .btn-dark').onclick = openModal_newInversor;
+
+// ── INIT ──
+if (TOKEN) startApp();
+</script>
+</body>
+</html>
