@@ -55,12 +55,23 @@ module.exports = router;
 // GET /api/admin/resumen-inversores — datos completos para el panel de análisis
 router.get('/resumen-inversores', authMiddleware, adminOnly, async (req, res) => {
   const [aportes, liqs, parts] = await Promise.all([
-    supabase.from('aportes').select('usuario_id, monto_usd, monto_eur, tipo, fecha, propiedades(nombre)').order('fecha', { ascending: true }),
-    supabase.from('liquidaciones').select('usuario_id, aporte_usuario, total_retorno, utilidad_neta, fee_exito_monto, propiedades(nombre), fecha').order('fecha', { ascending: true }),
-    supabase.from('participaciones').select('usuario_id, propiedad_id, monto_invertido, porcentaje, propiedades(nombre, estado)').eq('activo', true)
+    supabase.from('aportes').select('usuario_id, monto_usd, monto_eur, tipo_cambio, tipo, fecha, propiedades(nombre)').order('fecha', { ascending: true }),
+    supabase.from('liquidaciones').select('usuario_id, aporte_usuario, total_retorno, utilidad_neta, propiedades(nombre), fecha').order('fecha', { ascending: true }),
+    supabase.from('participaciones').select('usuario_id, propiedad_id, monto_invertido, porcentaje, propiedades(nombre, estado, precio_compra)').eq('activo', true)
   ]);
+
+  // Normalizar aportes: si no tiene monto_eur pero sí monto_usd y tipo_cambio, calcularlo
+  const aportes_normalizados = (aportes.data || []).map(a => {
+    let monto = Number(a.monto_eur || 0);
+    if (!monto && a.monto_usd) {
+      // Si tiene tipo de cambio, convertir. Si no, usar monto_usd como referencia
+      monto = a.tipo_cambio ? Number(a.monto_usd) / Number(a.tipo_cambio) : Number(a.monto_usd);
+    }
+    return { ...a, monto_normalizado: monto };
+  });
+
   res.json({
-    aportes: aportes.data || [],
+    aportes: aportes_normalizados,
     liquidaciones: liqs.data || [],
     participaciones: parts.data || []
   });
