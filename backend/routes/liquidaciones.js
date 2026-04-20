@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const supabase = require('../utils/supabase');
 const { authMiddleware, adminOnly } = require('../middleware/auth');
+const { generarYSubirReporte } = require('../utils/generarReporte');
 
 // ── GET /api/liquidaciones ───────────────────────────────────────────────────
 router.get('/', authMiddleware, async (req, res) => {
