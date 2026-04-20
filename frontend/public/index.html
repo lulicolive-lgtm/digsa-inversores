@@ -538,8 +538,17 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <div class="step-icon">⚡</div>
      <div class="step-content">
       <h4>Cómo generar una liquidación</h4>
-      <p><strong>Admin → Liquidar piso.</strong> Seleccioná la propiedad, ingresá el precio de venta final en EUR, la fecha, el fee de éxito (default 15%) y los alquileres acumulados. En "Destino de fondos" podés indicar a qué próxima inversión va el dinero.</p>
+      <p><strong>Admin → Liquidar piso.</strong> Seleccioná la propiedad, ingresá el precio de venta final en EUR, la fecha, el fee de éxito (default 15%) y los alquileres acumulados si los hay.</p>
       <div class="tip">💡 El sistema genera el PDF de liquidación para CADA inversor automáticamente, lo sube al portal y les notifica.</div>
+     </div>
+    </div>
+    <div class="manual-step">
+     <div class="step-icon">🔄</div>
+     <div class="step-content">
+      <h4>Reinversión automática</h4>
+      <p>En la sección <strong>"Destino de los fondos"</strong> aparecen todos los pisos activos con checkboxes. Seleccioná los pisos donde querés reinvertir el dinero de la liquidación.</p>
+      <p style="margin-top:8px">El sistema distribuye el dinero de cada inversor <strong>proporcionalmente al precio de compra</strong> de cada piso destino. Por ejemplo si hay dos pisos, uno de €500k y otro de €250k, el primero recibe el doble.</p>
+      <div class="tip">💡 Si no seleccionás ningún piso destino, el dinero queda registrado como "pendiente de asignación" en el historial del inversor. Podés asignarlo después desde Admin → Aportes.</div>
      </div>
     </div>
     <div class="manual-step">
@@ -577,6 +586,9 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
        <li>Genera reportes actualizados</li>
        <li>Notifica a cada inversor</li>
        <li>Marca el piso como vendido</li>
+       <li>Reinvierte proporcionalmente en pisos destino</li>
+       <li>Registra aportes y participaciones nuevas</li>
+       <li>Notifica reinversión a cada inversor</li>
       </ul>
      </div>
      <div class="manual-box">
