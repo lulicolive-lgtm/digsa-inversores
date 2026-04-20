@@ -17,7 +17,8 @@ router.get('/', authMiddleware, async (req, res) => {
 
 // ── POST /api/liquidaciones/generar ─────────────────────────────────────────
 router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
-  const { propiedad_id, precio_venta, fecha, fee_exito_pct = 0.15, alquileres = 0, destino = '' } = req.body;
+  const { propiedad_id, precio_venta, fecha, fee_exito_pct = 0.15, alquileres = 0, destino_ids = [] } = req.body;
+  // destino_ids: array de IDs de propiedades destino para reinversión automática
   if (!propiedad_id || !precio_venta || !fecha)
     return res.status(400).json({ error: 'propiedad_id, precio_venta y fecha son requeridos' });
 
@@ -63,7 +64,7 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
       precio_venta: Number(precio_venta),
       alquileres: Number(alquileres),
       fee_exito_pct: Number(fee_exito_pct),
-      fecha, destino
+      fecha, destino: destino_ids.join(', ')
     });
 
     const pdfPath = `liquidaciones/${propiedad_id}/${user.id}_${fecha}.pdf`;
@@ -94,7 +95,87 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
     estado: 'vendido', precio_venta, fecha_venta: fecha
   }).eq('id', propiedad_id);
 
-  res.json({ ok: true, inversores_liquidados: resultados.length, resultados });
+  // ── REINVERSIÓN AUTOMÁTICA ────────────────────────────────────────────────
+  if (destino_ids && destino_ids.length > 0) {
+    try {
+      // Obtener propiedades destino con sus precios de compra (para calcular proporción)
+      const { data: propsDest } = await supabase
+        .from('propiedades')
+        .select('id, nombre, precio_compra, gastos_compra')
+        .in('id', destino_ids);
+
+      if (propsDest && propsDest.length > 0) {
+        // Calcular peso proporcional de cada piso destino
+        const totalCosto = propsDest.reduce((s, p) => s + Number(p.precio_compra || 0) + Number(p.gastos_compra || 0), 0);
+
+        for (const part of parts) {
+          const user = part.usuarios;
+          const res_inv = resultados.find(r => r.usuario === `${user.nombre} ${user.apellido}`);
+          const monto_reinvertir = res_inv ? res_inv.total_retorno : 0;
+          if (monto_reinvertir <= 0) continue;
+
+          for (const propDest of propsDest) {
+            const costoProp = Number(propDest.precio_compra || 0) + Number(propDest.gastos_compra || 0);
+            const proporcion = totalCosto > 0 ? costoProp / totalCosto : 1 / propsDest.length;
+            const monto_aporte = Math.round(monto_reinvertir * proporcion * 100) / 100;
+            const porcentaje_nuevo = costoProp > 0 ? monto_aporte / costoProp : 0;
+
+            // Registrar aporte
+            await supabase.from('aportes').insert([{
+              usuario_id: user.id,
+              propiedad_id: propDest.id,
+              monto_eur: monto_aporte,
+              monto_usd: monto_aporte,
+              fecha,
+              tipo: 'aporte',
+              descripcion: `Reinversión automática de ${prop.nombre}`
+            }]);
+
+            // Registrar participación (o actualizar si ya existe)
+            const { data: partExist } = await supabase
+              .from('participaciones')
+              .select('id, monto_invertido, porcentaje')
+              .eq('usuario_id', user.id)
+              .eq('propiedad_id', propDest.id)
+              .eq('activo', true)
+              .single();
+
+            if (partExist) {
+              await supabase.from('participaciones').update({
+                monto_invertido: Number(partExist.monto_invertido) + monto_aporte,
+                porcentaje: Number(partExist.porcentaje) + porcentaje_nuevo
+              }).eq('id', partExist.id);
+            } else {
+              await supabase.from('participaciones').insert([{
+                usuario_id: user.id,
+                propiedad_id: propDest.id,
+                monto_invertido: monto_aporte,
+                porcentaje: porcentaje_nuevo,
+                fecha_entrada: fecha,
+                activo: true
+              }]);
+            }
+          }
+
+          // Notificar al inversor sobre la reinversión
+          const destNombres = propsDest.map(p => p.nombre).join(', ');
+          await supabase.from('notificaciones').insert([{
+            usuario_id: user.id,
+            titulo: `Reinversión automática registrada`,
+            mensaje: `Tu liquidación de ${prop.nombre} fue reinvertida en: ${destNombres}`,
+            tipo: 'aporte'
+          }]);
+
+          // Generar reporte actualizado
+          generarYSubirReporte(user.id).catch(console.error);
+        }
+      }
+    } catch(reinvErr) {
+      console.error('Error en reinversión automática:', reinvErr.message);
+    }
+  }
+
+  res.json({ ok: true, inversores_liquidados: resultados.length, resultados, reinversion: destino_ids.length > 0 });
 });
 
 // ── GET /api/liquidaciones/:id/pdf ──────────────────────────────────────────

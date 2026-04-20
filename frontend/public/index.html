@@ -423,7 +423,14 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
       <div class="fld"><label>Fecha de liquidación</label><input type="date" id="liq-fecha"></div>
       <div class="fld"><label>Fee de éxito (%)</label><input type="number" id="liq-fee" value="15"></div>
       <div class="fld"><label>Alquileres acumulados (EUR)</label><input type="number" id="liq-alquileres" value="0"></div>
-      <div class="fld fld-full"><label>Destino de los fondos</label><input type="text" id="liq-destino" placeholder="Ej: Lagasca 58, Ayala 78…"></div>
+      <div class="fld fld-full">
+       <label>Destino de los fondos (reinversión automática)</label>
+       <div id="liq-destino-wrap" style="border:1px solid var(--borde);background:var(--blanco);padding:12px;max-height:160px;overflow-y:auto">
+        <div style="font-size:11px;color:var(--negro3);margin-bottom:8px;font-weight:400">Seleccioná los pisos donde se reinvertirá el dinero. El sistema distribuirá proporcionalmente según el tamaño de cada piso.</div>
+        <div id="liq-destino-checks" style="display:flex;flex-direction:column;gap:8px"></div>
+       </div>
+       <div style="font-size:11px;color:var(--negro3);margin-top:6px">Si no seleccionás ninguno, el dinero queda pendiente de asignación.</div>
+      </div>
      </div>
      <div style="margin-top:24px">
       <button class="btn btn-orange" onclick="generarLiquidaciones()">⚡ Generar liquidaciones</button>
@@ -871,8 +878,22 @@ async function loadAdmin() {
     $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
     $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
     $('admin-prop-body').innerHTML=props.map(p=>`<tr><td><strong>${p.nombre}</strong></td><td>${statusBadge(p.estado)}</td><td><span class="badge badge-gray">${p.tipo}</span></td><td class="num">${eur(p.precio_compra)}</td><td class="num">${eur(p.precio_venta)}</td><td><button class="btn btn-outline btn-sm" onclick="editPropiedad('${p.id}')">Editar</button></td></tr>`).join('');
-    const propOpts=props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    const propsActivas=props.filter(p=>p.estado!=='vendido');
+    const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     $('liq-prop-sel').innerHTML=propOpts;
+    // Poblar checkboxes de destino (excluir el piso seleccionado)
+    const actualizarDestinos = () => {
+      const selId = $('liq-prop-sel').value;
+      $('liq-destino-checks').innerHTML = propsActivas
+        .filter(p => p.id !== selId)
+        .map(p => `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)">
+          <span>${p.nombre}</span>
+          <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
+        </label>`).join('');
+    };
+    actualizarDestinos();
+    $('liq-prop-sel').addEventListener('change', actualizarDestinos);
     $('doc-prop-sel').innerHTML='<option value="">— Ninguna —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
@@ -1000,8 +1021,22 @@ async function loadAdmin() {
     $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
     $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
     $('admin-prop-body').innerHTML=props.map(p=>`<tr><td><strong>${p.nombre}</strong></td><td>${statusBadge(p.estado)}</td><td><span class="badge badge-gray">${p.tipo}</span></td><td class="num">${eur(p.precio_compra)}</td><td class="num">${eur(p.precio_venta)}</td><td><button class="btn btn-outline btn-sm" onclick="editPropiedad('${p.id}')">Editar</button></td></tr>`).join('');
-    const propOpts=props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    const propsActivas=props.filter(p=>p.estado!=='vendido');
+    const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     $('liq-prop-sel').innerHTML=propOpts;
+    // Poblar checkboxes de destino (excluir el piso seleccionado)
+    const actualizarDestinos = () => {
+      const selId = $('liq-prop-sel').value;
+      $('liq-destino-checks').innerHTML = propsActivas
+        .filter(p => p.id !== selId)
+        .map(p => `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)">
+          <span>${p.nombre}</span>
+          <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
+        </label>`).join('');
+    };
+    actualizarDestinos();
+    $('liq-prop-sel').addEventListener('change', actualizarDestinos);
     $('doc-prop-sel').innerHTML='<option value="">— Ninguna —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
@@ -1195,14 +1230,15 @@ async function saveAporte() {
 }
 
 async function generarLiquidaciones() {
-  const body={propiedad_id:$('liq-prop-sel').value,precio_venta:parseFloat($('liq-precio').value),fecha:$('liq-fecha').value,fee_exito_pct:parseFloat($('liq-fee').value)/100,alquileres:parseFloat($('liq-alquileres').value)||0,destino:$('liq-destino').value||''};
+  const destino_ids = Array.from(document.querySelectorAll('#liq-destino-checks input:checked')).map(cb => cb.value);
+  const body={propiedad_id:$('liq-prop-sel').value,precio_venta:parseFloat($('liq-precio').value),fecha:$('liq-fecha').value,fee_exito_pct:parseFloat($('liq-fee').value)/100,alquileres:parseFloat($('liq-alquileres').value)||0,destino_ids};
   if (!body.propiedad_id||!body.precio_venta||!body.fecha) return showToast('Completá todos los campos','err');
   try{
     showLoading('Generando liquidaciones y PDFs…');
     const r=await api('POST','/liquidaciones/generar',body); hideLoading();
     const res=$('liq-result'); res.style.display='block';
     res.innerHTML=`<div style="background:var(--verde-light);border:1px solid var(--verde);padding:18px"><strong style="color:var(--verde)">✓ ${r.inversores_liquidados} liquidaciones generadas</strong><div style="margin-top:14px;font-size:13px">${(r.resultados||[]).map(l=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span>${l.usuario}</span><strong>${eur(l.total_retorno)}</strong></div>`).join('')}</div></div>`;
-    showToast('Liquidaciones generadas');
+    showToast(r.reinversion ? 'Liquidaciones generadas y fondos reinvertidos automáticamente' : 'Liquidaciones generadas');
   }catch(e){hideLoading();showToast(e.message,'err');}
 }
 
