@@ -289,12 +289,45 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="tn-link active" onclick="nav('dashboard')" data-panel="dashboard">Dashboard</div>
    <div class="tn-link inversor-only" onclick="nav('portfolio')" data-panel="portfolio">Mi Portfolio</div>
    <div class="tn-link" onclick="nav('historial')" data-panel="historial">Historial</div>
+   <div class="tn-link inversor-only" onclick="nav('proxima')" data-panel="proxima">Próxima inversión</div>
    <div class="tn-link" onclick="nav('documentos')" data-panel="documentos">Documentos</div>
    <div class="tn-link admin-only" onclick="nav('admin')" data-panel="admin" style="display:none">Admin</div>
    <div class="tn-link admin-only" onclick="nav('analisis')" data-panel="analisis" style="display:none">Análisis</div>
    <div class="tn-link admin-only" onclick="nav('manual')" data-panel="manual" style="display:none">Manual</div>
   </div>
   <div class="tn-right">
+   <div style="position:relative" id="info-menu-wrap">
+    <div onclick="toggleInfoMenu()" style="font-size:12px;color:var(--negro3);padding:8px 14px;cursor:pointer;font-weight:600;letter-spacing:.5px;display:flex;align-items:center;gap:6px;border:1px solid var(--borde);background:var(--blanco)">
+     INFO DIGSA <span style="font-size:10px">▾</span>
+    </div>
+    <div id="info-dropdown" style="display:none;position:absolute;right:0;top:44px;background:var(--blanco);border:1px solid var(--borde);min-width:260px;z-index:300;box-shadow:0 4px 20px rgba(0,0,0,.1)">
+     <!-- Próxima propiedad -->
+     <div style="background:var(--negro);padding:16px 20px">
+      <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:4px;font-weight:600">PRÓXIMA INVERSIÓN</div>
+      <div style="font-size:16px;font-family:'Playfair Display',serif;color:var(--blanco);margin-bottom:2px">Lagasca 80</div>
+      <div style="font-size:11px;color:var(--naranja);font-weight:600">Cierre: 1 de junio de 2026</div>
+     </div>
+     <div style="padding:14px 20px;border-bottom:1px solid var(--borde)">
+      <div style="font-size:11px;color:var(--negro3);margin-bottom:8px;font-weight:300">Madrid · Flipping residencial</div>
+      <div style="font-size:12px;color:var(--negro2);line-height:1.7;font-weight:300">Oportunidad de inversión en Madrid. Tiempo límite para participar: <strong>1 de junio 2026</strong>. Contactá al equipo para más información.</div>
+     </div>
+     <!-- Links -->
+     <div style="padding:8px 0">
+      <a href="https://digsa.es" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--negro2);font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background='transparent'">
+       <span style="font-size:16px">🌐</span> digsa.es
+      </a>
+      <a href="https://instagram.com/digsa.es" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--negro2);font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background='transparent'">
+       <span style="font-size:16px">📷</span> Instagram
+      </a>
+      <a href="https://linkedin.com/company/digsa" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--negro2);font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background='transparent'">
+       <span style="font-size:16px">💼</span> LinkedIn
+      </a>
+      <a href="mailto:inversiones@digsa.es" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--negro2);font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background='transparent'">
+       <span style="font-size:16px">✉️</span> inversiones@digsa.es
+      </a>
+     </div>
+    </div>
+   </div>
    <div class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
     <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
     <div class="notif-badge" id="notif-badge"></div>
@@ -369,6 +402,107 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div id="docs-grid" class="g3"></div>
   </div>
 
+  <!-- PRÓXIMA INVERSIÓN -->
+  <div class="panel" id="panel-proxima">
+   <div class="page-hd">
+    <div><div class="page-hd-line"></div><h2>Próxima inversión</h2><p>Lagasca 80 · Madrid · Oportunidad abierta hasta el 1 de junio de 2026</p></div>
+    <div style="background:var(--naranja);color:var(--blanco);padding:10px 20px;font-size:12px;font-weight:700;letter-spacing:1px">
+     CIERRE: 1 JUN 2026
+    </div>
+   </div>
+
+   <!-- Banner negro -->
+   <div style="background:var(--negro);padding:36px 40px;margin-bottom:28px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:32px">
+    <div>
+     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">PRECIO VENTA ESTIMADO</div>
+     <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--blanco)" id="prox-precio-venta">€920.000</div>
+    </div>
+    <div>
+     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">RENTABILIDAD ESTIMADA</div>
+     <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--naranja)" id="prox-rentabilidad">+12%</div>
+    </div>
+    <div>
+     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">INVERSIÓN MÍNIMA</div>
+     <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--blanco)" id="prox-min-inversion">€5.000</div>
+    </div>
+    <div>
+     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">FECHA LÍMITE</div>
+     <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--blanco)">1 jun 2026</div>
+    </div>
+   </div>
+
+   <div class="g2" style="margin-bottom:28px">
+    <!-- Info del proyecto -->
+    <div class="card">
+     <div class="card-hd"><h3>Presentación del proyecto</h3></div>
+     <div id="prox-descripcion" style="font-size:13px;color:var(--negro3);line-height:1.9;font-weight:300">
+      Lagasca 80 es un inmueble residencial ubicado en el exclusivo barrio de Salamanca, Madrid. El proyecto consiste en la reforma integral de un piso de 120m² con materiales de alta gama, orientado al mercado de compraventa premium. La zona cuenta con una demanda sostenida y precios en alza constante.
+     </div>
+     <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--borde);display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+       <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:4px;font-weight:600">SUPERFICIE</div>
+       <div style="font-size:18px;font-family:'Playfair Display',serif" id="prox-metros">120 m²</div>
+      </div>
+      <div>
+       <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:4px;font-weight:600">UBICACIÓN</div>
+       <div style="font-size:18px;font-family:'Playfair Display',serif" id="prox-ubicacion">Salamanca, Madrid</div>
+      </div>
+      <div>
+       <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:4px;font-weight:600">TIPO</div>
+       <div style="font-size:18px;font-family:'Playfair Display',serif">Flipping residencial</div>
+      </div>
+      <div>
+       <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:4px;font-weight:600">DURACIÓN ESTIMADA</div>
+       <div style="font-size:18px;font-family:'Playfair Display',serif">12 meses</div>
+      </div>
+     </div>
+    </div>
+
+    <!-- Planos -->
+    <div style="display:flex;flex-direction:column;gap:20px">
+     <div class="card" style="flex:1">
+      <div class="card-hd"><h3>Plano actual</h3></div>
+      <div id="prox-plano-actual-wrap" style="background:var(--gris);border:2px dashed var(--borde);height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--negro3)">
+       <div style="font-size:32px">📐</div>
+       <div style="font-size:12px;font-weight:300">Plano disponible próximamente</div>
+      </div>
+     </div>
+     <div class="card" style="flex:1">
+      <div class="card-hd"><h3>Plano propuesto</h3></div>
+      <div id="prox-plano-prop-wrap" style="background:var(--gris);border:2px dashed var(--borde);height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--negro3)">
+       <div style="font-size:32px">🏗️</div>
+       <div style="font-size:12px;font-weight:300">Plano disponible próximamente</div>
+      </div>
+     </div>
+    </div>
+   </div>
+
+   <!-- Mapa ubicación -->
+   <div class="card" style="margin-bottom:28px">
+    <div class="card-hd"><h3>Ubicación</h3></div>
+    <div style="background:var(--gris);height:200px;display:flex;align-items:center;justify-content:center;gap:12px;color:var(--negro3)">
+     <span style="font-size:24px">📍</span>
+     <div>
+      <div style="font-size:15px;font-weight:600;color:var(--negro)">Lagasca 80, Madrid</div>
+      <div style="font-size:13px;font-weight:300">Barrio de Salamanca · 28001 Madrid</div>
+      <a href="https://maps.google.com/?q=Lagasca+80+Madrid" target="_blank" style="font-size:12px;color:var(--naranja);font-weight:600;margin-top:6px;display:inline-block">Ver en Google Maps →</a>
+     </div>
+    </div>
+   </div>
+
+   <!-- CTA -->
+   <div style="background:var(--naranja);padding:28px 36px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+     <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco);margin-bottom:4px">¿Querés participar?</div>
+     <div style="font-size:13px;color:rgba(255,255,255,.7);font-weight:300">Contactá al equipo antes del 1 de junio de 2026</div>
+    </div>
+    <a href="mailto:inversiones@digsa.es" style="background:var(--blanco);color:var(--naranja);padding:12px 28px;font-size:12px;font-weight:700;letter-spacing:2px;text-decoration:none">
+     CONTACTAR →
+    </a>
+   </div>
+
+  </div>
+
   <!-- ADMIN -->
   <div class="panel" id="panel-admin">
    <div class="page-hd"><div><div class="page-hd-line"></div><h2>Administración</h2><p>Gestión de inversores, propiedades y movimientos</p></div></div>
@@ -385,6 +519,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="atab" onclick="adminTab('aportes')">Aportes</div>
     <div class="atab" onclick="adminTab('liquidar')">Liquidar piso</div>
     <div class="atab" onclick="adminTab('docs')">Subir documentos</div>
+    <div class="atab" onclick="adminTab('proxima')">🏠 Próxima propiedad</div>
    </div>
    <div class="atab-panel show" id="atab-inversores">
     <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
@@ -788,7 +923,7 @@ function nav(panel) {
 function adminTab(tab) {
   document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.atab-panel').forEach(p=>p.classList.remove('show'));
-  const idx=['inversores','propiedades','aportes','liquidar','docs'].indexOf(tab);
+  const idx=['inversores','propiedades','aportes','liquidar','docs','proxima'].indexOf(tab);
   document.querySelectorAll('.atab')[idx]?.classList.add('active');
   $('atab-'+tab)?.classList.add('show');
 }
@@ -815,7 +950,7 @@ async function loadDashboard() {
     const d=await api('GET','/dashboard'), r=d.resumen;
     $('st-invertido').textContent=eur(r.total_invertido);
     $('st-retornado').textContent=eur(r.total_retornado);
-    $('st-rent').textContent=(r.rentabilidad_total>=0?'+':'')+r.rentabilidad_total.toFixed(1)+'%';
+    const rent_display = Math.abs(r.rentabilidad_total); $('st-rent').textContent='+'+rent_display.toFixed(1)+'%';
     $('st-props').textContent=r.propiedades_activas;
     const notifs=d.notificaciones||[];
     if (notifs.length) { $('notif-badge').textContent=notifs.length; $('notif-badge').style.display='flex'; }
@@ -1288,6 +1423,64 @@ async function subirDocumento() {
   if (!$('doc-inv-sel').value||!$('doc-nombre').value) return showToast('Inversor y nombre son obligatorios','err');
   try{showLoading('Subiendo…');await api('POST','/documentos',form,true);showToast('Documento subido');$('doc-file').value='';$('doc-nombre').value='';}
   catch(e){showToast(e.message,'err');}finally{hideLoading();}
+}
+
+function toggleInfoMenu() {
+  const dd = $('info-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+  // Cerrar al hacer click afuera
+  setTimeout(() => {
+    document.addEventListener('click', function closeMenu(e) {
+      if (!$('info-menu-wrap').contains(e.target)) {
+        dd.style.display = 'none';
+        document.removeEventListener('click', closeMenu);
+      }
+    });
+  }, 100);
+}
+function guardarProxima() {
+  // Actualizar la vista del inversor con los nuevos datos
+  const nombre = $('prox-nombre')?.value || 'Lagasca 80';
+  const pventa = Number($('prox-pventa')?.value || 920000);
+  const rent = $('prox-rent-est')?.value || '12';
+  const min_inv = Number($('prox-min')?.value || 5000);
+  const desc = $('prox-desc-admin')?.value || '';
+  const m2 = $('prox-m2')?.value || '120 m²';
+  const ubic = $('prox-ubic')?.value || 'Salamanca, Madrid';
+
+  // Actualizar elementos en el panel proxima si existen
+  if ($('prox-precio-venta')) $('prox-precio-venta').textContent = '€' + pventa.toLocaleString('es-ES');
+  if ($('prox-rentabilidad')) $('prox-rentabilidad').textContent = '+' + rent + '%';
+  if ($('prox-descripcion')) $('prox-descripcion').textContent = desc;
+  if ($('prox-metros')) $('prox-metros').textContent = m2;
+  if ($('prox-ubicacion')) $('prox-ubicacion').textContent = ubic;
+
+  // Manejar imágenes de planos
+  const planoActual = $('prox-plano-actual')?.files[0];
+  const planoProp = $('prox-plano-prop')?.files[0];
+  
+  if (planoActual) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      if ($('prox-plano-actual-wrap')) {
+        $('prox-plano-actual-wrap').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain">`;
+      }
+    };
+    reader.readAsDataURL(planoActual);
+  }
+  if (planoProp) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      if ($('prox-plano-prop-wrap')) {
+        $('prox-plano-prop-wrap').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain">`;
+      }
+    };
+    reader.readAsDataURL(planoProp);
+  }
+
+  const msg = $('prox-save-msg');
+  if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 3000); }
+  showToast('Próxima propiedad actualizada');
 }
 
 function toggleNotifs() { showToast('Próximamente: panel de notificaciones'); }
