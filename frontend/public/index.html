@@ -887,10 +887,143 @@ async function loadAdmin() {
 async function loadAnalisis() {
   try {
     showLoading('Cargando análisis…');
-    const [stats,inversores,props,liqs,aportes]=await Promise.all([
-      api('GET','/admin/estadisticas'), api('GET','/inversores'),
-      api('GET','/propiedades'), api('GET','/liquidaciones'), api('GET','/aportes')
+    const [stats, inversores, props, resumen] = await Promise.all([
+      api('GET', '/admin/estadisticas'),
+      api('GET', '/inversores'),
+      api('GET', '/propiedades'),
+      api('GET', '/admin/resumen-inversores')
     ]);
+
+    // Filtrar admin de la lista de inversores
+    const invActivos = inversores.filter(i => i.activo && i.rol !== 'admin' && i.email !== 'admin@digsa.es');
+    const pisos_act = props.filter(p => p.estado !== 'vendido').length;
+    const pisos_vend = props.filter(p => p.estado === 'vendido').length;
+
+    $('analisis-kpis').innerHTML = `
+      <div class="scard scard-accent"><div class="scard-label">Capital gestionado</div><div class="scard-value">${eur(stats.total_capital_gestionado)}</div><div class="scard-sub">Total histórico</div></div>
+      <div class="scard"><div class="scard-label">Total retornado</div><div class="scard-value">${eur(stats.total_retornado)}</div></div>
+      <div class="scard"><div class="scard-label">Pisos activos</div><div class="scard-value">${pisos_act}</div></div>
+      <div class="scard"><div class="scard-label">Pisos vendidos</div><div class="scard-value">${pisos_vend}</div></div>
+      <div class="scard"><div class="scard-label">Rentabilidad prom.</div><div class="scard-value">+${stats.rentabilidad_promedio?.toFixed(1)||'0'}%</div></div>`;
+
+    const { aportes: todosAportes, liquidaciones: todasLiqs, participaciones: todasParts } = resumen;
+
+    const invData = invActivos.map(inv => {
+      const inv_ap = todosAportes.filter(a => a.usuario_id === inv.id);
+      const inv_liq = todasLiqs.filter(l => l.usuario_id === inv.id);
+      const inv_parts = todasParts.filter(p => p.usuario_id === inv.id);
+      const capital = inv_ap.filter(a => a.tipo !== 'retiro').reduce((s,a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
+      const retiros = inv_ap.filter(a => a.tipo === 'retiro').reduce((s,a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
+      const retornado = inv_liq.reduce((s,l) => s + Number(l.total_retorno || 0), 0);
+      const en_cartera = inv_parts.filter(p => p.propiedades?.estado !== 'vendido').reduce((s,p) => s + Number(p.monto_invertido || 0), 0);
+      const neto = capital - retiros;
+      const rent = neto > 0 ? (retornado + en_cartera - neto) / neto : 0;
+      return { inv, capital, retiros, retornado, en_cartera, neto, rent, movs: inv_ap.length, pisos_fin: inv_liq.length, pisos_act: inv_parts.filter(p=>p.propiedades?.estado!=='vendido').length };
+    });
+
+    const NARANJA = '#FF4D0F', paleta = ['#FF4D0F','#1A1A1A','#FF7A4A','#3D3D3D','#FF9B7A','#5A5A5A','#FFB99A','#777','#FFD4C0','#999','#FFE8DE'];
+    const destroyChart = id => { const c = document.getElementById(id); if(c){ const ch = Chart.getChart(c); if(ch) ch.destroy(); }};
+
+    destroyChart('chart-capital');
+    new Chart(document.getElementById('chart-capital').getContext('2d'), {
+      type: 'bar',
+      data: { labels: invData.map(d=>d.inv.nombre+' '+d.inv.apellido[0]+'.'), datasets: [{ label:'Capital', data: invData.map(d=>Math.round(d.capital)), backgroundColor: invData.map((_,i)=>paleta[i%paleta.length]+'CC'), borderColor: invData.map((_,i)=>paleta[i%paleta.length]), borderWidth:1 }] },
+      options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>'€'+Number(v).toLocaleString('es-ES')}}} }
+    });
+
+    destroyChart('chart-rent');
+    new Chart(document.getElementById('chart-rent').getContext('2d'), {
+      type: 'bar',
+      data: { labels: invData.map(d=>d.inv.nombre+' '+d.inv.apellido[0]+'.'), datasets: [{ label:'Rentabilidad', data: invData.map(d=>+(d.rent*100).toFixed(2)), backgroundColor: invData.map(d=>d.rent>=0?'#FF4D0F99':'#B5222299'), borderColor: invData.map(d=>d.rent>=0?NARANJA:'#B52222'), borderWidth:1 }] },
+      options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>v+'%'}}} }
+    });
+
+    const pisosAct = props.filter(p => p.estado !== 'vendido');
+    destroyChart('chart-pisos');
+    new Chart(document.getElementById('chart-pisos').getContext('2d'), {
+      type: 'doughnut',
+      data: { labels: pisosAct.map(p=>p.nombre), datasets: [{ data: pisosAct.map(p=>p.precio_compra||0), backgroundColor: paleta.slice(0, pisosAct.length) }] },
+      options: { responsive:true, plugins:{ legend:{position:'bottom', labels:{font:{size:10}}} } }
+    });
+
+    const pisosVend = props.filter(p => p.estado === 'vendido' && p.precio_compra && p.precio_venta);
+    destroyChart('chart-pisos-rent');
+    new Chart(document.getElementById('chart-pisos-rent').getContext('2d'), {
+      type: 'bar',
+      data: { labels: pisosVend.map(p=>p.nombre), datasets: [{ data: pisosVend.map(p=>+(((p.precio_venta-p.precio_compra)/p.precio_compra)*100).toFixed(1)), backgroundColor: NARANJA+'BB', borderColor: NARANJA, borderWidth:1 }] },
+      options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>v+'%'}}} }
+    });
+
+    $('analisis-inv-grid').innerHTML = invData.map(d => {
+      const rentColor = d.rent >= 0 ? 'var(--naranja)' : 'var(--rojo)';
+      const valorTotal = d.retornado + d.en_cartera;
+      const progreso = d.neto > 0 ? Math.min(100, (valorTotal / d.neto) * 100) : 0;
+      return `<div class="inv-card ${d.rent > 0 ? 'rentable' : ''}">
+        <div class="inv-rent-badge" style="color:${rentColor}">${d.rent>=0?'+':''}${(d.rent*100).toFixed(1)}%</div>
+        <div class="inv-card-name">${d.inv.nombre} ${d.inv.apellido}</div>
+        <div class="inv-card-email">${d.inv.email}</div>
+        <div class="inv-card-stats">
+          <div class="inv-mini-stat"><div class="inv-mini-label">Capital aportado</div><div class="inv-mini-val">${eur(d.capital)}</div></div>
+          <div class="inv-mini-stat"><div class="inv-mini-label">Liquidado</div><div class="inv-mini-val">${eur(d.retornado)}</div></div>
+          <div class="inv-mini-stat"><div class="inv-mini-label">En cartera</div><div class="inv-mini-val">${eur(d.en_cartera)}</div></div>
+          <div class="inv-mini-stat"><div class="inv-mini-label">Pisos activos</div><div class="inv-mini-val">${d.pisos_act}</div></div>
+        </div>
+        <div class="inv-progress"><div class="inv-progress-fill" style="width:${progreso}%"></div></div>
+        <div class="inv-progress-labels"><span>Aportado</span><span>${progreso.toFixed(0)}% recuperado</span></div>
+      </div>`;
+    }).join('');
+
+    $('analisis-tbl-body').innerHTML = invData.map(d => `
+      <tr>
+        <td><strong>${d.inv.nombre} ${d.inv.apellido}</strong><br><span style="font-size:11px;color:var(--negro3)">${d.inv.email}</span></td>
+        <td class="num">${eur(d.capital)}</td>
+        <td style="text-align:center">${d.movs}</td>
+        <td style="text-align:center">${d.pisos_fin}</td>
+        <td class="num">${eur(d.retornado)}</td>
+        <td class="${d.rent>=0?'pos':'neg'}" style="text-align:right">${d.rent>=0?'+':''}${(d.rent*100).toFixed(2)}%</td>
+        <td class="num pos">${eur(Math.max(0, d.retornado - d.neto))}</td>
+      </tr>`).join('');
+
+  } catch(e) { showToast('Error: '+e.message, 'err'); }
+  finally { hideLoading(); }
+}
+
+
+async function loadAdmin() {
+  try {
+    const [stats,inversores,props]=await Promise.all([api('GET','/admin/estadisticas'),api('GET','/inversores'),api('GET','/propiedades')]);
+    INVERSORES_CACHE=inversores; PROPIEDADES_CACHE=props;
+    $('ast-inv').textContent=stats.inversores_activos;
+    $('ast-prop').textContent=stats.total_propiedades;
+    $('ast-cap').textContent=eur(stats.total_capital_gestionado);
+    $('ast-ret').textContent=eur(stats.total_retornado);
+    $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
+    $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
+    $('admin-prop-body').innerHTML=props.map(p=>`<tr><td><strong>${p.nombre}</strong></td><td>${statusBadge(p.estado)}</td><td><span class="badge badge-gray">${p.tipo}</span></td><td class="num">${eur(p.precio_compra)}</td><td class="num">${eur(p.precio_venta)}</td><td><button class="btn btn-outline btn-sm" onclick="editPropiedad('${p.id}')">Editar</button></td></tr>`).join('');
+    const propOpts=props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('liq-prop-sel').innerHTML=propOpts;
+    $('doc-prop-sel').innerHTML='<option value="">— Ninguna —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
+    $('doc-inv-sel').innerHTML=invOpts; $('ap-inv-sel').innerHTML=invOpts;
+    const act=await api('GET','/admin/actividad');
+    $('admin-aporte-body').innerHTML=(act.ultimos_aportes||[]).map(a=>`<tr><td>${fmt_date(a.fecha)}</td><td>${a.usuarios?.nombre} ${a.usuarios?.apellido}</td><td>${a.propiedades?.nombre||'General'}</td><td class="num pos">${eur(a.monto_usd)}</td><td><span class="badge badge-green">${a.tipo}</span></td></tr>`).join('');
+    $('ap-fecha').value=new Date().toISOString().split('T')[0];
+    $('liq-fecha').value=new Date().toISOString().split('T')[0];
+  } catch(e) { showToast('Error admin: '+e.message,'err'); }
+}
+
+async function loadAnalisis() {
+  try {
+    showLoading('Cargando análisis…');
+    const [stats,inversores,props,act]=await Promise.all([
+      api('GET','/admin/estadisticas'), api('GET','/inversores'),
+      api('GET','/propiedades'), api('GET','/admin/actividad')
+    ]);
+    // Obtener aportes y liquidaciones de TODOS los inversores
+    const todosAportes=act.ultimos_aportes||[];
+    // Para análisis completo, buscar datos por inversor individualmente
+    const invActivos=inversores.filter(i=>i.activo && i.email!=='admin@digsa.es' && i.rol!=='admin');
     const pisos_act=props.filter(p=>p.estado!=='vendido').length;
     const pisos_vend=props.filter(p=>p.estado==='vendido').length;
     $('analisis-kpis').innerHTML=`
@@ -900,16 +1033,27 @@ async function loadAnalisis() {
       <div class="scard"><div class="scard-label">Pisos vendidos</div><div class="scard-value">${pisos_vend}</div></div>
       <div class="scard"><div class="scard-label">Rentabilidad prom.</div><div class="scard-value">+${stats.rentabilidad_promedio?.toFixed(1)||'0'}%</div></div>`;
 
-    const invData=inversores.filter(i=>i.activo).map(inv=>{
-      const inv_ap=aportes.filter(a=>a.usuario_id===inv.id);
-      const inv_liq=liqs.filter(l=>l.usuario_id===inv.id);
-      const capital=inv_ap.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
-      const retiros=inv_ap.filter(a=>a.tipo==='retiro').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
-      const retornado=inv_liq.reduce((s,l)=>s+Number(l.total_retorno||0),0);
-      const neto=capital-retiros;
-      const rent=neto>0?(retornado-neto)/neto:0;
-      return {inv,capital,retiros,retornado,neto,rent,movs:inv_ap.length,pisos_fin:inv_liq.length};
-    });
+    // Obtener datos reales de cada inversor desde el endpoint de dashboard simulado
+    const invData = await Promise.all(invActivos.map(async inv => {
+      try {
+        // Obtener aportes y liquidaciones de cada inversor via admin
+        const [inv_ap, inv_liq, inv_parts] = await Promise.all([
+          api('GET', `/aportes?usuario_id=${inv.id}`).catch(()=>[]),
+          api('GET', `/liquidaciones?usuario_id=${inv.id}`).catch(()=>[]),
+          api('GET', '/participaciones').catch(()=>[])
+        ]);
+        const mis_ap = Array.isArray(inv_ap) ? inv_ap.filter(a=>a.usuario_id===inv.id) : [];
+        const mis_liq = Array.isArray(inv_liq) ? inv_liq.filter(l=>l.usuario_id===inv.id) : [];
+        const capital = mis_ap.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
+        const retiros = mis_ap.filter(a=>a.tipo==='retiro').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
+        const retornado = mis_liq.reduce((s,l)=>s+Number(l.total_retorno||0),0);
+        const neto = capital - retiros;
+        const rent = neto>0 ? (retornado-neto)/neto : 0;
+        return {inv,capital,retiros,retornado,neto,rent,movs:mis_ap.length,pisos_fin:mis_liq.length};
+      } catch(e) {
+        return {inv,capital:0,retiros:0,retornado:0,neto:0,rent:0,movs:0,pisos_fin:0};
+      }
+    }));
 
     const NARANJA='#FF4D0F', NEGRO='#1A1A1A';
     const paleta=['#FF4D0F','#1A1A1A','#FF7A4A','#3D3D3D','#FF9B7A','#5A5A5A','#FFB99A','#777','#FFD4C0','#999','#FFE8DE'];
