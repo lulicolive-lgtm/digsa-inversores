@@ -289,44 +289,19 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="tn-link active" onclick="nav('dashboard')" data-panel="dashboard">Dashboard</div>
    <div class="tn-link inversor-only" onclick="nav('portfolio')" data-panel="portfolio">Mi Portfolio</div>
    <div class="tn-link" onclick="nav('historial')" data-panel="historial">Historial</div>
-   <div class="tn-link inversor-only" onclick="nav('proxima')" data-panel="proxima">Próxima inversión</div>
    <div class="tn-link" onclick="nav('documentos')" data-panel="documentos">Documentos</div>
+   <div class="tn-link inversor-only" onclick="nav('proxima')" data-panel="proxima">Próxima inversión</div>
    <div class="tn-link admin-only" onclick="nav('admin')" data-panel="admin" style="display:none">Admin</div>
    <div class="tn-link admin-only" onclick="nav('analisis')" data-panel="analisis" style="display:none">Análisis</div>
    <div class="tn-link admin-only" onclick="nav('manual')" data-panel="manual" style="display:none">Manual</div>
   </div>
   <div class="tn-right">
-   <div style="position:relative" id="info-menu-wrap">
-    <div onclick="toggleInfoMenu()" style="font-size:12px;color:var(--negro3);padding:8px 14px;cursor:pointer;font-weight:600;letter-spacing:.5px;display:flex;align-items:center;gap:6px;border:1px solid var(--borde);background:var(--blanco)">
-     INFO DIGSA <span style="font-size:10px">▾</span>
-    </div>
-    <div id="info-dropdown" style="display:none;position:absolute;right:0;top:44px;background:var(--blanco);border:1px solid var(--borde);min-width:260px;z-index:300;box-shadow:0 4px 20px rgba(0,0,0,.1)">
-     <!-- Próxima propiedad -->
-     <div style="background:var(--negro);padding:16px 20px">
-      <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:4px;font-weight:600">PRÓXIMA INVERSIÓN</div>
-      <div style="font-size:16px;font-family:'Playfair Display',serif;color:var(--blanco);margin-bottom:2px">Lagasca 80</div>
-      <div style="font-size:11px;color:var(--naranja);font-weight:600">Cierre: 1 de junio de 2026</div>
-     </div>
-     <div style="padding:14px 20px;border-bottom:1px solid var(--borde)">
-      <div style="font-size:11px;color:var(--negro3);margin-bottom:8px;font-weight:300">Madrid · Flipping residencial</div>
-      <div style="font-size:12px;color:var(--negro2);line-height:1.7;font-weight:300">Oportunidad de inversión en Madrid. Tiempo límite para participar: <strong>1 de junio 2026</strong>. Contactá al equipo para más información.</div>
-     </div>
-     <!-- Links -->
-     <div style="padding:8px 0">
-      <a href="https://digsa.es" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--negro2);font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background='transparent'">
-       <span style="font-size:16px">🌐</span> digsa.es
-      </a>
-      <a href="https://instagram.com/digsa.es" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--negro2);font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background='transparent'">
-       <span style="font-size:16px">📷</span> Instagram
-      </a>
-      <a href="https://linkedin.com/company/digsa" target="_blank" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--negro2);font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background='transparent'">
-       <span style="font-size:16px">💼</span> LinkedIn
-      </a>
-      <a href="mailto:inversiones@digsa.es" style="display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;color:var(--negro2);font-weight:500;transition:background .15s" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background='transparent'">
-       <span style="font-size:16px">✉️</span> inversiones@digsa.es
-      </a>
-     </div>
-    </div>
+   <!-- INFO DIGSA links -->
+   <div style="display:flex;align-items:center;gap:6px">
+    <a href="https://digsa.es" target="_blank" title="digsa.es" style="font-size:18px;line-height:1;opacity:.7;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">🌐</a>
+    <a href="https://www.instagram.com/digsa.es?igsh=MWJwMzB1ejV0N3RscA%3D%3D&utm_source=qr" target="_blank" title="Instagram" style="font-size:18px;line-height:1;opacity:.7;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">📷</a>
+    <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" title="TikTok" style="font-size:18px;line-height:1;opacity:.7;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">🎵</a>
+    <a href="mailto:gaston@grupodigsa.com" style="font-size:11px;background:var(--naranja);color:var(--blanco);padding:6px 12px;font-weight:700;letter-spacing:.5px;white-space:nowrap">Contactar</a>
    </div>
    <div class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
     <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -405,47 +380,51 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
   <!-- PRÓXIMA INVERSIÓN -->
   <div class="panel" id="panel-proxima">
    <div class="page-hd">
-    <div><div class="page-hd-line"></div><h2>Próxima inversión</h2><p>Lagasca 80 · Madrid · Oportunidad abierta hasta el 1 de junio de 2026</p></div>
-    <div style="background:var(--naranja);color:var(--blanco);padding:10px 20px;font-size:12px;font-weight:700;letter-spacing:1px">
-     CIERRE: 1 JUN 2026
-    </div>
+    <div><div class="page-hd-line"></div><h2 id="prox-titulo">Próxima inversión · Lagasca 80</h2><p id="prox-subtitulo">Madrid · Flipping residencial</p></div>
    </div>
 
-   <!-- Banner negro -->
-   <div style="background:var(--negro);padding:36px 40px;margin-bottom:28px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:32px">
+   <!-- CTA arriba -->
+   <div style="background:var(--naranja);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
     <div>
-     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">PRECIO VENTA ESTIMADO</div>
-     <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--blanco)" id="prox-precio-venta">€920.000</div>
+     <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--blanco);margin-bottom:2px">¿Querés participar?</div>
+     <div style="font-size:12px;color:rgba(255,255,255,.75);font-weight:300">Fecha límite: <strong>1 de junio de 2026</strong> · <span id="prox-countdown"></span></div>
     </div>
-    <div>
-     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">RENTABILIDAD ESTIMADA</div>
-     <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--naranja)" id="prox-rentabilidad">+12%</div>
+    <a href="mailto:gaston@grupodigsa.com" style="background:var(--blanco);color:var(--naranja);padding:12px 28px;font-size:11px;font-weight:700;letter-spacing:2px;text-decoration:none">CONTACTAR →</a>
+   </div>
+
+   <!-- 4 KPIs -->
+   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px">
+    <div class="scard scard-accent">
+     <div class="scard-label">Precio venta estimado</div>
+     <div class="scard-value" id="prox-precio-venta">—</div>
     </div>
-    <div>
-     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">INVERSIÓN MÍNIMA</div>
-     <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--blanco)" id="prox-min-inversion">€5.000</div>
+    <div class="scard">
+     <div class="scard-label">Rentabilidad estimada</div>
+     <div class="scard-value" id="prox-rentabilidad" style="color:var(--naranja)">—</div>
     </div>
-    <div>
-     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:8px;font-weight:600">FECHA LÍMITE</div>
-     <div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--blanco)">1 jun 2026</div>
+    <div class="scard">
+     <div class="scard-label">Inversión mínima</div>
+     <div class="scard-value" id="prox-min-inversion">—</div>
+    </div>
+    <div class="scard">
+     <div class="scard-label">Fecha límite</div>
+     <div class="scard-value" id="prox-fecha-display">—</div>
     </div>
    </div>
 
    <div class="g2" style="margin-bottom:28px">
-    <!-- Info del proyecto -->
+    <!-- Descripción -->
     <div class="card">
      <div class="card-hd"><h3>Presentación del proyecto</h3></div>
-     <div id="prox-descripcion" style="font-size:13px;color:var(--negro3);line-height:1.9;font-weight:300">
-      Lagasca 80 es un inmueble residencial ubicado en el exclusivo barrio de Salamanca, Madrid. El proyecto consiste en la reforma integral de un piso de 120m² con materiales de alta gama, orientado al mercado de compraventa premium. La zona cuenta con una demanda sostenida y precios en alza constante.
-     </div>
+     <div id="prox-descripcion" style="font-size:13px;color:var(--negro3);line-height:1.9;font-weight:300">Información disponible próximamente.</div>
      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--borde);display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div>
        <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:4px;font-weight:600">SUPERFICIE</div>
-       <div style="font-size:18px;font-family:'Playfair Display',serif" id="prox-metros">120 m²</div>
+       <div style="font-size:18px;font-family:'Playfair Display',serif" id="prox-metros">—</div>
       </div>
       <div>
        <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:4px;font-weight:600">UBICACIÓN</div>
-       <div style="font-size:18px;font-family:'Playfair Display',serif" id="prox-ubicacion">Salamanca, Madrid</div>
+       <div style="font-size:18px;font-family:'Playfair Display',serif" id="prox-ubicacion">—</div>
       </div>
       <div>
        <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:4px;font-weight:600">TIPO</div>
@@ -453,7 +432,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
       </div>
       <div>
        <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:4px;font-weight:600">DURACIÓN ESTIMADA</div>
-       <div style="font-size:18px;font-family:'Playfair Display',serif">12 meses</div>
+       <div style="font-size:18px;font-family:'Playfair Display',serif" id="prox-duracion-display">—</div>
       </div>
      </div>
     </div>
@@ -477,28 +456,17 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
 
-   <!-- Mapa ubicación -->
-   <div class="card" style="margin-bottom:28px">
+   <!-- Ubicación -->
+   <div class="card">
     <div class="card-hd"><h3>Ubicación</h3></div>
-    <div style="background:var(--gris);height:200px;display:flex;align-items:center;justify-content:center;gap:12px;color:var(--negro3)">
-     <span style="font-size:24px">📍</span>
+    <div style="background:var(--gris);height:160px;display:flex;align-items:center;justify-content:center;gap:16px;color:var(--negro3)">
+     <span style="font-size:28px">📍</span>
      <div>
-      <div style="font-size:15px;font-weight:600;color:var(--negro)">Lagasca 80, Madrid</div>
+      <div style="font-size:15px;font-weight:600;color:var(--negro)" id="prox-mapa-label">Lagasca 80, Madrid</div>
       <div style="font-size:13px;font-weight:300">Barrio de Salamanca · 28001 Madrid</div>
       <a href="https://maps.google.com/?q=Lagasca+80+Madrid" target="_blank" style="font-size:12px;color:var(--naranja);font-weight:600;margin-top:6px;display:inline-block">Ver en Google Maps →</a>
      </div>
     </div>
-   </div>
-
-   <!-- CTA -->
-   <div style="background:var(--naranja);padding:28px 36px;display:flex;align-items:center;justify-content:space-between">
-    <div>
-     <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco);margin-bottom:4px">¿Querés participar?</div>
-     <div style="font-size:13px;color:rgba(255,255,255,.7);font-weight:300">Contactá al equipo antes del 1 de junio de 2026</div>
-    </div>
-    <a href="mailto:inversiones@digsa.es" style="background:var(--blanco);color:var(--naranja);padding:12px 28px;font-size:12px;font-weight:700;letter-spacing:2px;text-decoration:none">
-     CONTACTAR →
-    </a>
    </div>
 
   </div>
@@ -1425,63 +1393,62 @@ async function subirDocumento() {
   catch(e){showToast(e.message,'err');}finally{hideLoading();}
 }
 
-function toggleInfoMenu() {
-  const dd = $('info-dropdown');
-  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
-  // Cerrar al hacer click afuera
-  setTimeout(() => {
-    document.addEventListener('click', function closeMenu(e) {
-      if (!$('info-menu-wrap').contains(e.target)) {
-        dd.style.display = 'none';
-        document.removeEventListener('click', closeMenu);
-      }
-    });
-  }, 100);
-}
+
 function guardarProxima() {
-  // Actualizar la vista del inversor con los nuevos datos
-  const nombre = $('prox-nombre')?.value || 'Lagasca 80';
-  const pventa = Number($('prox-pventa')?.value || 920000);
-  const rent = $('prox-rent-est')?.value || '12';
-  const min_inv = Number($('prox-min')?.value || 5000);
-  const desc = $('prox-desc-admin')?.value || '';
-  const m2 = $('prox-m2')?.value || '120 m²';
-  const ubic = $('prox-ubic')?.value || 'Salamanca, Madrid';
+  const nombre   = $('prox-nombre')?.value || 'Lagasca 80';
+  const pventa   = Number($('prox-pventa')?.value || 0);
+  const rent     = $('prox-rent-est')?.value || '';
+  const min_inv  = Number($('prox-min')?.value || 0);
+  const desc     = $('prox-desc-admin')?.value || '';
+  const m2       = $('prox-m2')?.value || '';
+  const ubic     = $('prox-ubic')?.value || '';
+  const duracion = $('prox-duracion')?.value || '';
+  const fecha    = $('prox-fecha')?.value || '';
 
-  // Actualizar elementos en el panel proxima si existen
-  if ($('prox-precio-venta')) $('prox-precio-venta').textContent = '€' + pventa.toLocaleString('es-ES');
-  if ($('prox-rentabilidad')) $('prox-rentabilidad').textContent = '+' + rent + '%';
-  if ($('prox-descripcion')) $('prox-descripcion').textContent = desc;
-  if ($('prox-metros')) $('prox-metros').textContent = m2;
-  if ($('prox-ubicacion')) $('prox-ubicacion').textContent = ubic;
+  // Actualizar panel próxima inversión
+  if ($('prox-titulo')) $('prox-titulo').textContent = 'Próxima inversión · ' + nombre;
+  if ($('prox-precio-venta')) $('prox-precio-venta').textContent = pventa ? '€' + pventa.toLocaleString('es-ES') : '—';
+  if ($('prox-rentabilidad')) $('prox-rentabilidad').textContent = rent ? '+' + rent + '%' : '—';
+  if ($('prox-min-inversion')) $('prox-min-inversion').textContent = min_inv ? '€' + min_inv.toLocaleString('es-ES') : '—';
+  if ($('prox-descripcion')) $('prox-descripcion').textContent = desc || 'Información disponible próximamente.';
+  if ($('prox-metros')) $('prox-metros').textContent = m2 || '—';
+  if ($('prox-ubicacion')) $('prox-ubicacion').textContent = ubic || '—';
+  if ($('prox-duracion-display')) $('prox-duracion-display').textContent = duracion || '—';
+  if ($('prox-mapa-label')) $('prox-mapa-label').textContent = nombre + ', Madrid';
+  if (fecha && $('prox-fecha-display')) {
+    const d = new Date(fecha);
+    $('prox-fecha-display').textContent = d.toLocaleDateString('es-ES', {day:'numeric',month:'long',year:'numeric'});
+  }
 
-  // Manejar imágenes de planos
-  const planoActual = $('prox-plano-actual')?.files[0];
-  const planoProp = $('prox-plano-prop')?.files[0];
-  
-  if (planoActual) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      if ($('prox-plano-actual-wrap')) {
-        $('prox-plano-actual-wrap').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain">`;
-      }
-    };
-    reader.readAsDataURL(planoActual);
-  }
-  if (planoProp) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      if ($('prox-plano-prop-wrap')) {
-        $('prox-plano-prop-wrap').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain">`;
-      }
-    };
-    reader.readAsDataURL(planoProp);
-  }
+  // Planos
+  const leerImagen = (inputId, wrapId) => {
+    const file = $(inputId)?.files[0];
+    if (file && $(wrapId)) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        $(wrapId).innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  leerImagen('prox-plano-actual', 'prox-plano-actual-wrap');
+  leerImagen('prox-plano-prop', 'prox-plano-prop-wrap');
 
   const msg = $('prox-save-msg');
   if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 3000); }
-  showToast('Próxima propiedad actualizada');
+  showToast('✓ Próxima propiedad actualizada');
 }
+
+// Countdown para la fecha límite
+function updateCountdown() {
+  const el = $('prox-countdown');
+  if (!el) return;
+  const limite = new Date('2026-06-01');
+  const hoy = new Date();
+  const dias = Math.ceil((limite - hoy) / (1000 * 60 * 60 * 24));
+  el.textContent = dias > 0 ? `Quedan ${dias} días` : 'Plazo vencido';
+}
+updateCountdown();
 
 function toggleNotifs() { showToast('Próximamente: panel de notificaciones'); }
 
