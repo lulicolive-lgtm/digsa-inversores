@@ -296,12 +296,25 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="tn-link admin-only" onclick="nav('manual')" data-panel="manual" style="display:none">Manual</div>
   </div>
   <div class="tn-right">
-   <!-- INFO DIGSA links -->
-   <div style="display:flex;align-items:center;gap:6px">
-    <a href="https://digsa.es" target="_blank" title="digsa.es" style="font-size:18px;line-height:1;opacity:.7;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">🌐</a>
-    <a href="https://www.instagram.com/digsa.es?igsh=MWJwMzB1ejV0N3RscA%3D%3D&utm_source=qr" target="_blank" title="Instagram" style="font-size:18px;line-height:1;opacity:.7;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">📷</a>
-    <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" title="TikTok" style="font-size:18px;line-height:1;opacity:.7;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.7">🎵</a>
-    <a href="mailto:gaston@grupodigsa.com" style="font-size:11px;background:var(--naranja);color:var(--blanco);padding:6px 12px;font-weight:700;letter-spacing:.5px;white-space:nowrap">Contactar</a>
+   <!-- INFO DIGSA dropdown -->
+   <div style="position:relative" id="digsa-menu-wrap">
+    <button onclick="toggleDigsaMenu()" style="font-size:11px;color:var(--negro3);padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:1px;border:1px solid var(--borde);background:var(--blanco);display:flex;align-items:center;gap:6px">
+     DIGSA <span style="font-size:9px;opacity:.6">▾</span>
+    </button>
+    <div id="digsa-dropdown" style="display:none;position:absolute;right:0;top:42px;background:var(--blanco);border:1px solid var(--borde);min-width:220px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.1)">
+     <a href="https://digsa.es" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">🌐</span> digsa.es
+     </a>
+     <a href="https://www.instagram.com/digsa.es?igsh=MWJwMzB1ejV0N3RscA%3D%3D&utm_source=qr" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">📷</span> Instagram
+     </a>
+     <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">🎵</span> TikTok
+     </a>
+     <a href="mailto:gaston@grupodigsa.com" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">✉️</span> gaston@grupodigsa.com
+     </a>
+    </div>
    </div>
    <div class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
     <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -488,6 +501,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="atab" onclick="adminTab('liquidar')">Liquidar piso</div>
     <div class="atab" onclick="adminTab('docs')">Subir documentos</div>
     <div class="atab" onclick="adminTab('proxima')">🏠 Próxima propiedad</div>
+    <div class="atab" onclick="adminTab('proxima')">🏠 Próxima propiedad</div>
    </div>
    <div class="atab-panel show" id="atab-inversores">
     <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
@@ -555,6 +569,46 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <div style="margin-top:24px"><button class="btn btn-dark" onclick="subirDocumento()">Subir documento</button></div>
     </div>
    </div>
+
+   <!-- TAB: próxima propiedad -->
+   <div class="atab-panel" id="atab-proxima">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+     <div class="card">
+      <div class="card-hd"><h3>Información del proyecto</h3></div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+       <div class="fld"><label>Nombre del proyecto</label><input id="prox-nombre" placeholder="Lagasca 80"></div>
+       <div class="fld"><label>Ubicación</label><input id="prox-ubic" placeholder="Salamanca, Madrid"></div>
+       <div class="fld"><label>Superficie</label><input id="prox-m2" placeholder="120 m²"></div>
+       <div class="fld"><label>Duración estimada</label><input id="prox-duracion" placeholder="12 meses"></div>
+       <div class="fld"><label>Descripción</label><textarea id="prox-desc-admin" rows="5" placeholder="Descripción del proyecto para los inversores…"></textarea></div>
+      </div>
+     </div>
+     <div style="display:flex;flex-direction:column;gap:20px">
+      <div class="card">
+       <div class="card-hd"><h3>Datos financieros</h3></div>
+       <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="fld"><label>Precio venta estimado (€)</label><input id="prox-pventa" type="number" placeholder="920000"></div>
+        <div class="fld"><label>Rentabilidad estimada (%)</label><input id="prox-rent-est" type="number" placeholder="12"></div>
+        <div class="fld"><label>Inversión mínima (€)</label><input id="prox-min" type="number" placeholder="5000"></div>
+        <div class="fld"><label>Fecha límite inversión</label><input id="prox-fecha" type="date"></div>
+       </div>
+      </div>
+      <div class="card">
+       <div class="card-hd"><h3>Planos</h3></div>
+       <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="fld"><label>Plano actual (JPG / PNG / PDF)</label><input type="file" id="prox-plano-actual" accept="image/*,.pdf"></div>
+        <div class="fld"><label>Plano propuesto (JPG / PNG / PDF)</label><input type="file" id="prox-plano-prop" accept="image/*,.pdf"></div>
+       </div>
+      </div>
+     </div>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:12px">
+     <button class="btn btn-dark" onclick="guardarProxima()">💾 Guardar y publicar</button>
+     <button class="btn btn-outline" onclick="nav('proxima')">👁 Vista previa →</button>
+    </div>
+    <div id="prox-save-msg" style="margin-top:12px;display:none;font-size:13px;color:var(--verde);font-weight:600">✓ Publicado. Los inversores ya pueden verlo.</div>
+   </div>
+
   </div>
 
   <!-- ANÁLISIS -->
@@ -1060,11 +1114,13 @@ async function loadAnalisis() {
       const neto = Math.max(capital - retiros, 0);
       // Rentabilidad = SOLO sobre lo que ya se liquidó, siempre >= 0
       // Sumamos el aporte de cada liquidación vs su retorno
+      // Rentabilidad: usar aporte_usuario de liquidaciones, o capital neto como fallback
       const total_aportado_liq = inv_liq.reduce((s,l) => s + Number(l.aporte_usuario || 0), 0);
-      const rent_real = (total_aportado_liq > 0 && retornado > 0)
-        ? Math.max(0, (retornado - total_aportado_liq) / total_aportado_liq)
+      // Si no hay datos de aporte en liquidaciones, usar capital total como base
+      const base_rent = total_aportado_liq > 0 ? total_aportado_liq : (neto - en_cartera);
+      const rent_real = (base_rent > 0 && retornado > 0)
+        ? Math.max(0, (retornado - base_rent) / base_rent)
         : 0;
-      // "En inversión" = tiene capital pero aún no se liquidó ningún piso
       const solo_en_cartera = retornado === 0 && en_cartera > 0;
       return { inv, capital, retiros, retornado, en_cartera, neto, rent: rent_real, solo_en_cartera, movs: inv_ap.length, pisos_fin: inv_liq.length, pisos_act: inv_parts.filter(p=>p.propiedades?.estado!=='vendido').length };
     });
@@ -1450,6 +1506,18 @@ function updateCountdown() {
 }
 updateCountdown();
 
+function toggleDigsaMenu() {
+  const dd = $('digsa-dropdown');
+  dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+  setTimeout(() => {
+    document.addEventListener('click', function closeMenu(e) {
+      if (!$('digsa-menu-wrap')?.contains(e.target)) {
+        if (dd) dd.style.display = 'none';
+        document.removeEventListener('click', closeMenu);
+      }
+    });
+  }, 100);
+}
 function toggleNotifs() { showToast('Próximamente: panel de notificaciones'); }
 
 if (TOKEN) startApp();
