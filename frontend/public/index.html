@@ -955,13 +955,14 @@ async function loadAnalisis() {
       // En cartera = monto invertido en pisos activos (ya pagado, no es ganancia futura)
       const en_cartera = inv_parts.filter(p => p.propiedades?.estado !== 'vendido').reduce((s,p) => s + Number(p.monto_invertido || 0), 0);
       const neto = Math.max(capital - retiros, 0);
-      // Rentabilidad = solo sobre lo que ya se liquidó (real, no estimado)
-      // Si tiene liquidaciones, siempre positivo. Si no, 0.
-      const rent = (neto > 0 && retornado > 0) ? (retornado - (neto - en_cartera)) / (neto - en_cartera || neto) : 
-                   (neto > 0 && en_cartera > 0) ? 0 : 0;
-      // Asegurar que nunca sea negativo si hay liquidaciones
-      const rent_final = retornado > 0 ? Math.max(0, rent) : 0;
-      return { inv, capital, retiros, retornado, en_cartera, neto, rent: rent_final, movs: inv_ap.length, pisos_fin: inv_liq.length, pisos_act: inv_parts.filter(p=>p.propiedades?.estado!=='vendido').length };
+      // Rentabilidad = solo sobre liquidaciones reales (siempre positivo)
+      const capital_liquidado = neto - en_cartera; // lo que ya salió de pisos activos
+      const rent_real = (capital_liquidado > 0 && retornado > 0) 
+        ? Math.max(0, (retornado - capital_liquidado) / capital_liquidado)
+        : 0;
+      // Solo en cartera = no tiene liquidaciones, todo en pisos activos
+      const solo_en_cartera = retornado === 0 && en_cartera > 0;
+      return { inv, capital, retiros, retornado, en_cartera, neto, rent: rent_real, solo_en_cartera, movs: inv_ap.length, pisos_fin: inv_liq.length, pisos_act: inv_parts.filter(p=>p.propiedades?.estado!=='vendido').length };
     });
 
     const NARANJA = '#FF4D0F', paleta = ['#FF4D0F','#1A1A1A','#FF7A4A','#3D3D3D','#FF9B7A','#5A5A5A','#FFB99A','#777','#FFD4C0','#999','#FFE8DE'];
@@ -977,7 +978,16 @@ async function loadAnalisis() {
     destroyChart('chart-rent');
     new Chart(document.getElementById('chart-rent').getContext('2d'), {
       type: 'bar',
-      data: { labels: invData.map(d=>d.inv.nombre+' '+d.inv.apellido[0]+'.'), datasets: [{ label:'Rentabilidad', data: invData.map(d=>+(d.rent*100).toFixed(2)), backgroundColor: invData.map((_,i)=>paleta[i%paleta.length]+'99'), borderColor: invData.map((_,i)=>paleta[i%paleta.length]), borderWidth:1 }] },
+      data: { 
+        labels: invData.map(d=>d.inv.nombre+' '+d.inv.apellido[0]+'.'), 
+        datasets: [{ 
+          label:'Rentabilidad', 
+          data: invData.map(d=>d.solo_en_cartera ? 0 : +(d.rent*100).toFixed(2)), 
+          backgroundColor: invData.map((d,i)=>d.solo_en_cartera?'#E0E0E0':paleta[i%paleta.length]+'99'), 
+          borderColor: invData.map((d,i)=>d.solo_en_cartera?'#AAAAAA':paleta[i%paleta.length]), 
+          borderWidth:1 
+        }] 
+      },
       options: { responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{callback:v=>v+'%'}}} }
     });
 
@@ -998,11 +1008,14 @@ async function loadAnalisis() {
     });
 
     $('analisis-inv-grid').innerHTML = invData.map(d => {
-      const rentColor = 'var(--naranja)'; // siempre positivo
       const valorTotal = d.retornado + d.en_cartera;
       const progreso = d.neto > 0 ? Math.min(100, (valorTotal / d.neto) * 100) : 0;
+      const rentLabel = d.solo_en_cartera 
+        ? 'En inversión' 
+        : `+${(d.rent*100).toFixed(1)}%`;
+      const rentColor = d.solo_en_cartera ? 'var(--negro3)' : 'var(--naranja)';
       return `<div class="inv-card rentable">
-        <div class="inv-rent-badge" style="color:${rentColor}">${d.rent>=0?'+':''}${(d.rent*100).toFixed(1)}%</div>
+        <div class="inv-rent-badge" style="color:${rentColor};font-size:${d.solo_en_cartera?'14px':'18px'}">${rentLabel}</div>
         <div class="inv-card-name">${d.inv.nombre} ${d.inv.apellido}</div>
         <div class="inv-card-email">${d.inv.email}</div>
         <div class="inv-card-stats">
@@ -1023,7 +1036,7 @@ async function loadAnalisis() {
         <td style="text-align:center">${d.movs}</td>
         <td style="text-align:center">${d.pisos_fin}</td>
         <td class="num">${eur(d.retornado)}</td>
-        <td class="${d.rent>=0?'pos':'neg'}" style="text-align:right">${d.rent>=0?'+':''}${(d.rent*100).toFixed(2)}%</td>
+        <td style="text-align:right;color:${d.solo_en_cartera?'var(--negro3)':'var(--verde)'};font-weight:600">${d.solo_en_cartera?'En inversión':`+${(d.rent*100).toFixed(2)}%`}</td>
         <td class="num pos">${eur(Math.max(0, d.retornado - d.neto))}</td>
       </tr>`).join('');
 
@@ -1172,7 +1185,7 @@ async function loadAnalisis() {
         <td style="text-align:center">${d.movs}</td>
         <td style="text-align:center">${d.pisos_fin}</td>
         <td class="num">${eur(d.retornado)}</td>
-        <td class="${d.rent>=0?'pos':'neg'}" style="text-align:right">${d.rent>=0?'+':''}${(d.rent*100).toFixed(2)}%</td>
+        <td style="text-align:right;color:${d.solo_en_cartera?'var(--negro3)':'var(--verde)'};font-weight:600">${d.solo_en_cartera?'En inversión':`+${(d.rent*100).toFixed(2)}%`}</td>
         <td class="num pos">${eur(Math.max(0,d.retornado-d.neto))}</td>
       </tr>`).join('');
 
