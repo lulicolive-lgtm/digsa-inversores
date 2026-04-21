@@ -515,6 +515,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="aside-liquidar" class="aside-link" onclick="adminTab('liquidar')">⚡ Liquidar piso</div>
     <div id="aside-docs" class="aside-link" onclick="adminTab('docs')">📄 Documentos</div>
     <div id="aside-proxima" class="aside-link" onclick="adminTab('proxima')">📋 Próxima propiedad</div>
+    <div id="aside-operacion" class="aside-link" onclick="adminTab('operacion')">📊 Nueva operación</div>
    </div>
    <!-- Content -->
    <div style="flex:1;min-width:0">
@@ -625,8 +626,96 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="prox-save-msg" style="margin-top:12px;display:none;font-size:13px;color:var(--verde);font-weight:600">✓ Publicado. Los inversores ya pueden verlo.</div>
    </div>
 
+   <!-- TAB: nueva operación -->
+   <div class="atab-panel" id="atab-operacion">
+    <div style="margin-bottom:20px">
+     <h3 style="font-size:22px;margin-bottom:6px">Análisis de operación</h3>
+     <p style="font-size:13px;color:var(--negro3);font-weight:300">Completá los campos con borde naranja. El análisis se calcula solo.</p>
+    </div>
+
+    <!-- Supuestos fijos -->
+    <div class="card" style="margin-bottom:20px">
+     <div class="card-hd"><h3>Supuestos del modelo</h3><span style="font-size:11px;color:var(--negro3)">Fijos — no modificar</span></div>
+     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">
+      <div style="background:var(--gris);padding:12px"><div style="font-size:10px;color:var(--negro3);margin-bottom:4px">FEE DE ÉXITO</div><div style="font-size:18px;font-weight:700">15%</div></div>
+      <div style="background:var(--gris);padding:12px"><div style="font-size:10px;color:var(--negro3);margin-bottom:4px">GASTOS COMERCIALIZACIÓN</div><div style="font-size:18px;font-weight:700">10%</div></div>
+      <div style="background:var(--gris);padding:12px"><div style="font-size:10px;color:var(--negro3);margin-bottom:4px">IVA COMERCIALIZACIÓN</div><div style="font-size:18px;font-weight:700">21%</div></div>
+      <div style="background:var(--gris);padding:12px"><div style="font-size:10px;color:var(--negro3);margin-bottom:4px">IMPUESTOS UTILIDAD</div><div style="font-size:18px;font-weight:700">25%</div></div>
+      <div style="background:var(--gris);padding:12px"><div style="font-size:10px;color:var(--negro3);margin-bottom:4px">GASTOS OPERATIVOS</div><div style="font-size:18px;font-weight:700">2%</div></div>
+     </div>
+    </div>
+
+    <!-- Datos del proyecto -->
+    <div class="card" style="margin-bottom:20px">
+     <div class="card-hd"><h3>Datos del proyecto</h3><span style="font-size:11px;color:var(--naranja);font-weight:600">● Completar</span></div>
+     <div class="form-grid">
+      <div class="fld"><label>Inmueble</label><input id="op-nombre" placeholder="LAGASCA 80" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
+      <div class="fld"><label>Fecha de compra</label><input id="op-fcompra" type="date" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
+      <div class="fld"><label>Fecha de venta estimada</label><input id="op-fventa" type="date" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
+      <div class="fld"><label>Precio de compra (€)</label><input id="op-compra" type="number" placeholder="1700000" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
+      <div class="fld"><label>Gastos totales compra (€)</label><input id="op-gastos" type="number" placeholder="260000" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
+      <div class="fld"><label>Precio de venta (€)</label><input id="op-venta" type="number" placeholder="2220000" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
+     </div>
+     <div style="margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div style="background:var(--gris);padding:12px"><div style="font-size:10px;color:var(--negro3);margin-bottom:4px">GASTOS OPERATIVOS (2%)</div><div style="font-size:16px;font-family:'Playfair Display',serif;font-weight:600" id="op-r-gastos-op">—</div></div>
+      <div style="background:var(--gris);padding:12px"><div style="font-size:10px;color:var(--negro3);margin-bottom:4px">TOTAL INVERSIÓN</div><div style="font-size:16px;font-family:'Playfair Display',serif;font-weight:700" id="op-r-total-inv">—</div></div>
+      <div style="background:var(--gris);padding:12px"><div style="font-size:10px;color:var(--negro3);margin-bottom:4px">UTILIDAD BRUTA</div><div style="font-size:16px;font-family:'Playfair Display',serif;font-weight:600" id="op-r-utilidad">—</div></div>
+      <div style="background:var(--naranja-light);padding:12px;border:1px solid rgba(255,77,15,.2)"><div style="font-size:10px;color:var(--naranja2);margin-bottom:4px">RENTABILIDAD ESTIMADA</div><div style="font-size:20px;font-family:'Playfair Display',serif;font-weight:700;color:var(--naranja)" id="op-r-rent">—</div></div>
+     </div>
+    </div>
+
+    <!-- Inversores -->
+    <div class="card" style="margin-bottom:20px">
+     <div class="card-hd"><h3>Participación de inversores</h3><span style="font-size:11px;color:var(--naranja);font-weight:600">● Completar % e inversión</span></div>
+     <div class="tbl-wrap">
+      <table class="dtbl">
+       <thead><tr>
+        <th>Inversor</th>
+        <th style="background:#FFF8F6;color:var(--naranja2)">% Participación ●</th>
+        <th style="background:#FFF8F6;color:var(--naranja2)">Inversión (€) ●</th>
+        <th>Venta proporcional</th>
+        <th>Utilidad bruta</th>
+        <th>Rentabilidad</th>
+        <th style="color:var(--verde)">Liquidación</th>
+        <th>Utilidad neta</th>
+       </tr></thead>
+       <tbody id="op-inv-body"></tbody>
+      </table>
+     </div>
+     <div style="margin-top:10px;font-size:12px;color:var(--negro3)">
+      Participación DIGSA España: <strong id="op-digsa-pct">—</strong> &nbsp;·&nbsp;
+      Total inversores: <strong id="op-total-pct">—</strong>
+     </div>
+    </div>
+
+    <!-- Resultado final -->
+    <div style="background:var(--negro);padding:28px 32px;margin-bottom:20px">
+     <h3 style="font-size:18px;color:var(--blanco);margin-bottom:16px">Resultado de la operación</h3>
+     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px">
+      <div style="background:rgba(255,255,255,.06);padding:16px"><div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:8px">TOTAL INVERSIÓN</div><div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco)" id="op-f-inv">—</div></div>
+      <div style="background:rgba(255,255,255,.06);padding:16px"><div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:8px">PRECIO DE VENTA</div><div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco)" id="op-f-venta">—</div></div>
+      <div style="background:rgba(255,255,255,.06);padding:16px"><div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:8px">TOTAL LIQUIDACIÓN</div><div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco)" id="op-f-liq">—</div></div>
+      <div style="background:rgba(255,77,15,.15);padding:16px;border:1px solid rgba(255,77,15,.3)"><div style="font-size:10px;letter-spacing:1.5px;color:var(--naranja);margin-bottom:8px">RENTABILIDAD NETA</div><div style="font-family:'Playfair Display',serif;font-size:28px;color:var(--naranja);font-weight:700" id="op-f-rent">—</div></div>
+     </div>
+     <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:16px">
+      <div style="font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:10px">HONORARIOS DIGSA ESPAÑA</div>
+      <div style="display:flex;gap:40px">
+       <div><div style="font-size:10px;color:rgba(255,255,255,.35)">Gastos operativos (2%)</div><div style="color:var(--blanco);font-weight:600;margin-top:4px" id="op-h-op">—</div></div>
+       <div><div style="font-size:10px;color:rgba(255,255,255,.35)">Fee de éxito (15%)</div><div style="color:var(--blanco);font-weight:600;margin-top:4px" id="op-h-fee">—</div></div>
+       <div><div style="font-size:10px;color:rgba(255,255,255,.35)">Gastos comercialización</div><div style="color:var(--blanco);font-weight:600;margin-top:4px" id="op-h-com">—</div></div>
+       <div><div style="font-size:10px;color:rgba(255,255,255,.35)">Total honorarios DIGSA</div><div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--naranja);margin-top:4px" id="op-h-total">—</div></div>
+      </div>
+     </div>
+    </div>
+
+    <div style="display:flex;gap:12px">
+     <button class="btn btn-dark" onclick="descargarOperacionExcel()">⬇ Descargar CSV / Excel</button>
+     <button class="btn btn-outline" onclick="limpiarOperacion()">✕ Limpiar</button>
+    </div>
    </div>
-  </div>
+
+   </div><!-- /content -->
+   </div><!-- /sidebar layout -->
 
   <!-- ANÁLISIS -->
   <div class="panel" id="panel-analisis">
@@ -1564,6 +1653,220 @@ function updateCountdown() {
     $('prox-countdown').textContent = dias > 0 ? `quedan ${dias} días` : 'plazo vencido';
   }
 }
+
+// ══════════════════════════════════════════════════
+// ANÁLISIS DE OPERACIÓN
+// ══════════════════════════════════════════════════
+const OP_INVERSORES = [
+  "DANIEL E","LUCIO G.","RAFAEL G","SEBASTIAN B.","SEBASTIAN L.",
+  "SEBASTIAN N.","YANINA I.","LUANA S.","CANDELA S.","FEDERICO S."
+];
+// Supuestos fijos
+const OP_FEE = 0.15, OP_IMP = 0.25, OP_GCOM = 0.10, OP_IVA = 0.21, OP_GOP = 0.02;
+
+function initOperacion() {
+  const tbody = $('op-inv-body');
+  if (!tbody || tbody.children.length > 0) return;
+  tbody.innerHTML = OP_INVERSORES.map((inv,i) => `
+    <tr>
+      <td><strong>${inv}</strong></td>
+      <td style="background:#FFF8F6;padding:4px">
+        <input type="number" class="op-pct" data-i="${i}" step="0.01" placeholder="0.00"
+          style="width:90px;border:1px solid var(--naranja);padding:6px;font-size:12px;text-align:right"
+          oninput="calcularOperacion()">
+        <span style="font-size:11px;color:var(--negro3)">%</span>
+      </td>
+      <td style="background:#FFF8F6;padding:4px">
+        <input type="number" class="op-inv" data-i="${i}" step="1" placeholder="0"
+          style="width:110px;border:1px solid var(--naranja);padding:6px;font-size:12px;text-align:right"
+          oninput="calcularOperacion()">
+      </td>
+      <td class="num op-vp-${i}">—</td>
+      <td class="num op-ub-${i}">—</td>
+      <td class="num op-rent-${i}">—</td>
+      <td class="num pos op-liq-${i}" style="font-weight:700">—</td>
+      <td class="num op-unet-${i}">—</td>
+    </tr>`).join('');
+}
+
+function calcularOperacion() {
+  const eur = n => n == null || isNaN(n) ? '—' : '€' + Math.round(n).toLocaleString('es-ES');
+  const pct = n => isNaN(n) || n === 0 ? '—' : '+' + (n*100).toFixed(2) + '%';
+
+  const compra = Number($('op-compra')?.value) || 0;
+  const gastos = Number($('op-gastos')?.value) || 0;
+  const venta  = Number($('op-venta')?.value)  || 0;
+
+  const gastos_op  = (compra + gastos) * OP_GOP;
+  const total_inv  = compra + gastos + gastos_op;
+  const utilidad   = venta - total_inv;
+  const rent_est   = total_inv > 0 ? utilidad / total_inv : 0;
+  const gcom_monto = utilidad * OP_GCOM;
+  const iva_monto  = gcom_monto * OP_IVA;
+  const fee_monto  = utilidad * OP_FEE;
+
+  // Actualizar resumen proyecto
+  if ($('op-r-gastos-op')) $('op-r-gastos-op').textContent = eur(gastos_op);
+  if ($('op-r-total-inv')) $('op-r-total-inv').textContent = eur(total_inv);
+  if ($('op-r-utilidad'))  $('op-r-utilidad').textContent  = eur(utilidad);
+  if ($('op-r-rent'))      $('op-r-rent').textContent      = pct(rent_est);
+
+  // Inversores
+  let total_pct = 0, total_liq = 0;
+  const pcts = document.querySelectorAll('.op-pct');
+  const invs = document.querySelectorAll('.op-inv');
+
+  pcts.forEach((inp, i) => {
+    const pct_inv = Number(inp.value) / 100 || 0;
+    const inv_val = Number(invs[i]?.value) || 0;
+    total_pct += pct_inv;
+
+    if (pct_inv > 0 || inv_val > 0) {
+      const vp    = venta * pct_inv;
+      const ub    = utilidad * pct_inv;
+      const fee_i = Math.max(0, ub) * OP_FEE;
+      const imp_i = Math.max(0, ub - fee_i) * OP_IMP;
+      const unet  = ub - fee_i - imp_i;
+      const liq   = inv_val + unet;
+      const r_inv = inv_val > 0 ? unet / inv_val : 0;
+      total_liq += liq;
+
+      const s = (cls) => document.querySelector(`.${cls}`);
+      const setCell = (cls, val) => { const el = document.querySelector(`.${cls}`); if(el) el.textContent = val; };
+      setCell(`op-vp-${i}`, eur(vp));
+      setCell(`op-ub-${i}`, eur(ub));
+      setCell(`op-rent-${i}`, pct(r_inv));
+      setCell(`op-liq-${i}`, eur(liq));
+      setCell(`op-unet-${i}`, eur(unet));
+    } else {
+      ['vp','ub','rent','liq','unet'].forEach(k => {
+        const el = document.querySelector(`.op-${k}-${i}`);
+        if(el) el.textContent = '—';
+      });
+    }
+  });
+
+  const digsa_pct = Math.max(0, 1 - total_pct);
+  if ($('op-digsa-pct')) $('op-digsa-pct').textContent = (digsa_pct*100).toFixed(2) + '%';
+  if ($('op-total-pct')) {
+    $('op-total-pct').textContent = (total_pct*100).toFixed(2) + '%';
+    $('op-total-pct').style.color = Math.abs(total_pct - 1) < 0.0001 ? 'var(--verde)' : 'var(--rojo)';
+  }
+
+  // Resultado final
+  if ($('op-f-inv'))   $('op-f-inv').textContent   = eur(total_inv);
+  if ($('op-f-venta')) $('op-f-venta').textContent  = eur(venta);
+  if ($('op-f-liq'))   $('op-f-liq').textContent    = eur(total_liq);
+  if ($('op-f-rent'))  $('op-f-rent').textContent   = total_inv > 0 ? pct((total_liq - total_inv) / total_inv) : '—';
+
+  // Honorarios DIGSA
+  if ($('op-h-op'))    $('op-h-op').textContent    = eur(gastos_op);
+  if ($('op-h-fee'))   $('op-h-fee').textContent   = eur(fee_monto);
+  if ($('op-h-com'))   $('op-h-com').textContent   = eur(gcom_monto + iva_monto);
+  if ($('op-h-total')) $('op-h-total').textContent = eur(gastos_op + fee_monto + gcom_monto + iva_monto);
+}
+
+function limpiarOperacion() {
+  ['op-nombre','op-fcompra','op-fventa','op-compra','op-gastos','op-venta'].forEach(id => {
+    const el = $(id); if(el) el.value = '';
+  });
+  document.querySelectorAll('.op-pct,.op-inv').forEach(el => el.value = '');
+  calcularOperacion();
+}
+
+async function descargarOperacionExcel() {
+  // Recopilar datos actuales
+  const nombre  = $('op-nombre')?.value || 'OPERACION';
+  const compra  = Number($('op-compra')?.value) || 0;
+  const gastos  = Number($('op-gastos')?.value) || 0;
+  const venta   = Number($('op-venta')?.value)  || 0;
+  const fcompra = $('op-fcompra')?.value || '';
+  const fventa  = $('op-fventa')?.value  || '';
+
+  const gastos_op = (compra + gastos) * OP_GOP;
+  const total_inv = compra + gastos + gastos_op;
+  const utilidad  = venta - total_inv;
+  const rent      = total_inv > 0 ? (utilidad/total_inv*100).toFixed(2) : '0';
+
+  const pcts = Array.from(document.querySelectorAll('.op-pct')).map(el => Number(el.value)/100 || 0);
+  const invs = Array.from(document.querySelectorAll('.op-inv')).map(el => Number(el.value) || 0);
+
+  // Generar CSV que abre en Excel
+  const sep = ';';
+  const fmt = n => Math.round(n).toLocaleString('es-ES');
+  let csv = `REPORTE DE INVERSIONES — ${nombre}
+
+`;
+  csv += `DATOS DEL PROYECTO
+`;
+  csv += `Inmueble${sep}${nombre}
+`;
+  csv += `Fecha compra${sep}${fcompra}
+`;
+  csv += `Fecha venta${sep}${fventa}
+`;
+  csv += `Precio de compra${sep}${fmt(compra)}
+`;
+  csv += `Gastos totales${sep}${fmt(gastos)}
+`;
+  csv += `Gastos operativos (2%)${sep}${fmt(gastos_op)}
+`;
+  csv += `Total inversión${sep}${fmt(total_inv)}
+`;
+  csv += `Precio de venta${sep}${fmt(venta)}
+`;
+  csv += `Utilidad bruta${sep}${fmt(utilidad)}
+`;
+  csv += `Rentabilidad${sep}${rent}%
+
+`;
+  csv += `SUPUESTOS
+`;
+  csv += `Fee de éxito${sep}15%
+Gastos comercialización${sep}10%
+IVA comercialización${sep}21%
+Impuestos utilidad${sep}25%
+Gastos operativos${sep}2%
+
+`;
+  csv += `INVERSORES
+`;
+  csv += `Inversor${sep}% Participación${sep}Inversión (€)${sep}Venta proporcional${sep}Utilidad bruta${sep}Rentabilidad${sep}Liquidación${sep}Utilidad neta
+`;
+
+  let total_liq = 0;
+  OP_INVERSORES.forEach((inv, i) => {
+    const p = pcts[i], inv_val = invs[i];
+    if (p > 0 || inv_val > 0) {
+      const vp   = venta * p;
+      const ub   = utilidad * p;
+      const fee  = Math.max(0, ub) * OP_FEE;
+      const imp  = Math.max(0, ub - fee) * OP_IMP;
+      const unet = ub - fee - imp;
+      const liq  = inv_val + unet;
+      const r    = inv_val > 0 ? (unet/inv_val*100).toFixed(2) : '0';
+      total_liq += liq;
+      csv += `${inv}${sep}${(p*100).toFixed(4)}%${sep}${fmt(inv_val)}${sep}${fmt(vp)}${sep}${fmt(ub)}${sep}${r}%${sep}${fmt(liq)}${sep}${fmt(unet)}
+`;
+    }
+  });
+  csv += `TOTAL${sep}${sep}${sep}${sep}${sep}${sep}${fmt(total_liq)}${sep}
+`;
+
+  // Descargar
+  const BOM = '\uFEFF';
+  const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `DIGSA_${nombre.replace(/\s/g,'_')}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Excel descargado correctamente');
+}
+
+// Init al abrir el tab
+document.addEventListener('click', e => {
+  if (e.target.id === 'aside-operacion') initOperacion();
+});
 
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
