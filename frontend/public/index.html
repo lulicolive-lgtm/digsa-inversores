@@ -563,9 +563,9 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <div id="liq-preview" style="display:none;background:var(--gris);padding:16px;margin-bottom:24px">
       <div style="font-size:11px;letter-spacing:1px;color:var(--negro3);margin-bottom:10px;font-weight:600">PREVIEW — Fee de éxito: 15% de la utilidad real</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-       <div><div style="font-size:10px;color:var(--negro3)">Utilidad bruta</div><div style="font-weight:700" id="prev-util">—</div></div>
-       <div><div style="font-size:10px;color:var(--negro3)">Fee (15%)</div><div style="font-weight:700;color:var(--naranja)" id="prev-fee">—</div></div>
-       <div><div style="font-size:10px;color:var(--negro3)">Rentabilidad estimada</div><div style="font-weight:700;color:var(--verde)" id="prev-rent">—</div></div>
+       <div><div style="font-size:10px;color:var(--negro3)">Ganancia neta por inversor</div><div style="font-weight:700" id="prev-util">—</div></div>
+       <div><div style="font-size:10px;color:var(--negro3)">Fee 15% + Impuestos 25% (s/neto)</div><div style="font-weight:700;color:var(--naranja)" id="prev-fee">—</div></div>
+       <div><div style="font-size:10px;color:var(--negro3)">Rentabilidad neta</div><div style="font-weight:700;color:var(--verde)" id="prev-rent">—</div></div>
       </div>
      </div>
 
@@ -1509,11 +1509,13 @@ function previsualizarLiq() {
   if (!prop || !prop.precio_compra) return;
   const inv = Number(prop.precio_compra);
   const util = precio - inv;
-  const fee = Math.max(0, util) * 0.15;
-  const rent = inv > 0 ? util / inv : 0;
+  const fee  = Math.max(0, util) * 0.15;
+  const imp  = Math.max(0, util - fee) * 0.25;
+  const unet = util - fee - imp;
+  const rent = inv > 0 ? unet / inv : 0;
   const eur = n => '€' + Math.round(n).toLocaleString('es-ES');
-  if ($('prev-util')) $('prev-util').textContent = eur(util);
-  if ($('prev-fee'))  $('prev-fee').textContent  = eur(fee);
+  if ($('prev-util')) $('prev-util').textContent = eur(unet);
+  if ($('prev-fee'))  $('prev-fee').textContent  = eur(fee) + ' fee + ' + eur(imp) + ' imp.';
   if ($('prev-rent')) $('prev-rent').textContent = (rent >= 0 ? '+' : '') + (rent*100).toFixed(1) + '%';
   if ($('liq-preview')) $('liq-preview').style.display = 'block';
 }
@@ -1696,13 +1698,19 @@ function calcularOperacion() {
   const gastos = Number($('op-gastos')?.value) || 0;
   const venta  = Number($('op-venta')?.value)  || 0;
 
-  const gastos_op  = (compra + gastos) * OP_GOP;
-  const total_inv  = compra + gastos + gastos_op;
-  const utilidad   = venta - total_inv;
-  const rent_est   = total_inv > 0 ? utilidad / total_inv : 0;
-  const gcom_monto = utilidad * OP_GCOM;
-  const iva_monto  = gcom_monto * OP_IVA;
-  const fee_monto  = utilidad * OP_FEE;
+  const gastos_op   = (compra + gastos) * OP_GOP;
+  const total_inv   = compra + gastos + gastos_op;
+  const util_bruta  = venta - (compra + gastos);
+  const util_gop    = util_bruta - gastos_op;
+  const gcom_monto  = Math.max(0, util_gop) * OP_GCOM;
+  const iva_monto   = gcom_monto * OP_IVA;
+  const util_neta   = util_gop - gcom_monto - iva_monto;
+  const fee_monto   = Math.max(0, util_neta) * OP_FEE;
+  const despues_fee = util_neta - fee_monto;
+  const impuestos   = Math.max(0, despues_fee) * OP_IMP;
+  const ganancia_neta = despues_fee - impuestos;
+  const utilidad    = ganancia_neta; // ganancia real a repartir
+  const rent_est    = total_inv > 0 ? ganancia_neta / total_inv : 0;
 
   // Actualizar resumen proyecto
   if ($('op-r-gastos-op')) $('op-r-gastos-op').textContent = eur(gastos_op);
@@ -1722,12 +1730,12 @@ function calcularOperacion() {
 
     if (pct_inv > 0 || inv_val > 0) {
       const vp    = venta * pct_inv;
-      const ub    = utilidad * pct_inv;
-      const fee_i = Math.max(0, ub) * OP_FEE;
-      const imp_i = Math.max(0, ub - fee_i) * OP_IMP;
-      const unet  = ub - fee_i - imp_i;
+      const unet  = ganancia_neta * pct_inv; // su parte de la ganancia neta ya descontados todos los gastos
       const liq   = inv_val + unet;
       const r_inv = inv_val > 0 ? unet / inv_val : 0;
+      const ub    = util_bruta * pct_inv; // utilidad bruta informativa
+      const fee_i = fee_monto * pct_inv;
+      const imp_i = impuestos * pct_inv;
       total_liq += liq;
 
       const s = (cls) => document.querySelector(`.${cls}`);
@@ -1762,7 +1770,7 @@ function calcularOperacion() {
   if ($('op-h-op'))    $('op-h-op').textContent    = eur(gastos_op);
   if ($('op-h-fee'))   $('op-h-fee').textContent   = eur(fee_monto);
   if ($('op-h-com'))   $('op-h-com').textContent   = eur(gcom_monto + iva_monto);
-  if ($('op-h-total')) $('op-h-total').textContent = eur(gastos_op + fee_monto + gcom_monto + iva_monto);
+  if ($('op-h-total')) $('op-h-total').textContent = eur(gastos_op + fee_monto + gcom_monto + iva_monto + impuestos);
 }
 
 function limpiarOperacion() {
@@ -1910,8 +1918,8 @@ Gastos operativos${sep}2%
     if (p > 0 || inv_val > 0) {
       const vp   = venta * p;
       const ub   = utilidad * p;
-      const fee  = Math.max(0, ub) * OP_FEE;
-      const imp  = Math.max(0, ub - fee) * OP_IMP;
+      const fee  = Math.max(0, ub) * 0.15;
+      const imp  = Math.max(0, ub - fee) * 0.25;
       const unet = ub - fee - imp;
       const liq  = inv_val + unet;
       const r    = inv_val > 0 ? (unet/inv_val*100).toFixed(2) : '0';

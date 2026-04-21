@@ -33,7 +33,35 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
 
   if (!parts?.length) return res.status(400).json({ error: 'No hay inversores asignados a esta propiedad' });
 
+  // precio_compra ya incluye inversión total (compra + gastos + GOP) según los Excel
   const inversion_total = Number(prop.precio_compra || 0);
+  // gastos_compra = gastos sin GOP
+  const gastos_compra = Number(prop.gastos_compra || 0);
+  const compra_base = inversion_total - gastos_compra; // precio de compra puro
+  
+  // Fórmula exacta verificada con los Excel de DIGSA:
+  // util_bruta = precio_venta - (compra_base + gastos_compra)
+  // GOP = (compra_base + gastos_compra) * 2%
+  // util_con_gop = util_bruta - GOP
+  // gastos_venta = util_con_gop * 10%
+  // IVA = gastos_venta * 21%
+  // util_neta_piso = util_con_gop - gastos_venta - IVA
+  // fee = util_neta_piso * 15%
+  // ganancia_neta = (util_neta_piso - fee) * (1 - 0.25)
+  // ganancia inversor = ganancia_neta * % participación
+  const precio_v = Number(precio_venta);
+  const base = compra_base + gastos_compra; // = precio_compra si gastos_compra está bien
+  const util_bruta_piso = precio_v - (base > 0 ? base : inversion_total);
+  const gop = (base > 0 ? base : inversion_total) * 0.02;
+  const util_con_gop = util_bruta_piso - gop;
+  const gastos_venta = Math.max(0, util_con_gop) * 0.10;
+  const iva_gastos = gastos_venta * 0.21;
+  const util_neta_piso = util_con_gop - gastos_venta - iva_gastos;
+  const fee_total_piso = Math.max(0, util_neta_piso) * 0.15;
+  const despues_fee_piso = util_neta_piso - fee_total_piso;
+  const impuestos_piso = Math.max(0, despues_fee_piso) * 0.25;
+  const ganancia_neta_piso = despues_fee_piso - impuestos_piso;
+
   const resultados = [];
 
   for (const part of parts) {
@@ -41,13 +69,15 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
     const aporte = Number(part.monto_invertido);
     const porcentaje = Number(part.porcentaje);
 
-    const utilidad_bruta_piso = Number(precio_venta) - inversion_total;
-    const utilidad_bruta_inv = utilidad_bruta_piso * porcentaje;
-    const fee_monto = utilidad_bruta_inv > 0 ? utilidad_bruta_inv * Number(fee_exito_pct) : 0;
-    const impuestos_monto = (utilidad_bruta_inv - fee_monto) * 0.25;
-    const utilidad_neta = utilidad_bruta_inv - fee_monto - impuestos_monto;
-    const total_retorno = aporte + utilidad_neta;
-    const rentabilidad_pct = aporte > 0 ? utilidad_neta / aporte : 0;
+    // Ganancia del inversor = su % de la ganancia neta total del piso
+    const utilidad_bruta_inv = util_bruta_piso * porcentaje;
+    const ganancia_inversor = ganancia_neta_piso * porcentaje;
+    const fee_monto = fee_total_piso * porcentaje;
+    const impuestos_monto = impuestos_piso * porcentaje;
+    const utilidad_neta = ganancia_inversor;
+    const total_retorno = aporte + ganancia_inversor;
+    const rentabilidad_pct = aporte > 0 ? ganancia_inversor / aporte : 0; - impuestos_monto;
+
 
     const { data: liq } = await supabase.from('liquidaciones').insert([{
       propiedad_id, usuario_id: user.id, fecha,
