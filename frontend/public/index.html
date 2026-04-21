@@ -547,26 +547,53 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
    <div class="atab-panel" id="atab-liquidar">
-    <div class="card" style="max-width:640px">
+    <div class="card" style="max-width:680px">
      <div class="card-hd"><h3>Generar liquidaciones</h3></div>
-     <p style="font-size:13px;color:var(--negro3);margin-bottom:24px;line-height:1.8;font-weight:300">Seleccioná el piso, cargá el precio de venta final y el sistema calculará automáticamente la liquidación de cada inversor y generará su PDF.</p>
-     <div class="form-grid">
+     <p style="font-size:13px;color:var(--negro3);margin-bottom:24px;line-height:1.8;font-weight:300">
+      Seleccioná el piso y el precio de venta real. El sistema calcula automáticamente la liquidación de cada inversor (fee de éxito: 15% de la utilidad) y genera el PDF para cada uno.
+     </p>
+
+     <!-- Datos básicos -->
+     <div class="form-grid" style="margin-bottom:24px">
       <div class="fld fld-full"><label>Propiedad</label><select id="liq-prop-sel"></select></div>
-      <div class="fld"><label>Precio de venta final (EUR)</label><input type="number" id="liq-precio" placeholder="280000"></div>
+      <div class="fld"><label>Precio de venta real (€)</label><input type="number" id="liq-precio" placeholder="280000" oninput="previsualizarLiq()"></div>
       <div class="fld"><label>Fecha de liquidación</label><input type="date" id="liq-fecha"></div>
-      <div class="fld"><label>Fee de éxito (%)</label><input type="number" id="liq-fee" value="15"></div>
-      <div class="fld"><label>Alquileres acumulados (EUR)</label><input type="number" id="liq-alquileres" value="0"></div>
-      <div class="fld fld-full">
-       <label>Destino de los fondos (reinversión automática)</label>
-       <div id="liq-destino-wrap" style="border:1px solid var(--borde);background:var(--blanco);padding:12px;max-height:160px;overflow-y:auto">
-        <div style="font-size:11px;color:var(--negro3);margin-bottom:8px;font-weight:400">Seleccioná los pisos donde se reinvertirá el dinero. El sistema distribuirá proporcionalmente según el tamaño de cada piso.</div>
-        <div id="liq-destino-checks" style="display:flex;flex-direction:column;gap:8px"></div>
-       </div>
-       <div style="font-size:11px;color:var(--negro3);margin-top:6px">Si no seleccionás ninguno, el dinero queda pendiente de asignación.</div>
+     </div>
+
+     <!-- Preview automático -->
+     <div id="liq-preview" style="display:none;background:var(--gris);padding:16px;margin-bottom:24px">
+      <div style="font-size:11px;letter-spacing:1px;color:var(--negro3);margin-bottom:10px;font-weight:600">PREVIEW — Fee de éxito: 15% de la utilidad real</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+       <div><div style="font-size:10px;color:var(--negro3)">Utilidad bruta</div><div style="font-weight:700" id="prev-util">—</div></div>
+       <div><div style="font-size:10px;color:var(--negro3)">Fee (15%)</div><div style="font-weight:700;color:var(--naranja)" id="prev-fee">—</div></div>
+       <div><div style="font-size:10px;color:var(--negro3)">Rentabilidad estimada</div><div style="font-weight:700;color:var(--verde)" id="prev-rent">—</div></div>
       </div>
      </div>
-     <div style="margin-top:24px">
-      <button class="btn btn-orange" onclick="generarLiquidaciones()">⚡ Generar liquidaciones</button>
+
+     <!-- Destino de fondos -->
+     <div class="fld fld-full" style="margin-bottom:20px">
+      <label>Destino de los fondos (reinversión)</label>
+      <!-- Toggle modo -->
+      <div style="display:flex;gap:0;margin-bottom:12px;border:1px solid var(--borde);width:fit-content">
+       <button id="liq-modo-auto" onclick="setModoDestino('auto')" style="padding:8px 18px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:var(--negro);color:var(--blanco)">Automático</button>
+       <button id="liq-modo-manual" onclick="setModoDestino('manual')" style="padding:8px 18px;font-size:11px;font-weight:600;border:none;cursor:pointer;background:var(--blanco);color:var(--negro3)">Manual</button>
+      </div>
+      <!-- Modo automático: checkboxes + distribución proporcional -->
+      <div id="liq-destino-auto">
+       <div style="font-size:11px;color:var(--negro3);margin-bottom:8px;font-weight:300">El sistema distribuye proporcionalmente al precio de compra de cada piso.</div>
+       <div id="liq-destino-checks" style="border:1px solid var(--borde);padding:12px;max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <!-- Modo manual: % por piso -->
+      <div id="liq-destino-manual" style="display:none">
+       <div style="font-size:11px;color:var(--negro3);margin-bottom:8px;font-weight:300">Ingresá el % que va a cada piso. La suma debe dar 100%.</div>
+       <div id="liq-destino-manual-rows" style="border:1px solid var(--borde);padding:12px;max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:8px"></div>
+       <div style="margin-top:8px;font-size:12px">Total asignado: <strong id="liq-manual-total" style="color:var(--verde)">0%</strong></div>
+      </div>
+      <div style="font-size:11px;color:var(--negro3);margin-top:8px">Si no seleccionás ninguno, el dinero queda pendiente de asignación.</div>
+     </div>
+
+     <div style="margin-top:8px">
+      <button class="btn btn-dark" onclick="generarLiquidaciones()">⚡ Generar liquidaciones para todos los inversores</button>
      </div>
      <div id="liq-result" style="margin-top:20px;display:none"></div>
     </div>
@@ -1161,13 +1188,25 @@ async function loadAdmin() {
     // Poblar checkboxes de destino (excluir el piso seleccionado)
     const actualizarDestinos = () => {
       const selId = $('liq-prop-sel').value;
-      $('liq-destino-checks').innerHTML = propsActivas
-        .filter(p => p.id !== selId)
-        .map(p => `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)">
+      const dest = propsActivas.filter(p => p.id !== selId);
+      // Modo automático - checkboxes
+      $('liq-destino-checks').innerHTML = dest.map(p => `
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)" onchange="previsualizarLiq()">
           <span>${p.nombre}</span>
           <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
         </label>`).join('');
+      // Modo manual - inputs de porcentaje
+      $('liq-destino-manual-rows').innerHTML = dest.map(p => `
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+          <input type="checkbox" value="${p.id}" class="liq-manual-cb" style="accent-color:var(--naranja)" onchange="updateManualTotal()">
+          <span style="flex:1">${p.nombre}</span>
+          <input type="number" class="liq-manual-pct" data-id="${p.id}" min="0" max="100" step="1" placeholder="0"
+            style="width:70px;border:1px solid var(--borde);padding:5px 8px;font-size:12px;text-align:right" 
+            oninput="updateManualTotal()">
+          <span style="font-size:11px;color:var(--negro3)">%</span>
+        </div>`).join('');
+      previsualizarLiq();
     };
     actualizarDestinos();
     $('liq-prop-sel').addEventListener('change', actualizarDestinos);
@@ -1328,13 +1367,25 @@ async function loadAdmin() {
     // Poblar checkboxes de destino (excluir el piso seleccionado)
     const actualizarDestinos = () => {
       const selId = $('liq-prop-sel').value;
-      $('liq-destino-checks').innerHTML = propsActivas
-        .filter(p => p.id !== selId)
-        .map(p => `<label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)">
+      const dest = propsActivas.filter(p => p.id !== selId);
+      // Modo automático - checkboxes
+      $('liq-destino-checks').innerHTML = dest.map(p => `
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)" onchange="previsualizarLiq()">
           <span>${p.nombre}</span>
           <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
         </label>`).join('');
+      // Modo manual - inputs de porcentaje
+      $('liq-destino-manual-rows').innerHTML = dest.map(p => `
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+          <input type="checkbox" value="${p.id}" class="liq-manual-cb" style="accent-color:var(--naranja)" onchange="updateManualTotal()">
+          <span style="flex:1">${p.nombre}</span>
+          <input type="number" class="liq-manual-pct" data-id="${p.id}" min="0" max="100" step="1" placeholder="0"
+            style="width:70px;border:1px solid var(--borde);padding:5px 8px;font-size:12px;text-align:right" 
+            oninput="updateManualTotal()">
+          <span style="font-size:11px;color:var(--negro3)">%</span>
+        </div>`).join('');
+      previsualizarLiq();
     };
     actualizarDestinos();
     $('liq-prop-sel').addEventListener('change', actualizarDestinos);
@@ -1530,9 +1581,58 @@ async function saveAporte() {
   catch(e){showToast(e.message,'err');}finally{hideLoading();}
 }
 
+function setModoDestino(modo) {
+  const isAuto = modo === 'auto';
+  $('liq-destino-auto').style.display = isAuto ? 'block' : 'none';
+  $('liq-destino-manual').style.display = isAuto ? 'none' : 'block';
+  $('liq-modo-auto').style.background = isAuto ? 'var(--negro)' : 'var(--blanco)';
+  $('liq-modo-auto').style.color = isAuto ? 'var(--blanco)' : 'var(--negro3)';
+  $('liq-modo-manual').style.background = isAuto ? 'var(--blanco)' : 'var(--negro)';
+  $('liq-modo-manual').style.color = isAuto ? 'var(--negro3)' : 'var(--blanco)';
+}
+
+function updateManualTotal() {
+  const checks = document.querySelectorAll('.liq-manual-cb:checked');
+  let total = 0;
+  checks.forEach(cb => {
+    const pct = Number(document.querySelector(`.liq-manual-pct[data-id="${cb.value}"]`)?.value) || 0;
+    total += pct;
+  });
+  const el = $('liq-manual-total');
+  if (el) { el.textContent = total.toFixed(1) + '%'; el.style.color = Math.abs(total-100) < 0.1 ? 'var(--verde)' : 'var(--rojo)'; }
+}
+
+function previsualizarLiq() {
+  const precio = parseFloat($('liq-precio')?.value) || 0;
+  const propId = $('liq-prop-sel')?.value;
+  if (!precio || !propId) { if($('liq-preview')) $('liq-preview').style.display='none'; return; }
+  const prop = PROPIEDADES_CACHE.find(p => p.id === propId);
+  if (!prop || !prop.precio_compra) return;
+  const inv = Number(prop.precio_compra);
+  const util = precio - inv;
+  const fee = Math.max(0, util) * 0.15;
+  const rent = inv > 0 ? util / inv : 0;
+  const eur = n => '€' + Math.round(n).toLocaleString('es-ES');
+  if ($('prev-util')) $('prev-util').textContent = eur(util);
+  if ($('prev-fee'))  $('prev-fee').textContent  = eur(fee);
+  if ($('prev-rent')) $('prev-rent').textContent = (rent >= 0 ? '+' : '') + (rent*100).toFixed(1) + '%';
+  if ($('liq-preview')) $('liq-preview').style.display = 'block';
+}
+
 async function generarLiquidaciones() {
-  const destino_ids = Array.from(document.querySelectorAll('#liq-destino-checks input:checked')).map(cb => cb.value);
-  const body={propiedad_id:$('liq-prop-sel').value,precio_venta:parseFloat($('liq-precio').value),fecha:$('liq-fecha').value,fee_exito_pct:parseFloat($('liq-fee').value)/100,alquileres:parseFloat($('liq-alquileres').value)||0,destino_ids};
+  // Determinar modo destino
+  const isManual = $('liq-destino-manual').style.display !== 'none';
+  let destino_ids = [];
+  let destino_pcts = {};
+  if (isManual) {
+    document.querySelectorAll('.liq-manual-cb:checked').forEach(cb => {
+      const pct = Number(document.querySelector(`.liq-manual-pct[data-id="${cb.value}"]`)?.value) || 0;
+      if (pct > 0) { destino_ids.push(cb.value); destino_pcts[cb.value] = pct / 100; }
+    });
+  } else {
+    destino_ids = Array.from(document.querySelectorAll('#liq-destino-checks input:checked')).map(cb => cb.value);
+  }
+  const body={propiedad_id:$('liq-prop-sel').value, precio_venta:parseFloat($('liq-precio').value), fecha:$('liq-fecha').value, fee_exito_pct:0.15, alquileres:0, destino_ids, destino_pcts};
   if (!body.propiedad_id||!body.precio_venta||!body.fecha) return showToast('Completá todos los campos','err');
   try{
     showLoading('Generando liquidaciones y PDFs…');

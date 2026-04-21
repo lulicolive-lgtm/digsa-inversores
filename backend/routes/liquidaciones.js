@@ -17,8 +17,8 @@ router.get('/', authMiddleware, async (req, res) => {
 
 // ── POST /api/liquidaciones/generar ─────────────────────────────────────────
 router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
-  const { propiedad_id, precio_venta, fecha, fee_exito_pct = 0.15, alquileres = 0, destino_ids = [] } = req.body;
-  // destino_ids: array de IDs de propiedades destino para reinversión automática
+  const { propiedad_id, precio_venta, fecha, destino_ids = [], destino_pcts = {} } = req.body;
+  const fee_exito_pct = 0.15; // siempre 15% de la utilidad real
   if (!propiedad_id || !precio_venta || !fecha)
     return res.status(400).json({ error: 'propiedad_id, precio_venta y fecha son requeridos' });
 
@@ -41,8 +41,7 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
     const aporte = Number(part.monto_invertido);
     const porcentaje = Number(part.porcentaje);
 
-    const ingresos_totales = Number(precio_venta) + Number(alquileres);
-    const utilidad_bruta_piso = ingresos_totales - inversion_total;
+    const utilidad_bruta_piso = Number(precio_venta) - inversion_total;
     const utilidad_bruta_inv = utilidad_bruta_piso * porcentaje;
     const fee_monto = utilidad_bruta_inv > 0 ? utilidad_bruta_inv * Number(fee_exito_pct) : 0;
     const impuestos_monto = (utilidad_bruta_inv - fee_monto) * 0.25;
@@ -62,7 +61,7 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
       fee_monto, impuestos_monto, utilidad_neta, total_retorno,
       rentabilidad_pct, inversion_total,
       precio_venta: Number(precio_venta),
-      alquileres: Number(alquileres),
+      alquileres: 0,
       fee_exito_pct: Number(fee_exito_pct),
       fecha, destino: destino_ids.join(', ')
     });
@@ -106,6 +105,7 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
 
       if (propsDest && propsDest.length > 0) {
         // Calcular peso proporcional de cada piso destino
+        const usarPctManual = destino_pcts && Object.keys(destino_pcts).length > 0;
         const totalCosto = propsDest.reduce((s, p) => s + Number(p.precio_compra || 0) + Number(p.gastos_compra || 0), 0);
 
         for (const part of parts) {
@@ -116,7 +116,9 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
 
           for (const propDest of propsDest) {
             const costoProp = Number(propDest.precio_compra || 0) + Number(propDest.gastos_compra || 0);
-            const proporcion = totalCosto > 0 ? costoProp / totalCosto : 1 / propsDest.length;
+            const proporcion = usarPctManual && destino_pcts[propDest.id] 
+              ? destino_pcts[propDest.id]
+              : (totalCosto > 0 ? costoProp / totalCosto : 1 / propsDest.length);
             const monto_aporte = Math.round(monto_reinvertir * proporcion * 100) / 100;
             const porcentaje_nuevo = costoProp > 0 ? monto_aporte / costoProp : 0;
 
