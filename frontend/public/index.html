@@ -1354,7 +1354,17 @@ async function loadAnalisis() {
         <td class="num pos">${eur(Math.max(0, d.retornado - d.neto))}</td>
       </tr>`).join('');
 
-  } catch(e) { showToast('Error: '+e.message, 'err'); }
+  } catch(e) {
+    hideLoading();
+    showToast('Error análisis: '+e.message, 'err');
+    // Mostrar error visible en el panel
+    const kpis = $('analisis-kpis');
+    if (kpis) kpis.innerHTML = `<div style="grid-column:1/-1;background:var(--rojo-light);color:var(--rojo);padding:16px;font-size:13px">
+      Error al cargar el análisis: ${e.message}<br>
+      <small>Verificá que el servidor esté corriendo y que el endpoint /admin/resumen-inversores exista.</small>
+    </div>`;
+    console.error('loadAnalisis error:', e);
+  }
   finally { hideLoading(); }
 }
 
