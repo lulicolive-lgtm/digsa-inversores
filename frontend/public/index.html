@@ -186,8 +186,11 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 /* ADMIN TABS */
 .admin-tabs{display:flex;gap:0;margin-bottom:28px;border-bottom:1px solid var(--borde);overflow-x:auto}
 .atab{padding:12px 20px;font-size:12px;color:var(--negro3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap;font-weight:600;letter-spacing:.5px}
-.atab:hover{color:var(--negro)}.atab.active{color:var(--naranja);border-bottom-color:var(--naranja)}
+.atab:hover{color:var(--negro)}.atab.active{color:var(--naranja);border-bottom-color:var(--naranja);border-left-color:var(--naranja)!important;background:var(--naranja-light)}
 .atab-panel{display:none}.atab-panel.show{display:block}
+.aside-link{padding:12px 16px;font-size:12px;color:var(--negro3);cursor:pointer;border-bottom:1px solid var(--gris2);font-weight:500;transition:all .15s;border-left:3px solid transparent;display:block}
+.aside-link:hover{color:var(--negro);background:var(--gris)}
+.aside-link.active{color:var(--naranja);border-left-color:var(--naranja);background:var(--naranja-light);font-weight:700}
 
 /* EMPTY / SPINNER */
 .empty{text-align:center;padding:56px 24px;color:var(--negro3)}
@@ -311,9 +314,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
       <span style="font-size:17px">🎵</span> TikTok
      </a>
-     <a href="mailto:gaston@grupodigsa.com" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
-      <span style="font-size:17px">✉️</span> gaston@grupodigsa.com
-     </a>
+
     </div>
    </div>
    <div class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
@@ -396,19 +397,30 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div><div class="page-hd-line"></div><h2 id="prox-titulo">Próxima inversión · Lagasca 80</h2><p id="prox-subtitulo">Madrid · Flipping residencial</p></div>
    </div>
 
-   <!-- CTA arriba -->
-   <div style="background:var(--naranja);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+   <!-- Banner motivador -->
+   <div style="background:var(--negro);padding:24px 36px;display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
     <div>
-     <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--blanco);margin-bottom:2px">¿Querés participar?</div>
-     <div style="font-size:12px;color:rgba(255,255,255,.75);font-weight:300">Fecha límite: <strong>1 de junio de 2026</strong> · <span id="prox-countdown"></span></div>
+     <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco);margin-bottom:6px">Tu inversión sigue girando.</div>
+     <div style="font-size:13px;color:rgba(255,255,255,.5);font-weight:300;max-width:560px">Una nueva oportunidad en el Barrio de Salamanca. Si querés sumar o reinvertir, este es el momento — <strong style="color:rgba(255,255,255,.8)"><span id="prox-countdown"></span></strong> para participar.</div>
     </div>
-    <a href="mailto:gaston@grupodigsa.com" style="background:var(--blanco);color:var(--naranja);padding:12px 28px;font-size:11px;font-weight:700;letter-spacing:2px;text-decoration:none">CONTACTAR →</a>
+    <div style="text-align:right;flex-shrink:0">
+     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:4px">CIERRE</div>
+     <div style="font-family:'Playfair Display',serif;font-size:24px;color:var(--naranja)" id="prox-fecha-banner">1 jun 2026</div>
+    </div>
    </div>
 
-   <!-- 4 KPIs -->
-   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px">
+   <!-- 5 KPIs según docs -->
+   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px">
+    <div class="scard">
+     <div class="scard-label">Valor de compra</div>
+     <div class="scard-value" id="prox-compra">—</div>
+    </div>
+    <div class="scard">
+     <div class="scard-label">Gastos operativos</div>
+     <div class="scard-value" id="prox-gastos-op">—</div>
+    </div>
     <div class="scard scard-accent">
-     <div class="scard-label">Precio venta estimado</div>
+     <div class="scard-label">Valor estimado de venta</div>
      <div class="scard-value" id="prox-precio-venta">—</div>
     </div>
     <div class="scard">
@@ -416,11 +428,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <div class="scard-value" id="prox-rentabilidad" style="color:var(--naranja)">—</div>
     </div>
     <div class="scard">
-     <div class="scard-label">Inversión mínima</div>
-     <div class="scard-value" id="prox-min-inversion">—</div>
-    </div>
-    <div class="scard">
-     <div class="scard-label">Fecha límite</div>
+     <div class="scard-label">Fecha límite de aporte</div>
      <div class="scard-value" id="prox-fecha-display">—</div>
     </div>
    </div>
@@ -487,6 +495,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
   <!-- ADMIN -->
   <div class="panel" id="panel-admin">
    <div class="page-hd"><div><div class="page-hd-line"></div><h2>Administración</h2><p>Gestión de inversores, propiedades y movimientos</p></div></div>
+   <div style="display:flex;gap:24px;align-items:flex-start">
+   <div style="width:180px;flex-shrink:0;position:sticky;top:80px">
    <div class="stat-row" id="admin-stats-row" style="grid-template-columns:repeat(5,1fr)">
     <div class="scard scard-accent"><div class="scard-label">Inversores activos</div><div class="scard-value" id="ast-inv">—</div></div>
     <div class="scard"><div class="scard-label">Propiedades</div><div class="scard-value" id="ast-prop">—</div></div>
@@ -494,21 +504,26 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="scard"><div class="scard-label">Total retornado</div><div class="scard-value" id="ast-ret">—</div></div>
     <div class="scard"><div class="scard-label">Rentabilidad prom.</div><div class="scard-value" id="ast-rentprom">—</div></div>
    </div>
-   <div class="admin-tabs">
-    <div class="atab active" onclick="adminTab('inversores')">Inversores</div>
-    <div class="atab" onclick="adminTab('propiedades')">Propiedades</div>
-    <div class="atab" onclick="adminTab('aportes')">Aportes</div>
-    <div class="atab" onclick="adminTab('liquidar')">Liquidar piso</div>
-    <div class="atab" onclick="adminTab('docs')">Subir documentos</div>
-    <div class="atab" onclick="adminTab('proxima')">🏠 Próxima propiedad</div>
-    <div class="atab" onclick="adminTab('proxima')">🏠 Próxima propiedad</div>
+   <!-- Admin layout: sidebar + content -->
+   <div style="display:flex;gap:24px;align-items:flex-start">
+   <!-- Sidebar -->
+   <div style="width:190px;flex-shrink:0;position:sticky;top:76px;background:var(--blanco);border:1px solid var(--borde)">
+    <div style="padding:12px 16px;font-size:10px;letter-spacing:2px;color:var(--negro3);font-weight:600;border-bottom:1px solid var(--borde);background:var(--gris)">MENÚ</div>
+    <div id="aside-inversores" class="aside-link active" onclick="adminTab('inversores')">👥 Inversores</div>
+    <div id="aside-propiedades" class="aside-link" onclick="adminTab('propiedades')">🏠 Propiedades</div>
+    <div id="aside-aportes" class="aside-link" onclick="adminTab('aportes')">💰 Aportes</div>
+    <div id="aside-liquidar" class="aside-link" onclick="adminTab('liquidar')">⚡ Liquidar piso</div>
+    <div id="aside-docs" class="aside-link" onclick="adminTab('docs')">📄 Documentos</div>
+    <div id="aside-proxima" class="aside-link" onclick="adminTab('proxima')">📋 Próxima propiedad</div>
    </div>
+   <!-- Content -->
+   <div style="flex:1;min-width:0">
    <div class="atab-panel show" id="atab-inversores">
     <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
      <button class="btn btn-dark" onclick="openModal_newInversor()">+ Nuevo inversor</button>
     </div>
     <div class="card" style="padding:0">
-     <table class="dtbl"><thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Estado</th><th>Acciones</th></tr></thead>
+     <table class="dtbl"><thead><tr><th>Nombre</th><th>Email</th><th>Contraseña sugerida</th><th>Teléfono</th><th>Estado</th><th>Acciones</th></tr></thead>
      <tbody id="admin-inv-body"></tbody></table>
     </div>
    </div>
@@ -587,10 +602,11 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
       <div class="card">
        <div class="card-hd"><h3>Datos financieros</h3></div>
        <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="fld"><label>Precio venta estimado (€)</label><input id="prox-pventa" type="number" placeholder="920000"></div>
-        <div class="fld"><label>Rentabilidad estimada (%)</label><input id="prox-rent-est" type="number" placeholder="12"></div>
-        <div class="fld"><label>Inversión mínima (€)</label><input id="prox-min" type="number" placeholder="5000"></div>
-        <div class="fld"><label>Fecha límite inversión</label><input id="prox-fecha" type="date"></div>
+        <div class="fld"><label>Valor de compra (€)</label><input id="prox-compra-val" type="number" placeholder="1700000"></div>
+        <div class="fld"><label>Gastos operativos (€)</label><input id="prox-gastos-val" type="number" placeholder="39200"></div>
+        <div class="fld"><label>Valor estimado de venta (€)</label><input id="prox-pventa" type="number" placeholder="2220000"></div>
+        <div class="fld"><label>Rentabilidad estimada (%)</label><input id="prox-rent-est" type="number" placeholder="9.6"></div>
+        <div class="fld"><label>Fecha límite de aporte</label><input id="prox-fecha" type="date"></div>
        </div>
       </div>
       <div class="card">
@@ -609,6 +625,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="prox-save-msg" style="margin-top:12px;display:none;font-size:13px;color:var(--verde);font-weight:600">✓ Publicado. Los inversores ya pueden verlo.</div>
    </div>
 
+   </div>
   </div>
 
   <!-- ANÁLISIS -->
@@ -803,7 +820,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="fld"><label>Apellido</label><input id="inv-apellido" placeholder="García"></div>
     <div class="fld"><label>Email</label><input id="inv-email" type="email" placeholder="juan@email.com"></div>
     <div class="fld"><label>Teléfono</label><input id="inv-tel" placeholder="+34 600 000 000"></div>
-    <div class="fld"><label>Contraseña</label><input id="inv-pass" type="password" placeholder="Mínimo 8 caracteres"></div>
+    <div class="fld"><label>Contraseña (sugerida: apellido en minúsculas)</label><input id="inv-pass" type="password" placeholder="Ej: garcia"></div>
     <div class="fld"><label>Estado</label><select id="inv-activo"><option value="true">Activo</option><option value="false">Inactivo</option></select></div>
    </div>
   </div>
@@ -825,7 +842,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="fld"><label>Estado</label><select id="prop-estado"><option value="en_obra">En obra</option><option value="disponible">Disponible</option><option value="reservado">Reservado</option><option value="vendido">Vendido</option></select></div>
     <div class="fld"><label>Tipo</label><select id="prop-tipo"><option value="flipping">Flipping</option><option value="renta">Renta</option><option value="mixto">Mixto</option></select></div>
     <div class="fld"><label>Precio compra (EUR)</label><input id="prop-compra" type="number"></div>
-    <div class="fld"><label>Gastos compra (EUR)</label><input id="prop-gastos" type="number"></div>
+    <div class="fld"><label>Gastos operativos (EUR)</label><input id="prop-gastos" type="number"></div>
     <div class="fld"><label>Precio venta estimado (EUR)</label><input id="prop-venta" type="number"></div>
     <div class="fld"><label>Fecha de compra</label><input id="prop-fcompra" type="date"></div>
     <div class="fld"><label>Fecha de venta</label><input id="prop-fventa" type="date"></div>
@@ -940,14 +957,14 @@ function nav(panel) {
   if (panel==='documentos') loadDocumentos();
   if (panel==='admin' && ME?.rol==='admin') loadAdmin();
   if (panel==='analisis' && ME?.rol==='admin') loadAnalisis();
+  if (panel==='proxima') cargarDatosProxima();
 }
 
 function adminTab(tab) {
-  document.querySelectorAll('.atab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.atab-panel').forEach(p=>p.classList.remove('show'));
-  const idx=['inversores','propiedades','aportes','liquidar','docs','proxima'].indexOf(tab);
-  document.querySelectorAll('.atab')[idx]?.classList.add('active');
+  document.querySelectorAll('.aside-link').forEach(l=>l.classList.remove('active'));
   $('atab-'+tab)?.classList.add('show');
+  $('aside-'+tab)?.classList.add('active');
 }
 
 async function startApp() {
@@ -1047,7 +1064,7 @@ async function loadAdmin() {
     $('ast-cap').textContent=eur(stats.total_capital_gestionado);
     $('ast-ret').textContent=eur(stats.total_retornado);
     $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
-    $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
+    $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3);font-family:monospace">${inv.apellido.toLowerCase()}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
     $('admin-prop-body').innerHTML=props.map(p=>`<tr><td><strong>${p.nombre}</strong></td><td>${statusBadge(p.estado)}</td><td><span class="badge badge-gray">${p.tipo}</span></td><td class="num">${eur(p.precio_compra)}</td><td class="num">${eur(p.precio_venta)}</td><td><button class="btn btn-outline btn-sm" onclick="editPropiedad('${p.id}')">Editar</button></td></tr>`).join('');
     const propsActivas=props.filter(p=>p.estado!=='vendido');
     const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
@@ -1214,7 +1231,7 @@ async function loadAdmin() {
     $('ast-cap').textContent=eur(stats.total_capital_gestionado);
     $('ast-ret').textContent=eur(stats.total_retornado);
     $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
-    $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
+    $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3);font-family:monospace">${inv.apellido.toLowerCase()}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
     $('admin-prop-body').innerHTML=props.map(p=>`<tr><td><strong>${p.nombre}</strong></td><td>${statusBadge(p.estado)}</td><td><span class="badge badge-gray">${p.tipo}</span></td><td class="num">${eur(p.precio_compra)}</td><td class="num">${eur(p.precio_venta)}</td><td><button class="btn btn-outline btn-sm" onclick="editPropiedad('${p.id}')">Editar</button></td></tr>`).join('');
     const propsActivas=props.filter(p=>p.estado!=='vendido');
     const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
@@ -1450,61 +1467,103 @@ async function subirDocumento() {
 }
 
 
+// Guardar datos en sessionStorage (persiste mientras la sesión esté abierta)
+const PROX_KEY = 'digsa_proxima_inversion';
+
 function guardarProxima() {
-  const nombre   = $('prox-nombre')?.value || 'Lagasca 80';
-  const pventa   = Number($('prox-pventa')?.value || 0);
-  const rent     = $('prox-rent-est')?.value || '';
-  const min_inv  = Number($('prox-min')?.value || 0);
-  const desc     = $('prox-desc-admin')?.value || '';
-  const m2       = $('prox-m2')?.value || '';
-  const ubic     = $('prox-ubic')?.value || '';
-  const duracion = $('prox-duracion')?.value || '';
-  const fecha    = $('prox-fecha')?.value || '';
+  const datos = {
+    nombre:   $('prox-nombre')?.value || '',
+    ubic:     $('prox-ubic')?.value || '',
+    m2:       $('prox-m2')?.value || '',
+    duracion: $('prox-duracion')?.value || '',
+    desc:     $('prox-desc-admin')?.value || '',
+    compra:   $('prox-compra-val')?.value || '',
+    gastos:   $('prox-gastos-val')?.value || '',
+    pventa:   $('prox-pventa')?.value || '',
+    rent:     $('prox-rent-est')?.value || '',
+    fecha:    $('prox-fecha')?.value || '',
+  };
+  sessionStorage.setItem(PROX_KEY, JSON.stringify(datos));
 
-  // Actualizar panel próxima inversión
-  if ($('prox-titulo')) $('prox-titulo').textContent = 'Próxima inversión · ' + nombre;
-  if ($('prox-precio-venta')) $('prox-precio-venta').textContent = pventa ? '€' + pventa.toLocaleString('es-ES') : '—';
-  if ($('prox-rentabilidad')) $('prox-rentabilidad').textContent = rent ? '+' + rent + '%' : '—';
-  if ($('prox-min-inversion')) $('prox-min-inversion').textContent = min_inv ? '€' + min_inv.toLocaleString('es-ES') : '—';
-  if ($('prox-descripcion')) $('prox-descripcion').textContent = desc || 'Información disponible próximamente.';
-  if ($('prox-metros')) $('prox-metros').textContent = m2 || '—';
-  if ($('prox-ubicacion')) $('prox-ubicacion').textContent = ubic || '—';
-  if ($('prox-duracion-display')) $('prox-duracion-display').textContent = duracion || '—';
-  if ($('prox-mapa-label')) $('prox-mapa-label').textContent = nombre + ', Madrid';
-  if (fecha && $('prox-fecha-display')) {
-    const d = new Date(fecha);
-    $('prox-fecha-display').textContent = d.toLocaleDateString('es-ES', {day:'numeric',month:'long',year:'numeric'});
-  }
-
-  // Planos
-  const leerImagen = (inputId, wrapId) => {
+  // Leer planos si se subieron
+  const leerImg = (inputId, key) => {
     const file = $(inputId)?.files[0];
-    if (file && $(wrapId)) {
+    if (file) {
       const reader = new FileReader();
       reader.onload = e => {
-        $(wrapId).innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
+        const d = JSON.parse(sessionStorage.getItem(PROX_KEY) || '{}');
+        d[key] = e.target.result;
+        sessionStorage.setItem(PROX_KEY, JSON.stringify(d));
+        aplicarDatosProxima(d);
       };
       reader.readAsDataURL(file);
     }
   };
-  leerImagen('prox-plano-actual', 'prox-plano-actual-wrap');
-  leerImagen('prox-plano-prop', 'prox-plano-prop-wrap');
+  leerImg('prox-plano-actual', 'plano_actual');
+  leerImg('prox-plano-prop', 'plano_prop');
 
+  aplicarDatosProxima(datos);
   const msg = $('prox-save-msg');
   if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 3000); }
-  showToast('✓ Próxima propiedad actualizada');
+  showToast('✓ Publicado para todos los inversores');
 }
 
-// Countdown para la fecha límite
-function updateCountdown() {
-  const el = $('prox-countdown');
-  if (!el) return;
-  const limite = new Date('2026-06-01');
-  const hoy = new Date();
-  const dias = Math.ceil((limite - hoy) / (1000 * 60 * 60 * 24));
-  el.textContent = dias > 0 ? `Quedan ${dias} días` : 'Plazo vencido';
+function cargarDatosProxima() {
+  const raw = sessionStorage.getItem(PROX_KEY);
+  if (!raw) return;
+  const d = JSON.parse(raw);
+  // Rellenar admin form si está visible
+  if ($('prox-nombre')) $('prox-nombre').value = d.nombre || '';
+  if ($('prox-ubic')) $('prox-ubic').value = d.ubic || '';
+  if ($('prox-m2')) $('prox-m2').value = d.m2 || '';
+  if ($('prox-duracion')) $('prox-duracion').value = d.duracion || '';
+  if ($('prox-desc-admin')) $('prox-desc-admin').value = d.desc || '';
+  if ($('prox-compra-val')) $('prox-compra-val').value = d.compra || '';
+  if ($('prox-gastos-val')) $('prox-gastos-val').value = d.gastos || '';
+  if ($('prox-pventa')) $('prox-pventa').value = d.pventa || '';
+  if ($('prox-rent-est')) $('prox-rent-est').value = d.rent || '';
+  if ($('prox-fecha')) $('prox-fecha').value = d.fecha || '';
+  aplicarDatosProxima(d);
 }
-updateCountdown();
+
+function aplicarDatosProxima(d) {
+  const fmt = n => n ? '€' + Number(n).toLocaleString('es-ES') : '—';
+  if ($('prox-titulo')) $('prox-titulo').textContent = 'Próxima inversión · ' + (d.nombre || 'Lagasca 80');
+  if ($('prox-precio-venta')) $('prox-precio-venta').textContent = fmt(d.pventa);
+  if ($('prox-compra')) $('prox-compra').textContent = fmt(d.compra);
+  if ($('prox-gastos-op')) $('prox-gastos-op').textContent = fmt(d.gastos);
+  if ($('prox-rentabilidad')) $('prox-rentabilidad').textContent = d.rent ? '+' + d.rent + '%' : '—';
+  if ($('prox-descripcion')) $('prox-descripcion').textContent = d.desc || 'Información disponible próximamente.';
+  if ($('prox-metros')) $('prox-metros').textContent = d.m2 || '—';
+  if ($('prox-ubicacion')) $('prox-ubicacion').textContent = d.ubic || '—';
+  if ($('prox-duracion-display')) $('prox-duracion-display').textContent = d.duracion || '—';
+  if ($('prox-mapa-label')) $('prox-mapa-label').textContent = (d.nombre || 'Lagasca 80') + ', Madrid';
+  if (d.fecha) {
+    const dt = new Date(d.fecha + 'T00:00:00');
+    const label = dt.toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    if ($('prox-fecha-display')) $('prox-fecha-display').textContent = label;
+    if ($('prox-fecha-banner')) $('prox-fecha-banner').textContent = label;
+    // Countdown
+    const dias = Math.ceil((dt - new Date()) / 86400000);
+    if ($('prox-countdown')) $('prox-countdown').textContent = dias > 0 ? `quedan ${dias} días` : 'plazo vencido';
+  }
+  if (d.plano_actual && $('prox-plano-actual-wrap'))
+    $('prox-plano-actual-wrap').innerHTML = `<img src="${d.plano_actual}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
+  if (d.plano_prop && $('prox-plano-prop-wrap'))
+    $('prox-plano-prop-wrap').innerHTML = `<img src="${d.plano_prop}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
+}
+
+// Cargar al inicio y actualizar countdown
+document.addEventListener('DOMContentLoaded', () => { cargarDatosProxima(); updateCountdown(); });
+function updateCountdown() {
+  const raw = sessionStorage.getItem(PROX_KEY);
+  if (!raw) return;
+  const d = JSON.parse(raw);
+  if (d.fecha && $('prox-countdown')) {
+    const dias = Math.ceil((new Date(d.fecha+'T00:00:00') - new Date()) / 86400000);
+    $('prox-countdown').textContent = dias > 0 ? `quedan ${dias} días` : 'plazo vencido';
+  }
+}
 
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
