@@ -751,6 +751,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    </div><!-- /content -->
    </div><!-- /sidebar layout -->
 
+  </div><!-- /panel-admin -->
+
   <!-- ANÁLISIS -->
   <div class="panel" id="panel-analisis">
    <div class="page-hd">
@@ -1949,55 +1951,44 @@ document.addEventListener('click', e => {
 async function cargarDesdeUltimasLiquidaciones() {
   try {
     showLoading('Cargando liquidaciones…');
-    // Traer todas las liquidaciones y agrupar por inversor (última de cada uno)
     const liqs = await api('GET', '/liquidaciones');
-    // También necesitamos el resumen para saber participaciones
-    const resumen = await api('GET', '/admin/resumen-inversores');
     hideLoading();
 
     if (!liqs || !liqs.length) { showToast('No hay liquidaciones registradas', 'err'); return; }
 
-    // Agrupar: para cada inversor, sumar el total_retorno de TODAS sus liquidaciones
+    // Para cada inversor: sumar todos sus total_retorno (reinversión total)
     const porInversor = {};
     liqs.forEach(l => {
       if (!l.usuario_id || !l.usuarios) return;
-      const nombre = `${l.usuarios.nombre} ${l.usuarios.apellido}`.toUpperCase();
-      if (!porInversor[nombre]) porInversor[nombre] = { total: 0, nombre: l.usuarios.nombre + ' ' + l.usuarios.apellido };
+      const nombre = (l.usuarios.nombre + ' ' + l.usuarios.apellido).toUpperCase().trim();
+      if (!porInversor[nombre]) porInversor[nombre] = { total: 0 };
       porInversor[nombre].total += Number(l.total_retorno || 0);
     });
 
-    // También calcular participaciones desde resumen (proporción del capital)
-    const { aportes: todosAportes, participaciones: todasParts } = resumen;
-    const totalCapital = todasParts.reduce((s,p) => s + Number(p.monto_invertido || 0), 0);
+    // Calcular total general para obtener % proporcional de cada uno
+    const totalGeneral = Object.values(porInversor).reduce((s,v) => s + v.total, 0);
 
-    // Rellenar los inputs
-    let cargados = 0;
     const inputs_pct = document.querySelectorAll('.op-pct');
     const inputs_inv = document.querySelectorAll('.op-inv');
+    let cargados = 0;
 
     inputs_pct.forEach((inp, i) => {
-      const inv_nombre = OP_INVERSORES[i].toUpperCase();
-      // Buscar coincidencia
-      const match = Object.keys(porInversor).find(k => 
-        k.includes(inv_nombre.split(' ')[0]) || inv_nombre.includes(k.split(' ')[0])
+      const inv_nombre = OP_INVERSORES[i].toUpperCase().trim();
+      const primerNombre = inv_nombre.split(' ')[0];
+      // Buscar coincidencia flexible
+      const match = Object.keys(porInversor).find(k =>
+        k.startsWith(primerNombre) || primerNombre.includes(k.split(' ')[0])
       );
       if (match && porInversor[match].total > 0) {
-        // Calcular % proporcional desde participaciones activas
-        const inv_parts = todasParts.filter(p => {
-          const u_nombre = `${p.usuarios?.nombre || ''} ${p.usuarios?.apellido || ''}`.toUpperCase();
-          return u_nombre.includes(inv_nombre.split(' ')[0]) || inv_nombre.includes(u_nombre.split(' ')[0]);
-        });
-        const inv_capital = inv_parts.reduce((s,p) => s + Number(p.monto_invertido || 0), 0);
-        const pct_proporcional = totalCapital > 0 ? (inv_capital / totalCapital * 100).toFixed(4) : 0;
-        
-        inp.value = pct_proporcional;
+        const pct = totalGeneral > 0 ? (porInversor[match].total / totalGeneral * 100) : 0;
+        inp.value = pct.toFixed(4);
         if (inputs_inv[i]) inputs_inv[i].value = Math.round(porInversor[match].total);
         cargados++;
       }
     });
 
     calcularOperacion();
-    showToast(`✓ ${cargados} inversores cargados desde liquidaciones`);
+    showToast(`✓ ${cargados} inversores cargados. % proporcional al retorno de cada uno.`);
   } catch(e) {
     hideLoading();
     showToast('Error: ' + e.message, 'err');
