@@ -50,8 +50,6 @@ router.get('/actividad', authMiddleware, adminOnly, async (req, res) => {
   });
 });
 
-module.exports = router;
-
 // GET /api/admin/resumen-inversores — datos completos para el panel de análisis
 router.get('/resumen-inversores', authMiddleware, adminOnly, async (req, res) => {
   const [aportes, liqs, parts] = await Promise.all([
@@ -60,11 +58,9 @@ router.get('/resumen-inversores', authMiddleware, adminOnly, async (req, res) =>
     supabase.from('participaciones').select('usuario_id, propiedad_id, monto_invertido, porcentaje, propiedades(nombre, estado, precio_compra)').eq('activo', true)
   ]);
 
-  // Normalizar aportes: si no tiene monto_eur pero sí monto_usd y tipo_cambio, calcularlo
   const aportes_normalizados = (aportes.data || []).map(a => {
     let monto = Number(a.monto_eur || 0);
     if (!monto && a.monto_usd) {
-      // Si tiene tipo de cambio, convertir. Si no, usar monto_usd como referencia
       monto = a.tipo_cambio ? Number(a.monto_usd) / Number(a.tipo_cambio) : Number(a.monto_usd);
     }
     return { ...a, monto_normalizado: monto };
@@ -76,3 +72,5 @@ router.get('/resumen-inversores', authMiddleware, adminOnly, async (req, res) =>
     participaciones: parts.data || []
   });
 });
+
+module.exports = router;
