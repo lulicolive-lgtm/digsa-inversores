@@ -13,8 +13,8 @@ router.get('/', authMiddleware, async (req, res) => {
   ]);
 
   const participaciones = partRes.data || [];
-  const aportes = aportesRes.data || [];
-  const liquidaciones = liqRes.data || [];
+  const aportes        = aportesRes.data || [];
+  const liquidaciones  = liqRes.data || [];
 
   const inversion_inicial = aportes
     .filter(a => a.tipo === 'aporte')
@@ -29,14 +29,13 @@ router.get('/', authMiddleware, async (req, res) => {
 
   const total_retornado = liquidaciones.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
 
+  // Neto estimado en cartera (fórmula exacta del Excel)
   const pisos_activos = participaciones.filter(p => p.propiedades?.estado !== 'vendido');
   const valor_en_cartera = pisos_activos.reduce((s, p) => {
-    const prop = p.propiedades;
+    const prop   = p.propiedades;
     const aporte = Number(p.monto_invertido || 0);
     if (prop?.precio_venta && prop?.precio_compra && Number(prop.precio_compra) > 0) {
-      const compra = Number(prop.precio_compra);
-      const venta  = Number(prop.precio_venta);
-      const util_inv = (venta - compra) * (aporte / compra);
+      const util_inv = (Number(prop.precio_venta) - Number(prop.precio_compra)) * (aporte / Number(prop.precio_compra));
       const fee = Math.max(0, util_inv) * 0.15;
       const imp = Math.max(0, util_inv - fee) * 0.25;
       return s + aporte + util_inv - fee - imp;
@@ -44,11 +43,13 @@ router.get('/', authMiddleware, async (req, res) => {
     return s + aporte;
   }, 0);
 
-  const valor_actual = valor_en_cartera;
+  // Pendiente = lo que hay disponible pero no está en ningún piso activo
+  // = valor_actual - neto_en_cartera
+  const pendiente = Math.max(0, valor_en_cartera > 0
+    ? 0
+    : inversion_inicial + total_retornado - retiros);
 
-  const pendiente = aportes
-    .filter(a => a.tipo === 'aporte' && !a.propiedad_id)
-    .reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
+  const valor_actual = valor_en_cartera + pendiente;
 
   const rentabilidad_total = inversion_inicial > 0
     ? (valor_actual - inversion_inicial) / inversion_inicial
@@ -63,8 +64,19 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 
   res.json({
-    resumen: { inversion_inicial, valor_actual, rentabilidad_total, tir, retiros, pendiente, propiedades_activas: pisos_activos.length, total_retornado },
-    participaciones, aportes, liquidaciones,
+    resumen: {
+      inversion_inicial,
+      valor_actual,
+      rentabilidad_total,
+      tir,
+      retiros,
+      pendiente,
+      propiedades_activas: pisos_activos.length,
+      total_retornado
+    },
+    participaciones,
+    aportes,
+    liquidaciones,
     notificaciones: notifRes.data || []
   });
 });
