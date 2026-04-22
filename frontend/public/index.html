@@ -1154,9 +1154,9 @@ async function startApp() {
   if (!TOKEN) { $('screen-login').classList.add('show'); return; }
   if (!ME) { try { const r=await api('GET','/auth/me'); ME=r.user; } catch { doLogout(); return; } }
   $('screen-login').classList.remove('show'); $('screen-app').classList.add('show');
-  $('user-ava').textContent=(ME.nombre[0]+ME.apellido[0]).toUpperCase();
-  $('user-info').textContent=ME.nombre+' '+ME.apellido;
-  $('dash-title').textContent='Hola, '+ME.nombre;
+  if($('user-ava')) $('user-ava').textContent=((ME.nombre||'?')[0]+(ME.apellido||'?')[0]).toUpperCase();
+  if($('user-info')) $('user-info').textContent=(ME.nombre||'')+' '+(ME.apellido||'');
+  if($('dash-title')) $('dash-title').textContent='Hola, '+(ME.nombre||'');
   $('dash-date').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   if (ME.rol==='admin') {
     document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
@@ -1175,14 +1175,14 @@ async function loadDashboard() {
     const rent_pct = (r.rentabilidad_total||0)*100;
     $('st-rent').textContent=(rent_pct>=0?'+':'')+rent_pct.toFixed(1)+'%';
     if($('st-tir')) $('st-tir').textContent=r.tir?(((r.tir||0)*100).toFixed(1)+'%'):'—';
-    if($('st-props')) $('st-props').textContent=r.propiedades_activas||0;
+    if($('st-props')) if($('st-props')) $('st-props').textContent=r.propiedades_activas||0;
     // Banner pendiente
     if((r.pendiente||0)>0 && $('dash-pendiente-wrap')) {
       $('dash-pendiente-wrap').style.display='flex';
-      if($('dash-pendiente')) $('dash-pendiente').textContent=eur(r.pendiente);
+      if($('dash-pendiente')) if($('dash-pendiente')) $('dash-pendiente').textContent=eur(r.pendiente);
     }
     const notifs=d.notificaciones||[];
-    if (notifs.length) { $('notif-badge').textContent=notifs.length; $('notif-badge').style.display='flex'; }
+    if (notifs.length) { if($('notif-badge')) $('notif-badge').textContent=notifs.length; $('notif-badge').style.display='flex'; }
     const activas=(d.participaciones||[]).filter(p=>p.propiedades?.estado!=='vendido');
     if (activas.length) {
       $('dash-props-list').innerHTML=activas.slice(0,5).map(p=>`
@@ -1239,7 +1239,7 @@ async function loadPortfolio() {
         <td class="pos">${rent !== '—' ? '+'+rent : '—'}</td>
       </tr>`;
     }).join('');
-    if($('st-props')) $('st-props').textContent = props.length;
+    if($('st-props')) if($('st-props')) $('st-props').textContent = props.length;
   } catch(e) { tbody.innerHTML=`<tr><td colspan="6" style="color:var(--rojo);text-align:center;padding:28px">${e.message}</td></tr>`; }
 }
 
@@ -1293,11 +1293,11 @@ async function loadAdmin() {
   try {
     const [stats,inversores,props]=await Promise.all([api('GET','/admin/estadisticas'),api('GET','/inversores'),api('GET','/propiedades')]);
     INVERSORES_CACHE=inversores; PROPIEDADES_CACHE=props;
-    $('ast-inv').textContent=stats.inversores_activos;
-    $('ast-prop').textContent=stats.total_propiedades;
-    $('ast-cap').textContent=eur(stats.total_capital_gestionado);
-    $('ast-ret').textContent=eur(stats.total_retornado);
-    $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
+    if($('ast-inv')) $('ast-inv').textContent=stats.inversores_activos;
+    if($('ast-prop')) $('ast-prop').textContent=stats.total_propiedades;
+    if($('ast-cap')) $('ast-cap').textContent=eur(stats.total_capital_gestionado);
+    if($('ast-ret')) $('ast-ret').textContent=eur(stats.total_retornado);
+    if($('ast-rentprom')) $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
     $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3);font-family:monospace">${inv.apellido.toLowerCase()}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
     PROPS_CACHE_ADMIN = props; renderAdminProps(props);
     const propsActivas=props.filter(p=>p.estado!=='vendido');
@@ -1482,11 +1482,11 @@ async function loadAdmin() {
   try {
     const [stats,inversores,props]=await Promise.all([api('GET','/admin/estadisticas'),api('GET','/inversores'),api('GET','/propiedades')]);
     INVERSORES_CACHE=inversores; PROPIEDADES_CACHE=props;
-    $('ast-inv').textContent=stats.inversores_activos;
-    $('ast-prop').textContent=stats.total_propiedades;
-    $('ast-cap').textContent=eur(stats.total_capital_gestionado);
-    $('ast-ret').textContent=eur(stats.total_retornado);
-    $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
+    if($('ast-inv')) $('ast-inv').textContent=stats.inversores_activos;
+    if($('ast-prop')) $('ast-prop').textContent=stats.total_propiedades;
+    if($('ast-cap')) $('ast-cap').textContent=eur(stats.total_capital_gestionado);
+    if($('ast-ret')) $('ast-ret').textContent=eur(stats.total_retornado);
+    if($('ast-rentprom')) $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
     $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3);font-family:monospace">${inv.apellido.toLowerCase()}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
     PROPS_CACHE_ADMIN = props; renderAdminProps(props);
     const propsActivas=props.filter(p=>p.estado!=='vendido');
