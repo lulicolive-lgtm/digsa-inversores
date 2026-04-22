@@ -21,6 +21,9 @@ router.get('/', authMiddleware, async (req, res) => {
   // Inversión inicial = suma de aportes en EUR
   const inversion_inicial = aportes
     .filter(a => a.tipo === 'aporte')
+    .reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0)
+    - aportes
+    .filter(a => a.tipo === 'retiro')
     .reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
 
   const retiros = aportes
