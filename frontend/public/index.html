@@ -334,11 +334,20 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div><div class="page-hd-line"></div><h2 id="dash-title">Bienvenido</h2><p id="dash-sub">Panel de inversión personal · DIGSA</p></div>
     <div style="text-align:right;font-size:12px;color:var(--negro3);font-weight:300" id="dash-date"></div>
    </div>
-   <div class="stat-row" id="dash-stats">
-    <div class="scard scard-accent"><div class="scard-label">Capital invertido</div><div class="scard-value" id="st-invertido">—</div></div>
-    <div class="scard"><div class="scard-label">Total retornado</div><div class="scard-value" id="st-retornado">—</div></div>
-    <div class="scard"><div class="scard-label">Rentabilidad</div><div class="scard-value" id="st-rent">—</div></div>
-    <div class="scard"><div class="scard-label">Propiedades activas</div><div class="scard-value" id="st-props">—</div></div>
+   <div class="stat-row" id="dash-stats" style="grid-template-columns:repeat(5,1fr)">
+    <div class="scard scard-accent"><div class="scard-label">Inversión inicial</div><div class="scard-value" id="st-invertido">—</div></div>
+    <div class="scard"><div class="scard-label">Valor actual</div><div class="scard-value" id="st-retornado">—</div></div>
+    <div class="scard"><div class="scard-label">Rentabilidad total</div><div class="scard-value" id="st-rent">—</div></div>
+    <div class="scard"><div class="scard-label">TIR anualizada</div><div class="scard-value" id="st-tir">—</div></div>
+    <div class="scard"><div class="scard-label">Mis propiedades</div><div class="scard-value" id="st-props">—</div></div>
+   </div>
+   <!-- Pendiente de inversión -->
+   <div id="dash-pendiente-wrap" style="display:none;background:var(--naranja-light);border:1px solid rgba(255,77,15,.2);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+    <div>
+     <div style="font-size:11px;font-weight:600;color:var(--naranja2);letter-spacing:1px">PENDIENTE DE INVERSIÓN</div>
+     <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--negro)" id="dash-pendiente">—</div>
+    </div>
+    <div style="font-size:12px;color:var(--negro3)">Dinero liquidado sin asignar a nueva propiedad</div>
    </div>
    <div class="g2">
     <div class="card">
@@ -351,7 +360,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
    <div class="card">
-    <div class="card-hd"><h3>Liquidaciones</h3><span class="card-hd-action" onclick="nav('documentos')">Ver documentos →</span></div>
+    <div class="card-hd"><h3>Inversiones finalizadas</h3><span class="card-hd-action" onclick="nav('documentos')">Ver documentos →</span></div>
     <div class="tbl-wrap">
      <table class="dtbl">
       <thead><tr><th>Propiedad</th><th>Fecha</th><th>Aporte</th><th>Retorno total</th><th>Rentabilidad</th><th>Documento</th></tr></thead>
@@ -366,7 +375,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="page-hd"><div><div class="page-hd-line"></div><h2>Mi Portfolio</h2><p>Estado actual de tus inversiones inmobiliarias</p></div></div>
    <div class="tbl-wrap card" style="padding:0">
     <table class="dtbl">
-     <thead><tr><th>Propiedad</th><th>Estado</th><th>Mi inversión</th><th>Participación</th><th>Tipo</th><th>Ingreso</th><th>Rentab. estimada</th></tr></thead>
+     <thead><tr><th>Propiedad</th><th>Estado</th><th>Mi aporte</th><th>Participación</th><th>Neto estimado</th><th>Rentabilidad</th></tr></thead>
      <tbody id="port-body"></tbody>
     </table>
    </div>
@@ -388,7 +397,14 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
   <!-- DOCUMENTOS -->
   <div class="panel" id="panel-documentos">
    <div class="page-hd"><div><div class="page-hd-line"></div><h2>Documentos</h2><p>Reportes y liquidaciones disponibles para descarga</p></div></div>
-   <div id="docs-grid" class="g3"></div>
+   <div class="card" style="padding:0">
+    <div class="tbl-wrap">
+     <table class="dtbl">
+      <thead><tr><th>Propiedad</th><th>Fecha</th><th>Tipo</th><th>Documento</th></tr></thead>
+      <tbody id="docs-tbody"></tbody>
+     </table>
+    </div>
+   </div>
   </div>
 
   <!-- PRÓXIMA INVERSIÓN -->
@@ -996,8 +1012,9 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="form-grid">
     <div class="fld fld-full"><label>Inversor</label><select id="ap-inv-sel"></select></div>
     <div class="fld"><label>Propiedad (opcional)</label><select id="ap-prop-sel"><option value="">— Aporte general —</option></select></div>
-    <div class="fld"><label>Monto (USD)</label><input id="ap-monto" type="number"></div>
-    <div class="fld"><label>Tipo de cambio USD/EUR</label><input id="ap-tc" type="number" step="0.01" placeholder="1.08"></div>
+    <div class="fld"><label>Monto (USD)</label><input id="ap-monto" type="number" oninput="calcTC()"></div>
+    <div class="fld"><label>Monto (EUR)</label><input id="ap-monto-eur" type="number" oninput="calcTC()"></div>
+    <div class="fld"><label>Tipo de cambio (auto)</label><input id="ap-tc" type="number" step="0.0001" placeholder="calculado automático" readonly style="background:var(--gris);color:var(--negro3)"></div>
     <div class="fld"><label>Fecha</label><input id="ap-fecha" type="date"></div>
     <div class="fld"><label>Tipo</label><select id="ap-tipo"><option value="aporte">Aporte</option><option value="retiro">Retiro</option><option value="renta">Renta</option></select></div>
     <div class="fld fld-full"><label>Descripción</label><input id="ap-desc" placeholder="Descripción opcional"></div>
@@ -1148,15 +1165,34 @@ async function loadDashboard() {
 
 async function loadPortfolio() {
   const tbody=$('port-body');
-  tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px"><div class="spinner"></div></td></tr>';
+  tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px"><div class="spinner"></div></td></tr>';
   try {
-    const props=await api('GET','/propiedades');
-    if (!props.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--negro3)">Sin propiedades asignadas</td></tr>'; return; }
+    const [props, dash] = await Promise.all([api('GET','/propiedades'), api('GET','/dashboard')]);
+    if (!props.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--negro3)">Sin propiedades asignadas</td></tr>'; return; }
+    const parts = dash.participaciones || [];
     tbody.innerHTML=props.map(p=>{
-      const rent=p.precio_compra&&p.precio_venta?(((p.precio_venta-p.precio_compra)/p.precio_compra)*100).toFixed(1)+'%':'—';
-      return `<tr><td><strong>${p.nombre}</strong><br><span style="font-size:11px;color:var(--negro3)">${p.direccion||''}</span></td><td>${statusBadge(p.estado)}</td><td class="num">${eur(p.mi_inversion||p.precio_compra)}</td><td>${p.mi_porcentaje?pct(p.mi_porcentaje):'—'}</td><td><span class="badge badge-gray">${p.tipo||'—'}</span></td><td class="pos">${p.renta_mensual?eur(p.renta_mensual)+'/mes':'—'}</td><td class="${rent!=='—'?'pos':''}">${rent!=='—'?'+'+rent:'—'}</td></tr>`;
+      const part = parts.find(pt => pt.propiedad_id === p.id);
+      const aporte = part ? Number(part.monto_invertido) : 0;
+      const pct_part = part ? Number(part.porcentaje) : 0;
+      // Neto estimado
+      let neto = aporte;
+      if (p.precio_compra && p.precio_venta && p.precio_compra > 0) {
+        const util = (p.precio_venta - p.precio_compra) * pct_part;
+        const fee = util * 0.15;
+        const imp = (util - fee) * 0.25;
+        neto = aporte + util - fee - imp;
+      }
+      const rent = aporte > 0 ? (((neto - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
+      return `<tr>
+        <td><strong>${p.nombre}</strong></td>
+        <td>${statusBadge(p.estado)}</td>
+        <td class="num">${eur(aporte)}</td>
+        <td>${pct_part ? (pct_part*100).toFixed(2)+'%' : '—'}</td>
+        <td class="num pos">${eur(neto)}</td>
+        <td class="pos">${rent !== '—' ? '+'+rent : '—'}</td>
+      </tr>`;
     }).join('');
-  } catch(e) { tbody.innerHTML=`<tr><td colspan="7" style="color:var(--rojo);text-align:center;padding:28px">${e.message}</td></tr>`; }
+  } catch(e) { tbody.innerHTML=`<tr><td colspan="6" style="color:var(--rojo);text-align:center;padding:28px">${e.message}</td></tr>`; }
 }
 
 async function loadHistorial() {
@@ -1165,19 +1201,44 @@ async function loadHistorial() {
   try {
     const aportes=await api('GET','/aportes');
     if (!aportes.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--negro3)">Sin movimientos</td></tr>'; return; }
-    tbody.innerHTML=aportes.map(a=>`<tr><td>${fmt_date(a.fecha)}</td><td><span class="badge ${a.tipo==='retiro'?'badge-red':'badge-green'}">${a.tipo}</span></td><td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td><td class="num ${a.tipo==='retiro'?'neg':'pos'}">${a.tipo==='retiro'?'-':'+ '}${eur(a.monto_usd)}</td><td style="color:var(--negro3)">${a.tipo_cambio||'—'}</td><td class="num">${a.monto_eur?'€'+Number(a.monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2}):'—'}</td><td style="color:var(--negro3);font-size:12px">${a.descripcion||'—'}</td></tr>`).join('');
+    const totalEur = aportes.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
+    const totalUsd = aportes.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_usd||0),0);
+    tbody.innerHTML=aportes.map(a=>`<tr>
+      <td>${fmt_date(a.fecha)}</td>
+      <td><span class="badge ${a.tipo==='retiro'?'badge-red':'badge-green'}">${a.tipo}</span></td>
+      <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
+      <td class="num ${a.tipo==='retiro'?'neg':'pos'}">${a.tipo==='retiro'?'-':'+'}${eur(a.monto_usd||0)}</td>
+      <td style="color:var(--negro3)">${a.tipo_cambio||'—'}</td>
+      <td class="num">${a.monto_eur?'€'+Number(a.monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2}):'—'}</td>
+      <td style="color:var(--negro3);font-size:12px">${a.descripcion||'—'}</td>
+    </tr>`).join('') +
+    `<tr style="background:var(--gris);font-weight:700">
+      <td colspan="3"><strong>TOTAL APORTADO</strong></td>
+      <td class="num">${eur(totalUsd)}</td>
+      <td></td>
+      <td class="num">€${totalEur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+      <td></td>
+    </tr>`;
   } catch(e) { tbody.innerHTML=`<tr><td colspan="7" style="color:var(--rojo);text-align:center;padding:28px">${e.message}</td></tr>`; }
 }
 
 async function loadDocumentos() {
-  const grid=$('docs-grid');
-  grid.innerHTML='<div style="padding:28px"><div class="spinner"></div></div>';
+  const tbody=$('docs-tbody');
+  if (!tbody) return;
+  tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:28px"><div class="spinner"></div></td></tr>';
   try {
     const docs=await api('GET','/documentos');
-    if (!docs.length) { grid.innerHTML='<div class="empty" style="grid-column:1/-1"><p>No hay documentos disponibles aún.</p></div>'; return; }
+    if (!docs.length) { tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:28px;color:var(--negro3)">No hay documentos disponibles aún.</td></tr>'; return; }
+    // Ordenar por fecha descendente
+    docs.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
     const iconMap={reporte:'📊',liquidacion:'💰',contrato:'📝',otro:'📎'};
-    grid.innerHTML=docs.map(d=>`<div class="card" style="display:flex;flex-direction:column;gap:14px"><div style="font-size:32px">${iconMap[d.tipo]||'📄'}</div><div><div style="font-weight:700;font-size:13px;margin-bottom:5px">${d.nombre}</div><div style="font-size:11px;color:var(--negro3);font-weight:300">${d.propiedades?.nombre||'—'} · ${fmt_date(d.fecha)}</div><div style="margin-top:4px"><span class="badge badge-orange">${d.tipo}</span></div></div><a href="${d.url}" target="_blank" class="dl-btn" style="align-self:flex-start"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Descargar</a></div>`).join('');
-  } catch(e) { grid.innerHTML=`<p style="color:var(--rojo);padding:28px">${e.message}</p>`; }
+    tbody.innerHTML=docs.map(d=>`<tr>
+      <td><strong>${d.propiedades?.nombre||'—'}</strong></td>
+      <td>${fmt_date(d.fecha)}</td>
+      <td><span class="badge badge-orange">${iconMap[d.tipo]||'📄'} ${d.tipo}</span></td>
+      <td><a href="${d.url}" target="_blank" class="dl-btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>${d.nombre||'Descargar'}</a></td>
+    </tr>`).join('');
+  } catch(e) { tbody.innerHTML=`<tr><td colspan="4" style="color:var(--rojo);padding:28px">${e.message}</td></tr>`; }
 }
 
 async function loadAdmin() {
@@ -1485,8 +1546,21 @@ async function savePropiedad() {
   } catch(e){showToast(e.message,'err');}finally{hideLoading();}
 }
 
+function calcTC() {
+  const usd = parseFloat($('ap-monto')?.value) || 0;
+  const eur_val = parseFloat($('ap-monto-eur')?.value) || 0;
+  if (usd > 0 && eur_val > 0) {
+    const tc = usd / eur_val;
+    if($('ap-tc')) $('ap-tc').value = tc.toFixed(4);
+  }
+}
+
 async function saveAporte() {
-  const body={usuario_id:$('ap-inv-sel').value,propiedad_id:$('ap-prop-sel').value||null,monto_usd:parseFloat($('ap-monto').value),tipo_cambio:$('ap-tc').value?parseFloat($('ap-tc').value):null,fecha:$('ap-fecha').value,tipo:$('ap-tipo').value,descripcion:$('ap-desc').value||null};
+  const monto_usd = parseFloat($('ap-monto')?.value) || 0;
+  const monto_eur_inp = parseFloat($('ap-monto-eur')?.value) || 0;
+  const tc = parseFloat($('ap-tc')?.value) || null;
+  const monto_eur_calc = monto_eur_inp || (monto_usd && tc ? monto_usd / tc : monto_usd);
+  const body={usuario_id:$('ap-inv-sel').value,propiedad_id:$('ap-prop-sel').value||null,monto_usd:monto_usd||monto_eur_calc,monto_eur:monto_eur_calc,tipo_cambio:tc,fecha:$('ap-fecha').value,tipo:$('ap-tipo').value,descripcion:$('ap-desc').value||null};
   if (!body.usuario_id||!body.monto_usd||!body.fecha) return showToast('Completá los campos obligatorios','err');
   try{showLoading('Registrando…');await api('POST','/aportes',body);closeModal('modal-aporte');showToast('Aporte registrado');loadAdmin();}
   catch(e){showToast(e.message,'err');}finally{hideLoading();}
