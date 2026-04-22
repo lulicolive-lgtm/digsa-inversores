@@ -544,20 +544,39 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
    <div class="atab-panel" id="atab-propiedades">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+     <select id="prop-orden" onchange="ordenarPropiedades()" style="border:1px solid var(--borde);padding:8px 12px;font-size:12px;background:var(--blanco)">
+      <option value="nombre">Ordenar: A → Z</option>
+      <option value="nombre_desc">Z → A</option>
+      <option value="fecha">Fecha más reciente</option>
+      <option value="precio_asc">Precio: menor → mayor</option>
+      <option value="precio_desc">Precio: mayor → menor</option>
+      <option value="estado">Por estado</option>
+     </select>
      <button class="btn btn-dark" onclick="openModal_newPropiedad()">+ Nueva propiedad</button>
     </div>
     <div class="card" style="padding:0">
-     <table class="dtbl"><thead><tr><th>Nombre</th><th>Estado</th><th>Tipo</th><th>Total inversión</th><th>Precio venta</th><th>Acciones</th></tr></thead>
+     <table class="dtbl"><thead><tr><th>Nombre</th><th>Estado</th><th>Fecha compra</th><th>Total inversión</th><th>Precio venta</th><th>Acciones</th></tr></thead>
      <tbody id="admin-prop-body"></tbody></table>
     </div>
    </div>
    <div class="atab-panel" id="atab-aportes">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
+     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <input type="month" id="ap-filter-fecha" placeholder="Mes" onchange="filtrarAportes()"
+        style="border:1px solid var(--borde);padding:7px 10px;font-size:12px">
+      <select id="ap-filter-prop" onchange="filtrarAportes()" style="border:1px solid var(--borde);padding:7px 10px;font-size:12px;background:var(--blanco)">
+       <option value="">Todos los pisos</option>
+      </select>
+      <select id="ap-filter-inv" onchange="filtrarAportes()" style="border:1px solid var(--borde);padding:7px 10px;font-size:12px;background:var(--blanco)">
+       <option value="">Todos los inversores</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="limpiarFiltrosAportes()">✕ Limpiar</button>
+     </div>
      <button class="btn btn-dark" onclick="openModal('modal-aporte')">+ Registrar aporte</button>
     </div>
     <div class="card" style="padding:0">
-     <table class="dtbl"><thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Monto USD</th><th>Tipo</th></tr></thead>
+     <table class="dtbl"><thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Monto USD</th><th>T/C</th><th>Monto EUR</th><th>Tipo</th><th>Acciones</th></tr></thead>
      <tbody id="admin-aporte-body"></tbody></table>
     </div>
    </div>
@@ -625,6 +644,27 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
       <div class="fld fld-full"><label>Archivo (PDF)</label><input type="file" id="doc-file" accept=".pdf,.xlsx,.docx"></div>
      </div>
      <div style="margin-top:24px"><button class="btn btn-dark" onclick="subirDocumento()">Subir documento</button></div>
+    </div>
+
+    <!-- Lista de documentos admin -->
+    <div class="card" style="margin-top:20px;padding:0">
+     <div class="card-hd" style="padding:16px 20px">
+      <h3>Documentos cargados</h3>
+      <div style="display:flex;gap:8px">
+       <select id="adm-doc-filter-inv" onchange="filtrarDocsAdmin()" style="border:1px solid var(--borde);padding:6px 10px;font-size:12px;background:var(--blanco)">
+        <option value="">Todos los inversores</option>
+       </select>
+       <select id="adm-doc-filter-prop" onchange="filtrarDocsAdmin()" style="border:1px solid var(--borde);padding:6px 10px;font-size:12px;background:var(--blanco)">
+        <option value="">Todos los pisos</option>
+       </select>
+      </div>
+     </div>
+     <div class="tbl-wrap">
+      <table class="dtbl">
+       <thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Tipo</th><th>Documento</th></tr></thead>
+       <tbody id="admin-docs-body"></tbody>
+      </table>
+     </div>
     </div>
    </div>
 
@@ -1107,6 +1147,7 @@ function adminTab(tab) {
   document.querySelectorAll('.aside-link').forEach(l=>l.classList.remove('active'));
   $('atab-'+tab)?.classList.add('show');
   $('aside-'+tab)?.classList.add('active');
+  if (tab==='docs') loadDocsAdmin();
 }
 
 async function startApp() {
@@ -1251,7 +1292,7 @@ async function loadAdmin() {
     $('ast-ret').textContent=eur(stats.total_retornado);
     $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
     $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3);font-family:monospace">${inv.apellido.toLowerCase()}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
-    $('admin-prop-body').innerHTML=props.map(p=>`<tr><td><strong>${p.nombre}</strong></td><td>${statusBadge(p.estado)}</td><td><span class="badge badge-gray">${p.tipo}</span></td><td class="num">${eur(p.precio_compra)}</td><td class="num">${eur(p.precio_venta)}</td><td><button class="btn btn-outline btn-sm" onclick="editPropiedad('${p.id}')">Editar</button></td></tr>`).join('');
+    PROPS_CACHE_ADMIN = props; renderAdminProps(props);
     const propsActivas=props.filter(p=>p.estado!=='vendido');
     const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     $('liq-prop-sel').innerHTML=propOpts;
@@ -1440,7 +1481,7 @@ async function loadAdmin() {
     $('ast-ret').textContent=eur(stats.total_retornado);
     $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
     $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3);font-family:monospace">${inv.apellido.toLowerCase()}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
-    $('admin-prop-body').innerHTML=props.map(p=>`<tr><td><strong>${p.nombre}</strong></td><td>${statusBadge(p.estado)}</td><td><span class="badge badge-gray">${p.tipo}</span></td><td class="num">${eur(p.precio_compra)}</td><td class="num">${eur(p.precio_venta)}</td><td><button class="btn btn-outline btn-sm" onclick="editPropiedad('${p.id}')">Editar</button></td></tr>`).join('');
+    PROPS_CACHE_ADMIN = props; renderAdminProps(props);
     const propsActivas=props.filter(p=>p.estado!=='vendido');
     const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     $('liq-prop-sel').innerHTML=propOpts;
@@ -1628,6 +1669,44 @@ async function generarLiquidaciones() {
     res.innerHTML=`<div style="background:var(--verde-light);border:1px solid var(--verde);padding:18px"><strong style="color:var(--verde)">✓ ${r.inversores_liquidados} liquidaciones generadas</strong><div style="margin-top:14px;font-size:13px">${(r.resultados||[]).map(l=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.05)"><span>${l.usuario}</span><strong>${eur(l.total_retorno)}</strong></div>`).join('')}</div></div>`;
     showToast(r.reinversion ? 'Liquidaciones generadas y fondos reinvertidos automáticamente' : 'Liquidaciones generadas');
   }catch(e){hideLoading();showToast(e.message,'err');}
+}
+
+let DOCS_CACHE_ADMIN = [];
+
+function filtrarDocsAdmin() {
+  const inv  = $('adm-doc-filter-inv')?.value  || '';
+  const prop = $('adm-doc-filter-prop')?.value || '';
+  let items = [...DOCS_CACHE_ADMIN];
+  if (inv)  items = items.filter(d => d.usuario_id === inv);
+  if (prop) items = items.filter(d => d.propiedad_id === prop);
+  renderDocsAdmin(items);
+}
+
+function renderDocsAdmin(docs) {
+  const tbody = $('admin-docs-body');
+  if (!tbody) return;
+  docs.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
+  const iconMap = {reporte:'📊', liquidacion:'💰', contrato:'📝', otro:'📎'};
+  tbody.innerHTML = docs.length ? docs.map(d => `<tr>
+    <td>${fmt_date(d.fecha)}</td>
+    <td>${d.usuarios?.nombre ? `<strong>${d.usuarios.nombre} ${d.usuarios.apellido}</strong>` : '<span style="color:var(--negro3)">—</span>'}</td>
+    <td>${d.propiedades?.nombre || '<span style="color:var(--negro3)">—</span>'}</td>
+    <td><span class="badge badge-orange">${iconMap[d.tipo]||'📄'} ${d.tipo}</span></td>
+    <td><a href="${d.url}" target="_blank" class="dl-btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>${d.nombre||'Ver'}</a></td>
+  </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--negro3)">Sin documentos</td></tr>';
+}
+
+async function loadDocsAdmin() {
+  try {
+    const docs = await api('GET', '/documentos/todos').catch(() => api('GET', '/documentos'));
+    DOCS_CACHE_ADMIN = docs || [];
+    // Poblar filtros
+    const invs_u  = [...new Map(docs.filter(d=>d.usuarios).map(d=>[d.usuario_id, d.usuarios])).entries()];
+    const props_u = [...new Map(docs.filter(d=>d.propiedades).map(d=>[d.propiedad_id, d.propiedades])).entries()];
+    if($('adm-doc-filter-inv'))  $('adm-doc-filter-inv').innerHTML  = '<option value="">Todos los inversores</option>' + invs_u.map(([id,u])=>`<option value="${id}">${u.nombre} ${u.apellido}</option>`).join('');
+    if($('adm-doc-filter-prop')) $('adm-doc-filter-prop').innerHTML = '<option value="">Todos los pisos</option>'      + props_u.map(([id,p])=>`<option value="${id}">${p.nombre}</option>`).join('');
+    renderDocsAdmin(docs);
+  } catch(e) { console.error(e); }
 }
 
 async function subirDocumento() {
@@ -2164,6 +2243,127 @@ function renderAportes(items) {
     <td><button class="btn btn-outline btn-sm" onclick="editAporte('${a.id}')">Editar</button></td>
   </tr>`).join('') + `<tr style="background:var(--gris);font-weight:700">
     <td colspan="5"><strong>TOTAL</strong></td>
+    <td class="num">€${total_eur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+    <td colspan="2"></td>
+  </tr>`;
+}
+
+// ══ PROPIEDADES ADMIN ══
+let PROPS_CACHE_ADMIN = [];
+
+function ordenarPropiedades() {
+  const orden = $('prop-orden')?.value || 'nombre';
+  let props = [...PROPS_CACHE_ADMIN];
+  if (orden === 'nombre')      props.sort((a,b) => (a.nombre||'').localeCompare(b.nombre||''));
+  else if (orden === 'nombre_desc') props.sort((a,b) => (b.nombre||'').localeCompare(a.nombre||''));
+  else if (orden === 'fecha')  props.sort((a,b) => new Date(b.fecha_compra||0) - new Date(a.fecha_compra||0));
+  else if (orden === 'precio_asc')  props.sort((a,b) => (a.precio_compra||0) - (b.precio_compra||0));
+  else if (orden === 'precio_desc') props.sort((a,b) => (b.precio_compra||0) - (a.precio_compra||0));
+  else if (orden === 'estado') props.sort((a,b) => (a.estado||'').localeCompare(b.estado||''));
+  renderAdminProps(props);
+}
+
+function renderAdminProps(props) {
+  const tbody = $('admin-prop-body');
+  if (!tbody) return;
+  tbody.innerHTML = props.map(p => `<tr>
+    <td><strong>${p.nombre}</strong></td>
+    <td>${statusBadge(p.estado)}</td>
+    <td>${p.fecha_compra ? fmt_date(p.fecha_compra) : '—'}</td>
+    <td class="num">${p.precio_compra ? eur(p.precio_compra) : '—'}</td>
+    <td class="num">${p.precio_venta ? eur(p.precio_venta) : '—'}</td>
+    <td style="display:flex;gap:6px">
+      <button class="btn btn-outline btn-sm" onclick="editPropiedad('${p.id}')">Editar</button>
+      <button class="btn btn-outline btn-sm" onclick="verOperacion('${p.id}')">Ver operación</button>
+    </td>
+  </tr>`).join('');
+}
+
+async function verOperacion(propId) {
+  const prop = PROPS_CACHE_ADMIN.find(p => p.id === propId);
+  if (!prop) return;
+  const liqs = await api('GET', '/liquidaciones').catch(()=>[]);
+  const liqProp = liqs.filter(l => l.propiedad_id === propId);
+  const compra = Number(prop.precio_compra||0);
+  const venta_est = Number(prop.precio_venta||0);
+  const util_est = venta_est - compra;
+  const rent_est = compra > 0 ? (util_est/compra*100).toFixed(1) : 0;
+
+  let html_body = `<div style="padding:8px 0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+      <div style="background:var(--gris);padding:14px">
+        <div style="font-size:10px;color:var(--negro3);margin-bottom:4px;letter-spacing:1px">TOTAL INVERSIÓN</div>
+        <div style="font-weight:700;font-size:16px">${eur(compra)}</div>
+      </div>
+      <div style="background:var(--gris);padding:14px">
+        <div style="font-size:10px;color:var(--negro3);margin-bottom:4px;letter-spacing:1px">VENTA ESTIMADA</div>
+        <div style="font-weight:700;font-size:16px">${eur(venta_est)}</div>
+      </div>
+      <div style="background:var(--naranja-light);padding:14px;border:1px solid rgba(255,77,15,.2)">
+        <div style="font-size:10px;color:var(--naranja2);margin-bottom:4px;letter-spacing:1px">RENTABILIDAD EST.</div>
+        <div style="font-weight:700;font-size:16px;color:var(--naranja)">+${rent_est}%</div>
+      </div>
+    </div>`;
+
+  if (prop.estado === 'vendido' && liqProp.length) {
+    const venta_real = Number(liqProp[0]?.precio_venta || 0);
+    const util_real = venta_real - compra;
+    const rent_real = compra > 0 ? (util_real/compra*100).toFixed(1) : 0;
+    html_body += `<div style="background:var(--negro);padding:20px;margin-top:4px">
+      <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:14px">RESULTADO FINAL</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div><div style="font-size:10px;color:rgba(255,255,255,.4)">VENTA REAL</div><div style="font-weight:700;color:var(--blanco);font-size:16px;margin-top:4px">${eur(venta_real)}</div></div>
+        <div><div style="font-size:10px;color:rgba(255,255,255,.4)">UTILIDAD REAL</div><div style="font-weight:700;color:var(--naranja);font-size:16px;margin-top:4px">${eur(util_real)}</div></div>
+        <div><div style="font-size:10px;color:rgba(255,255,255,.4)">RENTABILIDAD REAL</div><div style="font-weight:700;color:var(--naranja);font-size:16px;margin-top:4px">+${rent_real}%</div></div>
+      </div>
+    </div>`;
+  }
+  html_body += '</div>';
+
+  $('modal-generic-title').textContent = prop.nombre;
+  $('modal-generic-body').innerHTML = html_body;
+  $('modal-generic').style.display = 'flex';
+}
+
+// ══ APORTES ADMIN ══
+let APORTES_CACHE_ADMIN = [];
+
+function limpiarFiltrosAportes() {
+  if($('ap-filter-fecha')) $('ap-filter-fecha').value = '';
+  if($('ap-filter-prop'))  $('ap-filter-prop').value  = '';
+  if($('ap-filter-inv'))   $('ap-filter-inv').value   = '';
+  renderAportes(APORTES_CACHE_ADMIN);
+}
+
+function filtrarAportes() {
+  const fecha = $('ap-filter-fecha')?.value || '';
+  const prop  = $('ap-filter-prop')?.value  || '';
+  const inv   = $('ap-filter-inv')?.value   || '';
+  let items = [...APORTES_CACHE_ADMIN];
+  if (fecha) items = items.filter(a => (a.fecha||'').startsWith(fecha));
+  if (prop)  items = items.filter(a => a.propiedad_id === prop);
+  if (inv)   items = items.filter(a => a.usuario_id === inv);
+  renderAportes(items);
+}
+
+function renderAportes(items) {
+  const tbody = $('admin-aporte-body');
+  if (!tbody) return;
+  const total_eur = items.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
+  const total_usd = items.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_usd||0),0);
+  tbody.innerHTML = items.map(a => `<tr>
+    <td>${fmt_date(a.fecha)}</td>
+    <td><strong>${a.usuarios?.nombre||''} ${a.usuarios?.apellido||''}</strong></td>
+    <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
+    <td class="num">${a.monto_usd ? eur(a.monto_usd) : '—'}</td>
+    <td style="color:var(--negro3)">${a.tipo_cambio||'—'}</td>
+    <td class="num">${a.monto_eur ? '€'+Number(a.monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2}) : '—'}</td>
+    <td><span class="badge ${a.tipo==='retiro'?'badge-red':'badge-green'}">${a.tipo}</span></td>
+    <td><button class="btn btn-outline btn-sm" onclick="editAporte('${a.id}')">Editar</button></td>
+  </tr>`).join('') + `<tr style="background:var(--gris);font-weight:700">
+    <td colspan="3"><strong>TOTAL</strong></td>
+    <td class="num">${eur(total_usd)}</td>
+    <td></td>
     <td class="num">€${total_eur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
     <td colspan="2"></td>
   </tr>`;
