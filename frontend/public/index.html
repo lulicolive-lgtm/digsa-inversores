@@ -1170,10 +1170,17 @@ async function startApp() {
 async function loadDashboard() {
   try {
     const d=await api('GET','/dashboard'), r=d.resumen;
-    $('st-invertido').textContent=eur(r.total_invertido);
-    $('st-retornado').textContent=eur(r.total_retornado);
-    const rent_display = Math.abs(r.rentabilidad_total); $('st-rent').textContent='+'+rent_display.toFixed(1)+'%';
-    $('st-props').textContent=r.propiedades_activas;
+    $('st-invertido').textContent=eur(r.inversion_inicial||r.total_invertido||0);
+    $('st-retornado').textContent=eur(r.valor_actual||r.total_retornado||0);
+    const rent_pct = (r.rentabilidad_total||0)*100;
+    $('st-rent').textContent=(rent_pct>=0?'+':'')+rent_pct.toFixed(1)+'%';
+    if($('st-tir')) $('st-tir').textContent=r.tir?(((r.tir||0)*100).toFixed(1)+'%'):'—';
+    if($('st-props')) $('st-props').textContent=r.propiedades_activas||0;
+    // Banner pendiente
+    if((r.pendiente||0)>0 && $('dash-pendiente-wrap')) {
+      $('dash-pendiente-wrap').style.display='flex';
+      if($('dash-pendiente')) $('dash-pendiente').textContent=eur(r.pendiente);
+    }
     const notifs=d.notificaciones||[];
     if (notifs.length) { $('notif-badge').textContent=notifs.length; $('notif-badge').style.display='flex'; }
     const activas=(d.participaciones||[]).filter(p=>p.propiedades?.estado!=='vendido');
