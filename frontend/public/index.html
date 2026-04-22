@@ -258,7 +258,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    </div>
    <div class="ll-content">
     <h1>Tu inversión,<br><em>siempre visible.</em></h1>
-    <p>Portal exclusivo para inversores de DIGSA. Seguí el rendimiento de tus activos, descargá liquidaciones y conocé las próximas oportunidades.</p>
+    <p>Portal exclusivo para inversores de DIGSA. Seguí el rendimiento de tus activos, revisá tus inversiones y conocé las próximas oportunidades.</p>
    </div>
    <div class="ll-bottom">
     <div class="ll-divider"></div>
@@ -338,8 +338,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="scard scard-accent"><div class="scard-label">Inversión inicial</div><div class="scard-value" id="st-invertido">—</div></div>
     <div class="scard"><div class="scard-label">Valor actual</div><div class="scard-value" id="st-retornado">—</div></div>
     <div class="scard"><div class="scard-label">Rentabilidad total</div><div class="scard-value" id="st-rent">—</div></div>
-    <div class="scard"><div class="scard-label">TIR anualizada</div><div class="scard-value" id="st-tir">—</div></div>
-    <div class="scard"><div class="scard-label">Mis propiedades</div><div class="scard-value" id="st-props">—</div></div>
+    <div class="scard"><div class="scard-label">TIR</div><div class="scard-value" id="st-tir">—</div></div>
+    
    </div>
    <!-- Pendiente de inversión -->
    <div id="dash-pendiente-wrap" style="display:none;background:var(--naranja-light);border:1px solid rgba(255,77,15,.2);padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
@@ -364,7 +364,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="tbl-wrap">
      <table class="dtbl">
       <thead><tr><th>Propiedad</th><th>Fecha</th><th>Aporte</th><th>Retorno total</th><th>Rentabilidad</th><th>Documento</th></tr></thead>
-      <tbody id="dash-liq-body"><tr><td colspan="6" style="text-align:center;color:var(--negro3);padding:28px">Sin liquidaciones</td></tr></tbody>
+      <tbody id="dash-liq-body"><tr><td colspan="6" style="text-align:center;color:var(--negro3);padding:28px">Sin inversiones finalizadas</td></tr></tbody>
      </table>
     </div>
    </div>
@@ -396,7 +396,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
   <!-- DOCUMENTOS -->
   <div class="panel" id="panel-documentos">
-   <div class="page-hd"><div><div class="page-hd-line"></div><h2>Documentos</h2><p>Reportes y liquidaciones disponibles para descarga</p></div></div>
+   <div class="page-hd"><div><div class="page-hd-line"></div><h2>Documentos</h2><p>Reportes e inversiones finalizadas disponibles para descarga</p></div></div>
    <div class="card" style="padding:0">
     <div class="tbl-wrap">
      <table class="dtbl">
@@ -527,7 +527,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="aside-inversores" class="aside-link active" onclick="adminTab('inversores')">👥 Inversores</div>
     <div id="aside-propiedades" class="aside-link" onclick="adminTab('propiedades')">🏠 Propiedades</div>
     <div id="aside-aportes" class="aside-link" onclick="adminTab('aportes')">💰 Aportes</div>
-    <div id="aside-liquidar" class="aside-link" onclick="adminTab('liquidar')">⚡ Liquidar piso</div>
+    <div id="aside-liquidar" class="aside-link" onclick="adminTab('liquidar')">⚡ Nuevo aporte / Liquidar</div>
     <div id="aside-docs" class="aside-link" onclick="adminTab('docs')">📄 Documentos</div>
     <div id="aside-proxima" class="aside-link" onclick="adminTab('proxima')">📋 Próxima propiedad</div>
     <div id="aside-operacion" class="aside-link" onclick="adminTab('operacion')">📊 Nueva operación</div>
@@ -548,7 +548,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <button class="btn btn-dark" onclick="openModal_newPropiedad()">+ Nueva propiedad</button>
     </div>
     <div class="card" style="padding:0">
-     <table class="dtbl"><thead><tr><th>Nombre</th><th>Estado</th><th>Tipo</th><th>Precio compra</th><th>Precio venta</th><th>Acciones</th></tr></thead>
+     <table class="dtbl"><thead><tr><th>Nombre</th><th>Estado</th><th>Tipo</th><th>Total inversión</th><th>Precio venta</th><th>Acciones</th></tr></thead>
      <tbody id="admin-prop-body"></tbody></table>
     </div>
    </div>
@@ -563,7 +563,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    </div>
    <div class="atab-panel" id="atab-liquidar">
     <div class="card" style="max-width:680px">
-     <div class="card-hd"><h3>Generar liquidaciones</h3></div>
+     <div class="card-hd"><h3>Generar Inversiones finalizadas</h3></div>
      <p style="font-size:13px;color:var(--negro3);margin-bottom:24px;line-height:1.8;font-weight:300">
       Seleccioná el piso y el precio de venta real. El sistema calcula automáticamente la liquidación de cada inversor (fee de éxito: 15% de la utilidad) y genera el PDF para cada uno.
      </p>
@@ -982,7 +982,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="fld"><label>Dirección</label><input id="prop-dir" placeholder="Ayala 85, Madrid"></div>
     <div class="fld"><label>Estado</label><select id="prop-estado"><option value="en_obra">En obra</option><option value="disponible">Disponible</option><option value="reservado">Reservado</option><option value="vendido">Vendido</option></select></div>
     <div class="fld"><label>Tipo</label><select id="prop-tipo"><option value="flipping">Flipping</option><option value="renta">Renta</option><option value="mixto">Mixto</option></select></div>
-    <div class="fld"><label>Precio compra (EUR)</label><input id="prop-compra" type="number"></div>
+    <div class="fld"><label>Total inversión (EUR)</label><input id="prop-compra" type="number"></div>
     <div class="fld"><label>Gastos operativos (EUR)</label><input id="prop-gastos" type="number"></div>
     <div class="fld"><label>Precio venta estimado (EUR)</label><input id="prop-venta" type="number"></div>
     <div class="fld"><label>Fecha de compra</label><input id="prop-fcompra" type="date"></div>
@@ -1174,7 +1174,6 @@ async function loadPortfolio() {
       const part = parts.find(pt => pt.propiedad_id === p.id);
       const aporte = part ? Number(part.monto_invertido) : 0;
       const pct_part = part ? Number(part.porcentaje) : 0;
-      // Neto estimado
       let neto = aporte;
       if (p.precio_compra && p.precio_venta && p.precio_compra > 0) {
         const util = (p.precio_venta - p.precio_compra) * pct_part;
@@ -1192,6 +1191,7 @@ async function loadPortfolio() {
         <td class="pos">${rent !== '—' ? '+'+rent : '—'}</td>
       </tr>`;
     }).join('');
+    if($('st-props')) $('st-props').textContent = props.length;
   } catch(e) { tbody.innerHTML=`<tr><td colspan="6" style="color:var(--rojo);text-align:center;padding:28px">${e.message}</td></tr>`; }
 }
 
@@ -2077,6 +2077,96 @@ async function cargarDesdeUltimasLiquidaciones() {
     hideLoading();
     showToast('Error: ' + e.message, 'err');
   }
+}
+
+// Ver operación de una propiedad
+async function verOperacion(propId) {
+  const prop = PROPS_CACHE_ADMIN.find(p => p.id === propId);
+  if (!prop) return;
+  const parts = await api('GET', `/participaciones?propiedad_id=${propId}`).catch(()=>[]);
+  const liqs = await api('GET', `/liquidaciones?propiedad_id=${propId}`).catch(()=>[]);
+  
+  const compra = Number(prop.precio_compra||0);
+  const venta_est = Number(prop.precio_venta||0);
+  const util_est = venta_est - compra;
+  
+  let html_op = `<div style="padding:20px;max-width:600px">
+    <h3 style="margin-bottom:16px">${prop.nombre}</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div style="background:var(--gris);padding:12px">
+        <div style="font-size:10px;color:var(--negro3);margin-bottom:4px">TOTAL INVERSIÓN</div>
+        <div style="font-weight:700">${eur(compra)}</div>
+      </div>
+      <div style="background:var(--gris);padding:12px">
+        <div style="font-size:10px;color:var(--negro3);margin-bottom:4px">VENTA ESTIMADA</div>
+        <div style="font-weight:700">${eur(venta_est)}</div>
+      </div>
+      <div style="background:var(--gris);padding:12px">
+        <div style="font-size:10px;color:var(--negro3);margin-bottom:4px">UTILIDAD ESTIMADA</div>
+        <div style="font-weight:700;color:var(--verde)">${eur(util_est)}</div>
+      </div>
+      <div style="background:var(--gris);padding:12px">
+        <div style="font-size:10px;color:var(--negro3);margin-bottom:4px">RENTABILIDAD EST.</div>
+        <div style="font-weight:700;color:var(--naranja)">${compra>0?'+'+(util_est/compra*100).toFixed(1)+'%':'—'}</div>
+      </div>
+    </div>`;
+  
+  if (prop.estado === 'vendido' && liqs.length) {
+    const venta_real = liqs[0]?.precio_venta || 0;
+    const util_real = venta_real - compra;
+    html_op += `<div style="border-top:2px solid var(--naranja);padding-top:16px;margin-top:4px">
+      <div style="font-size:11px;font-weight:600;color:var(--naranja);margin-bottom:12px">RESULTADO FINAL</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="background:var(--negro);padding:12px">
+          <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:4px">VENTA REAL</div>
+          <div style="font-weight:700;color:var(--blanco)">${eur(venta_real)}</div>
+        </div>
+        <div style="background:var(--negro);padding:12px">
+          <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:4px">UTILIDAD REAL</div>
+          <div style="font-weight:700;color:var(--naranja)">${eur(util_real)}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+  html_op += '</div>';
+  
+  // Mostrar en modal genérico
+  $('modal-generic-title').textContent = 'Operación: ' + prop.nombre;
+  $('modal-generic-body').innerHTML = html_op;
+  $('modal-generic').style.display = 'flex';
+}
+
+// Filtros aportes admin
+let APORTES_CACHE_ADMIN = [];
+function filtrarAportes() {
+  const fecha = $('ap-filter-fecha')?.value || '';
+  const prop  = $('ap-filter-prop')?.value  || '';
+  const inv   = $('ap-filter-inv')?.value   || '';
+  let items = [...APORTES_CACHE_ADMIN];
+  if (fecha)  items = items.filter(a => a.fecha?.startsWith(fecha));
+  if (prop)   items = items.filter(a => a.propiedad_id === prop);
+  if (inv)    items = items.filter(a => a.usuario_id === inv);
+  renderAportes(items);
+}
+
+function renderAportes(items) {
+  const tbody = $('admin-ap-body');
+  if (!tbody) return;
+  const total_eur = items.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
+  tbody.innerHTML = items.map(a => `<tr>
+    <td>${fmt_date(a.fecha)}</td>
+    <td><strong>${a.usuarios?.nombre||''} ${a.usuarios?.apellido||''}</strong></td>
+    <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
+    <td class="num">${eur(a.monto_usd||0)}</td>
+    <td>${a.tipo_cambio||'—'}</td>
+    <td class="num">${a.monto_eur?'€'+Number(a.monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2}):'—'}</td>
+    <td><span class="badge ${a.tipo==='retiro'?'badge-red':'badge-green'}">${a.tipo}</span></td>
+    <td><button class="btn btn-outline btn-sm" onclick="editAporte('${a.id}')">Editar</button></td>
+  </tr>`).join('') + `<tr style="background:var(--gris);font-weight:700">
+    <td colspan="5"><strong>TOTAL</strong></td>
+    <td class="num">€${total_eur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+    <td colspan="2"></td>
+  </tr>`;
 }
 
 function toggleDigsaMenu() {
