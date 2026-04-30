@@ -2,6 +2,7 @@ const router = require('express').Router();
 const supabase = require('../utils/supabase');
 const { authMiddleware } = require('../middleware/auth');
 
+// GET /api/dashboard
 router.get('/', authMiddleware, async (req, res) => {
   const uid = req.user.id;
 
@@ -13,29 +14,35 @@ router.get('/', authMiddleware, async (req, res) => {
   ]);
 
   const participaciones = partRes.data || [];
-  const aportes        = aportesRes.data || [];
-  const liquidaciones  = liqRes.data || [];
+  const aportes = aportesRes.data || [];
+  const liquidaciones = liqRes.data || [];
 
+  // RESUMEN EJECUTIVO — igual que el Excel
+  // Inversión inicial = suma de aportes en EUR
+  // Inversión inicial = suma de aportes, sin restar retiros
+  // (la utilidad se convierte en capital al reinvertir, no se distingue el origen)
   const inversion_inicial = aportes
     .filter(a => a.tipo === 'aporte')
-    .reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0)
-    - aportes
-    .filter(a => a.tipo === 'retiro')
     .reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
 
   const retiros = aportes
     .filter(a => a.tipo === 'retiro')
     .reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
 
+  // Valor actual = sum(neto estimado de pisos activos) + pendiente
+  // Neto estimado = aporte + utilidad_inv - fee(15%) - impuestos(25% sobre util-fee)
+  // NO se suma total_retornado porque las liquidaciones ya fueron reinvertidas
   const total_retornado = liquidaciones.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
 
-  // Neto estimado en cartera (fórmula exacta del Excel)
   const pisos_activos = participaciones.filter(p => p.propiedades?.estado !== 'vendido');
   const valor_en_cartera = pisos_activos.reduce((s, p) => {
-    const prop   = p.propiedades;
+    const prop = p.propiedades;
     const aporte = Number(p.monto_invertido || 0);
     if (prop?.precio_venta && prop?.precio_compra && Number(prop.precio_compra) > 0) {
-      const util_inv = (Number(prop.precio_venta) - Number(prop.precio_compra)) * (aporte / Number(prop.precio_compra));
+      const compra = Number(prop.precio_compra);
+      const venta  = Number(prop.precio_venta);
+      const util_piso = venta - compra;
+      const util_inv  = util_piso * (aporte / compra);
       const fee = Math.max(0, util_inv) * 0.15;
       const imp = Math.max(0, util_inv - fee) * 0.25;
       return s + aporte + util_inv - fee - imp;
@@ -43,18 +50,18 @@ router.get('/', authMiddleware, async (req, res) => {
     return s + aporte;
   }, 0);
 
-  // Pendiente = lo que hay disponible pero no está en ningún piso activo
-  // = valor_actual - neto_en_cartera
-  const pendiente = Math.max(0, valor_en_cartera > 0
-    ? 0
-    : inversion_inicial + total_retornado - retiros);
-
-  const valor_actual = valor_en_cartera + pendiente;
+  const valor_actual = valor_en_cartera;
+  
+  // Pendiente de inversión
+  const pendiente = aportes
+    .filter(a => a.tipo === 'aporte' && !a.propiedad_id)
+    .reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
 
   const rentabilidad_total = inversion_inicial > 0
     ? (valor_actual - inversion_inicial) / inversion_inicial
     : 0;
 
+  // TIR aproximada (rentabilidad anualizada)
   const primer_aporte = aportes.filter(a => a.tipo === 'aporte').slice(-1)[0];
   let tir = 0;
   if (primer_aporte && inversion_inicial > 0) {
