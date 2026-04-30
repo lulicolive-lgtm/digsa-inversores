@@ -1992,9 +1992,11 @@ async function cargarAsignacion() {
 }
 
 function calcAsigMonto(inp) {
+  console.log('calcAsigMonto called', inp.value, inp.dataset);
   const capital = Number(inp.dataset.capital) || 0;
   const pct = Number(inp.value) / 100 || 0;
   const monto = Math.round(capital * pct);
+  console.log('capital:', capital, 'pct:', pct, 'monto:', monto);
   const idx = inp.dataset.idx;
   // Usar data-idx para encontrar la celda (evitar problemas con UUIDs en selectores CSS)
   const cell = document.querySelector(`[data-monto-idx="${idx}"]`);
