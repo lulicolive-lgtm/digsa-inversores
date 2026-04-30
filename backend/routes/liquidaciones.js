@@ -15,6 +15,22 @@ router.get('/', authMiddleware, async (req, res) => {
   res.json(data || []);
 });
 
+// GET todas (admin)
+router.get('/todas', authMiddleware, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('liquidaciones')
+    .select('*, propiedades(nombre), usuarios(nombre,apellido)')
+    .order('fecha', { ascending: false });
+  res.json(data || []);
+});
+
+// PUT editar liquidación (admin)
+router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
+  const { data, error } = await supabase
+    .from('liquidaciones').update(req.body).eq('id', req.params.id).select().single();
+  if (error) return res.status(400).json({ error: error.message });
+  res.json(data);
+});
+
 // ── POST /api/liquidaciones/generar ─────────────────────────────────────────
 router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
   const { propiedad_id, precio_venta, fecha, destino_ids = [], destino_pcts = {} } = req.body;

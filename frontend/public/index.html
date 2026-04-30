@@ -531,6 +531,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="aside-docs" class="aside-link" onclick="adminTab('docs')">📄 Documentos</div>
     <div id="aside-proxima" class="aside-link" onclick="adminTab('proxima')">📋 Próxima propiedad</div>
     <div id="aside-operacion" class="aside-link" onclick="adminTab('operacion')">📊 Nueva operación</div>
+    <div id="aside-liquidaciones" class="aside-link" onclick="adminTab('liquidaciones');loadAdminLiquidaciones()">💰 Inv. finalizadas</div>
    </div>
    <!-- Content -->
    <div style="flex:1;min-width:0">
@@ -802,6 +803,19 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <button class="btn btn-outline" onclick="limpiarOperacion()">✕ Limpiar</button>
     </div>
     <div id="op-guardado-msg" style="display:none;margin-top:12px;font-size:13px;color:var(--verde);font-weight:600">✓ Operación guardada correctamente en el sistema</div>
+   </div>
+
+   <!-- TAB: liquidaciones históricas -->
+   <div class="atab-panel" id="atab-liquidaciones">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+     <h3 style="font-size:18px">Inversiones finalizadas</h3>
+    </div>
+    <div class="card" style="padding:0">
+     <table class="dtbl">
+      <thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Aporte</th><th>Retorno total</th><th>Utilidad neta</th><th>Acciones</th></tr></thead>
+      <tbody id="admin-liq-body"></tbody>
+     </table>
+    </div>
    </div>
 
    </div><!-- /content -->
@@ -1629,6 +1643,29 @@ async function savePropiedad() {
   } catch(e){showToast(e.message,'err');}finally{hideLoading();}
 }
 
+// EDITAR APORTE
+let APORTE_EDIT_ID = null;
+async function editAporte(id) {
+  const a = APORTES_CACHE_ADMIN.find(x => x.id === id);
+  if (!a) return;
+  APORTE_EDIT_ID = id;
+  // Reusar el modal de aporte con datos precargados
+  $('ap-inv-sel').value = a.usuario_id;
+  $('ap-prop-sel').value = a.propiedad_id || '';
+  $('ap-monto').value = a.monto_usd || '';
+  $('ap-monto-eur').value = a.monto_eur || '';
+  $('ap-tc').value = a.tipo_cambio || '';
+  $('ap-fecha').value = a.fecha || '';
+  $('ap-tipo').value = a.tipo || 'aporte';
+  $('ap-desc').value = a.descripcion || '';
+  // Cambiar título y botón
+  const title = document.querySelector('#modal-aporte .modal-hd h3');
+  if (title) title.textContent = 'Editar aporte';
+  const btn = document.querySelector('#modal-aporte .btn-dark');
+  if (btn) btn.textContent = 'Guardar cambios';
+  openModal('modal-aporte');
+}
+
 function calcTC() {
   const usd = parseFloat($('ap-monto')?.value) || 0;
   const eur_val = parseFloat($('ap-monto-eur')?.value) || 0;
@@ -1643,10 +1680,34 @@ async function saveAporte() {
   const monto_eur_inp = parseFloat($('ap-monto-eur')?.value) || 0;
   const tc = parseFloat($('ap-tc')?.value) || null;
   const monto_eur_calc = monto_eur_inp || (monto_usd && tc ? monto_usd / tc : monto_usd);
-  const body={usuario_id:$('ap-inv-sel').value,propiedad_id:$('ap-prop-sel').value||null,monto_usd:monto_usd||monto_eur_calc,monto_eur:monto_eur_calc,tipo_cambio:tc,fecha:$('ap-fecha').value,tipo:$('ap-tipo').value,descripcion:$('ap-desc').value||null};
-  if (!body.usuario_id||!body.monto_usd||!body.fecha) return showToast('Completá los campos obligatorios','err');
-  try{showLoading('Registrando…');await api('POST','/aportes',body);closeModal('modal-aporte');showToast('Aporte registrado');loadAdmin();}
-  catch(e){showToast(e.message,'err');}finally{hideLoading();}
+  const body = {
+    usuario_id: $('ap-inv-sel').value,
+    propiedad_id: $('ap-prop-sel').value || null,
+    monto_usd: monto_usd || monto_eur_calc,
+    monto_eur: monto_eur_calc,
+    tipo_cambio: tc,
+    fecha: $('ap-fecha').value,
+    tipo: $('ap-tipo').value,
+    descripcion: $('ap-desc').value || null
+  };
+  if (!body.usuario_id || !body.monto_usd || !body.fecha) return showToast('Completá los campos obligatorios','err');
+  try {
+    showLoading(APORTE_EDIT_ID ? 'Actualizando…' : 'Registrando…');
+    if (APORTE_EDIT_ID) {
+      await api('PUT', '/aportes/' + APORTE_EDIT_ID, body);
+      APORTE_EDIT_ID = null;
+    } else {
+      await api('POST', '/aportes', body);
+    }
+    // Resetear título del modal
+    const title = document.querySelector('#modal-aporte .modal-hd h3');
+    if (title) title.textContent = 'Registrar aporte';
+    const btn = document.querySelector('#modal-aporte .btn-dark');
+    if (btn) btn.textContent = 'Registrar';
+    closeModal('modal-aporte');
+    showToast('Aporte guardado');
+    loadAdminAportes();
+  } catch(e) { showToast(e.message,'err'); } finally { hideLoading(); }
 }
 
 function setModoDestino(modo) {
@@ -2411,6 +2472,95 @@ function renderAportes(items) {
   </tr>`;
 }
 
+// EDITAR LIQUIDACIÓN
+let LIQ_CACHE_ADMIN = [];
+let LIQ_EDIT_ID = null;
+
+async function loadAdminLiquidaciones() {
+  try {
+    const liqs = await api('GET', '/liquidaciones/todas').catch(() => api('GET', '/liquidaciones'));
+    LIQ_CACHE_ADMIN = liqs || [];
+    const tbody = $('admin-liq-body');
+    if (!tbody) return;
+    tbody.innerHTML = LIQ_CACHE_ADMIN.map(l => `<tr>
+      <td>${fmt_date(l.fecha)}</td>
+      <td><strong>${l.usuarios?.nombre||''} ${l.usuarios?.apellido||''}</strong></td>
+      <td>${l.propiedades?.nombre||'—'}</td>
+      <td class="num">€${Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+      <td class="num pos">€${Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+      <td class="num">€${Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="editLiquidacion('${l.id}')">Editar</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones</td></tr>';
+  } catch(e) { console.error(e); }
+}
+
+async function editLiquidacion(id) {
+  const l = LIQ_CACHE_ADMIN.find(x => x.id === id);
+  if (!l) return;
+  LIQ_EDIT_ID = id;
+
+  // Rellenar modal de edición de liquidación
+  if ($('liq-edit-id'))    $('liq-edit-id').value    = id;
+  if ($('liq-edit-inv'))   $('liq-edit-inv').value   = l.usuarios?.nombre + ' ' + l.usuarios?.apellido;
+  if ($('liq-edit-piso'))  $('liq-edit-piso').value  = l.propiedades?.nombre || '';
+  if ($('liq-edit-fecha')) $('liq-edit-fecha').value = l.fecha || '';
+  if ($('liq-edit-aporte'))$('liq-edit-aporte').value= l.aporte_usuario || '';
+  if ($('liq-edit-retorno'))$('liq-edit-retorno').value= l.total_retorno || '';
+  if ($('liq-edit-precio'))$('liq-edit-precio').value= l.precio_venta || '';
+  calcLiqEdit();
+  $('modal-liq-edit').style.display = 'flex';
+}
+
+function calcLiqEdit() {
+  const aporte  = parseFloat($('liq-edit-aporte')?.value)  || 0;
+  const retorno = parseFloat($('liq-edit-retorno')?.value) || 0;
+  const util    = retorno - aporte;
+  const fee     = Math.max(0, util) * 0.15;
+  const imp     = Math.max(0, util - fee) * 0.25;
+  const unet    = util - fee - imp;
+  const eur = n => '€' + Math.round(n).toLocaleString('es-ES');
+  if ($('liq-edit-util'))  $('liq-edit-util').textContent  = eur(util);
+  if ($('liq-edit-fee'))   $('liq-edit-fee').textContent   = eur(fee);
+  if ($('liq-edit-imp'))   $('liq-edit-imp').textContent   = eur(imp);
+  if ($('liq-edit-unet'))  $('liq-edit-unet').textContent  = eur(unet);
+}
+
+async function saveLiquidacion() {
+  if (!LIQ_EDIT_ID) return;
+  const aporte  = parseFloat($('liq-edit-aporte')?.value)  || 0;
+  const retorno = parseFloat($('liq-edit-retorno')?.value) || 0;
+  const precio  = parseFloat($('liq-edit-precio')?.value)  || 0;
+  const fecha   = $('liq-edit-fecha')?.value || '';
+  const util    = retorno - aporte;
+  const fee     = Math.max(0, util) * 0.15;
+  const imp     = Math.max(0, util - fee) * 0.25;
+  const unet    = util - fee - imp;
+
+  try {
+    showLoading('Guardando…');
+    await api('PUT', '/liquidaciones/' + LIQ_EDIT_ID, {
+      aporte_usuario: aporte,
+      total_retorno: retorno,
+      precio_venta: precio,
+      fecha,
+      utilidad_bruta: util,
+      fee_exito_pct: 0.15,
+      fee_exito_monto: fee,
+      utilidad_neta: unet,
+    });
+    $('modal-liq-edit').style.display = 'none';
+    LIQ_EDIT_ID = null;
+    showToast('Liquidación actualizada');
+    // Preguntar si regenerar PDF
+    if (confirm('¿Querés regenerar el PDF de liquidación para este inversor?')) {
+      showToast('Generando PDF… (próximamente)');
+    }
+    loadAdminLiquidaciones();
+  } catch(e) { showToast(e.message, 'err'); } finally { hideLoading(); }
+}
+
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
@@ -2427,5 +2577,39 @@ function toggleNotifs() { showToast('Próximamente: panel de notificaciones'); }
 
 if (TOKEN) startApp();
 </script>
+<!-- Modal editar liquidación -->
+<div id="modal-liq-edit" class="modal" style="display:none">
+ <div class="modal-box" style="max-width:560px">
+  <div class="modal-hd">
+   <h3>Editar liquidación</h3>
+   <button class="modal-close" onclick="$('modal-liq-edit').style.display='none'">×</button>
+  </div>
+  <div style="padding:0 24px 24px">
+   <input type="hidden" id="liq-edit-id">
+   <div class="form-grid" style="margin-bottom:16px">
+    <div class="fld fld-full"><label>Inversor</label><input id="liq-edit-inv" readonly style="background:var(--gris);color:var(--negro3)"></div>
+    <div class="fld fld-full"><label>Propiedad</label><input id="liq-edit-piso" readonly style="background:var(--gris);color:var(--negro3)"></div>
+    <div class="fld"><label>Fecha</label><input type="date" id="liq-edit-fecha"></div>
+    <div class="fld"><label>Precio de venta (€)</label><input type="number" id="liq-edit-precio" oninput="calcLiqEdit()"></div>
+    <div class="fld"><label>Aporte del inversor (€)</label><input type="number" id="liq-edit-aporte" oninput="calcLiqEdit()"></div>
+    <div class="fld"><label>Total retorno (€)</label><input type="number" id="liq-edit-retorno" oninput="calcLiqEdit()"></div>
+   </div>
+   <!-- Preview calculado -->
+   <div style="background:var(--gris);padding:14px;margin-bottom:20px">
+    <div style="font-size:10px;letter-spacing:1px;color:var(--negro3);margin-bottom:10px">CALCULADO AUTOMÁTICAMENTE</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+     <div>Utilidad bruta: <strong id="liq-edit-util">—</strong></div>
+     <div>Fee éxito (15%): <strong id="liq-edit-fee" style="color:var(--naranja)">—</strong></div>
+     <div>Impuestos (25%): <strong id="liq-edit-imp">—</strong></div>
+     <div>Utilidad neta: <strong id="liq-edit-unet" style="color:var(--verde)">—</strong></div>
+    </div>
+   </div>
+   <div style="display:flex;gap:12px">
+    <button class="btn btn-dark" onclick="saveLiquidacion()">Guardar cambios</button>
+    <button class="btn btn-outline" onclick="$('modal-liq-edit').style.display='none'">Cancelar</button>
+   </div>
+  </div>
+ </div>
+</div>
 </body>
 </html>
