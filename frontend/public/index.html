@@ -512,12 +512,13 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
   <div class="panel" id="panel-admin">
    <div class="page-hd"><div><div class="page-hd-line"></div><h2>Administración</h2><p>Gestión de inversores, propiedades y movimientos</p></div></div>
    <!-- KPIs arriba, fuera del sidebar -->
-   <div class="stat-row" id="admin-stats-row" style="grid-template-columns:repeat(5,1fr)">
+   <div class="stat-row" id="admin-stats-row" style="grid-template-columns:repeat(6,1fr)">
     <div class="scard scard-accent"><div class="scard-label">Inversores activos</div><div class="scard-value" id="ast-inv">—</div></div>
     <div class="scard"><div class="scard-label">Propiedades</div><div class="scard-value" id="ast-prop">—</div></div>
     <div class="scard"><div class="scard-label">Capital gestionado</div><div class="scard-value" id="ast-cap">—</div></div>
     <div class="scard"><div class="scard-label">Total retornado</div><div class="scard-value" id="ast-ret">—</div></div>
     <div class="scard"><div class="scard-label">Rentabilidad prom.</div><div class="scard-value" id="ast-rentprom">—</div></div>
+    <div class="scard" style="border:2px solid var(--naranja)"><div class="scard-label" style="color:var(--naranja2)">💰 Pendiente total</div><div class="scard-value" id="ast-pendiente" style="color:var(--naranja)">—</div></div>
    </div>
    <!-- Sidebar + Content -->
    <div style="display:flex;gap:24px;align-items:flex-start">
@@ -540,7 +541,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <button class="btn btn-dark" onclick="openModal_newInversor()">+ Nuevo inversor</button>
     </div>
     <div class="card" style="padding:0">
-     <table class="dtbl"><thead><tr><th>Nombre</th><th>Email</th><th>Contraseña sugerida</th><th>Teléfono</th><th>Estado</th><th>Acciones</th></tr></thead>
+     <table class="dtbl"><thead><tr><th>Nombre</th><th>Email</th><th>En pisos activos</th><th>Pendiente</th><th>Total liquidado</th><th>Estado</th><th>Acciones</th></tr></thead>
      <tbody id="admin-inv-body"></tbody></table>
     </div>
    </div>
@@ -1347,7 +1348,56 @@ async function loadAdmin() {
     if($('ast-cap')) $('ast-cap').textContent=eur(stats.total_capital_gestionado);
     if($('ast-ret')) $('ast-ret').textContent=eur(stats.total_retornado);
     if($('ast-rentprom')) $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
-    $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3);font-family:monospace">${inv.apellido.toLowerCase()}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
+    // Calcular pendiente por inversor desde resumen
+async function renderInversoresConPendiente(inversores) {
+  try {
+    const resumen = await api('GET', '/admin/resumen-inversores');
+    const aportes_todos = resumen.aportes || [];
+    const liqs_todas = resumen.liquidaciones || [];
+    const parts_todas = resumen.participaciones || [];
+    
+    let pendiente_total = 0;
+
+    $('admin-inv-body').innerHTML = inversores.map(inv => {
+      const ap_inv = aportes_todos.filter(a => a.usuario_id === inv.id);
+      const liq_inv = liqs_todas.filter(l => l.usuario_id === inv.id);
+      const part_inv = parts_todas.filter(p => p.usuario_id === inv.id && p.propiedades?.estado !== 'vendido');
+
+      const en_cartera = part_inv.reduce((s, p) => s + Number(p.monto_invertido || 0), 0);
+      const total_liq = liq_inv.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
+      const retiros = ap_inv.filter(a => a.tipo === 'retiro').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0);
+      const pendiente = Math.max(0, total_liq - retiros - en_cartera + 
+        ap_inv.filter(a => a.tipo === 'aporte').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0) - en_cartera);
+      
+      // Fórmula del Excel: pendiente = valor_actual - neto_en_cartera
+      // Simplificado para la tabla: mostrar en_cartera y total_liq
+      pendiente_total += pendiente;
+
+      const eur = n => n > 0 ? '€' + Math.round(n).toLocaleString('es-ES') : '—';
+      return `<tr>
+        <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
+        <td style="color:var(--negro3)">${inv.email}</td>
+        <td class="num">${eur(en_cartera)}</td>
+        <td class="num" style="color:${pendiente > 0 ? 'var(--naranja)' : 'var(--negro3)'}">${pendiente > 0 ? eur(pendiente) : '—'}</td>
+        <td class="num">${eur(total_liq)}</td>
+        <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
+      </tr>`;
+    }).join('');
+
+    if ($('ast-pendiente')) $('ast-pendiente').textContent = pendiente_total > 0 
+      ? '€' + Math.round(pendiente_total).toLocaleString('es-ES') 
+      : '€0';
+  } catch(e) {
+    $('admin-inv-body').innerHTML = inversores.map(inv => `<tr>
+      <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
+      <td style="color:var(--negro3)">${inv.email}</td>
+      <td colspan="3" style="color:var(--negro3)">—</td>
+      <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
+    </tr>`).join('');
+  }
+}
     PROPS_CACHE_ADMIN = props; renderAdminProps(props);
     const propsActivas=props.filter(p=>p.estado!=='vendido');
     const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
@@ -1536,7 +1586,56 @@ async function loadAdmin() {
     if($('ast-cap')) $('ast-cap').textContent=eur(stats.total_capital_gestionado);
     if($('ast-ret')) $('ast-ret').textContent=eur(stats.total_retornado);
     if($('ast-rentprom')) $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
-    $('admin-inv-body').innerHTML=inversores.map(inv=>`<tr><td><strong>${inv.nombre} ${inv.apellido}</strong></td><td style="color:var(--negro3)">${inv.email}</td><td style="color:var(--negro3);font-family:monospace">${inv.apellido.toLowerCase()}</td><td style="color:var(--negro3)">${inv.telefono||'—'}</td><td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td><td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td></tr>`).join('');
+    // Calcular pendiente por inversor desde resumen
+async function renderInversoresConPendiente(inversores) {
+  try {
+    const resumen = await api('GET', '/admin/resumen-inversores');
+    const aportes_todos = resumen.aportes || [];
+    const liqs_todas = resumen.liquidaciones || [];
+    const parts_todas = resumen.participaciones || [];
+    
+    let pendiente_total = 0;
+
+    $('admin-inv-body').innerHTML = inversores.map(inv => {
+      const ap_inv = aportes_todos.filter(a => a.usuario_id === inv.id);
+      const liq_inv = liqs_todas.filter(l => l.usuario_id === inv.id);
+      const part_inv = parts_todas.filter(p => p.usuario_id === inv.id && p.propiedades?.estado !== 'vendido');
+
+      const en_cartera = part_inv.reduce((s, p) => s + Number(p.monto_invertido || 0), 0);
+      const total_liq = liq_inv.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
+      const retiros = ap_inv.filter(a => a.tipo === 'retiro').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0);
+      const pendiente = Math.max(0, total_liq - retiros - en_cartera + 
+        ap_inv.filter(a => a.tipo === 'aporte').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0) - en_cartera);
+      
+      // Fórmula del Excel: pendiente = valor_actual - neto_en_cartera
+      // Simplificado para la tabla: mostrar en_cartera y total_liq
+      pendiente_total += pendiente;
+
+      const eur = n => n > 0 ? '€' + Math.round(n).toLocaleString('es-ES') : '—';
+      return `<tr>
+        <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
+        <td style="color:var(--negro3)">${inv.email}</td>
+        <td class="num">${eur(en_cartera)}</td>
+        <td class="num" style="color:${pendiente > 0 ? 'var(--naranja)' : 'var(--negro3)'}">${pendiente > 0 ? eur(pendiente) : '—'}</td>
+        <td class="num">${eur(total_liq)}</td>
+        <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
+      </tr>`;
+    }).join('');
+
+    if ($('ast-pendiente')) $('ast-pendiente').textContent = pendiente_total > 0 
+      ? '€' + Math.round(pendiente_total).toLocaleString('es-ES') 
+      : '€0';
+  } catch(e) {
+    $('admin-inv-body').innerHTML = inversores.map(inv => `<tr>
+      <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
+      <td style="color:var(--negro3)">${inv.email}</td>
+      <td colspan="3" style="color:var(--negro3)">—</td>
+      <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
+    </tr>`).join('');
+  }
+}
     PROPS_CACHE_ADMIN = props; renderAdminProps(props);
     const propsActivas=props.filter(p=>p.estado!=='vendido');
     const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
