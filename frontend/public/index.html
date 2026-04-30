@@ -1960,7 +1960,7 @@ async function cargarAsignacion() {
           <th style="text-align:right">Monto a invertir</th>
         </tr></thead>
         <tbody>
-          ${rows.map(r => `<tr>
+          ${rows.map((r, i) => `<tr>
             <td><strong>${r.inv.nombre} ${r.inv.apellido}</strong></td>
             <td class="num">€${Math.round(r.capital_total).toLocaleString('es-ES')}</td>
             <td class="num">€${Math.round(r.en_cartera_neto).toLocaleString('es-ES')}</td>
@@ -1969,14 +1969,14 @@ async function cargarAsignacion() {
             </td>
             <td style="text-align:center;padding:8px">
               <div style="display:flex;align-items:center;justify-content:center;gap:4px">
-                <input type="number" class="asig-pct" data-inv="${r.inv.id}" data-capital="${r.pendiente || r.capital_total}"
+                <input type="number" class="asig-pct" data-inv="${r.inv.id}" data-capital="${r.pendiente || r.capital_total}" data-idx="${i}"
                   min="0" max="100" step="1" placeholder="0"
                   style="width:65px;border:1px solid var(--naranja);padding:5px 8px;font-size:12px;text-align:right"
                   oninput="calcAsigMonto(this)">
                 <span style="font-size:11px;color:var(--negro3)">%</span>
               </div>
             </td>
-            <td class="num asig-monto-${r.inv.id}" style="font-weight:600;color:var(--verde)">—</td>
+            <td class="num" data-monto-idx="${i}" style="font-weight:600;color:var(--verde)">—</td>
           </tr>`).join('')}
         </tbody>
         <tfoot><tr style="background:var(--gris)">
@@ -1995,8 +1995,9 @@ function calcAsigMonto(inp) {
   const capital = Number(inp.dataset.capital) || 0;
   const pct = Number(inp.value) / 100 || 0;
   const monto = Math.round(capital * pct);
-  const invId = inp.dataset.inv;
-  const cell = document.querySelector(`.asig-monto-${invId}`);
+  const idx = inp.dataset.idx;
+  // Usar data-idx para encontrar la celda (evitar problemas con UUIDs en selectores CSS)
+  const cell = document.querySelector(`[data-monto-idx="${idx}"]`);
   if (cell) cell.textContent = monto > 0 ? '€' + monto.toLocaleString('es-ES') : '—';
   // Actualizar total
   let total = 0;
