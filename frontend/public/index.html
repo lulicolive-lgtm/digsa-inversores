@@ -1353,13 +1353,15 @@ async function startApp() {
   if (ME.rol==='admin') {
     document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
     document.querySelectorAll('.inversor-only').forEach(e=>e.style.display='none');
-    nav('analisis');
+    nav('dashboard');
+    loadDashboard();
   } else {
     loadDashboard();
   }
 }
 
 async function loadDashboard() {
+  if (ME?.rol === 'admin') { await loadAdminDashboard(); return; }
   try {
     const d=await api('GET','/dashboard'), r=d.resumen;
     $('st-invertido').textContent=eur(r.inversion_inicial||r.total_invertido||0);
@@ -3156,6 +3158,164 @@ async function loadDiGSADashboard() {
   } catch(e) {
     if(tbody) tbody.innerHTML = `<tr><td colspan="8" style="color:var(--rojo);padding:20px;text-align:center">${e.message}</td></tr>`;
     console.error('DIGSA dashboard error:', e);
+  }
+}
+
+async function loadAdminDashboard() {
+  const panel = $('panel-dashboard');
+  if (!panel) return;
+
+  panel.innerHTML = `<div style="text-align:center;padding:40px"><div class="spinner"></div></div>`;
+
+  try {
+    const props = await api('GET', '/propiedades');
+
+    // Datos DIGSA por piso (del Excel)
+    const DS = {
+      'Alcalá 146':              { pct:0.5787, inv:144872  },
+      'Jardín San Federico 15':  { pct:0.5620, inv:669503  },
+      'DRC 48':                  { pct:0.5661, inv:128401  },
+      'Villa 4 2° Dcha':         { pct:0.5832, inv:317767  },
+      'Ayala 134':               { pct:0.4679, inv:532320  },
+      'Don Ramón de la Cruz 98': { pct:0.4411, inv:365944  },
+      'Ayala 154':               { pct:0.5455, inv:434043  },
+      'Ayala 78':                { pct:0.4895, inv:220250  },
+      'Lagasca 58':              { pct:0.5333, inv:938722  },
+      'Lagasca 80':              { pct:0.4412, inv:893935  },
+      'Hermosilla 131':          { pct:0.4818, inv:383423  },
+    };
+
+    let inv_t=0, util_inv_t=0, honor_t=0;
+    const rows_v=[], rows_a=[];
+
+    props.forEach(p => {
+      const ds = DS[p.nombre];
+      if (!ds) return;
+      const comp  = Number(p.precio_compra||0);
+      const venta = Number(p.precio_venta||0);
+      const util_piso = venta - comp;
+
+      // Como inversor
+      const util_b = util_piso * ds.pct;
+      const fee_i  = Math.max(0, util_b) * 0.15;
+      const imp_i  = Math.max(0, util_b - fee_i) * 0.25;
+      const util_n = util_b - fee_i - imp_i;
+
+      // Como gestor
+      const gop   = comp * 0.02;
+      const com   = Math.max(0, util_piso) * 0.10;
+      const iva   = com * 0.21;
+      const fee_g = Math.max(0, util_piso) * 0.15;
+      const honor = gop + com + iva + fee_g;
+
+      inv_t      += ds.inv;
+      util_inv_t += util_n;
+      honor_t    += honor;
+
+      const est = p.estado !== 'vendido';
+      const tag = est ? '<span style="font-size:10px;background:var(--naranja-light);color:var(--naranja2);padding:1px 6px;margin-left:6px">EST.</span>' : '';
+      const row = `<tr>
+        <td><strong>${p.nombre}</strong>${tag}</td>
+        <td class="num">${(ds.pct*100).toFixed(1)}%</td>
+        <td class="num">${eur(ds.inv)}</td>
+        <td class="num pos">+${eur(util_n)}</td>
+        <td class="num pos">+${eur(honor)}</td>
+        <td class="num" style="font-weight:700;color:var(--naranja)">+${eur(util_n+honor)}</td>
+        <td class="num pos">${ds.inv>0?'+'+(util_n/ds.inv*100).toFixed(1)+'%':'—'}</td>
+      </tr>`;
+      est ? rows_a.push(row) : rows_v.push(row);
+    });
+
+    const total = util_inv_t + honor_t;
+    const thead = `<tr>
+      <th>Piso</th><th>% DIGSA</th><th>Inversión</th>
+      <th>Utilidad inversora</th><th>Honorarios gestora</th>
+      <th>Total DIGSA</th><th>Rent.</th></tr>`;
+    const tfoot = `<tr style="background:var(--negro);color:var(--blanco);font-weight:700">
+      <td colspan="2"><strong>TOTAL</strong></td>
+      <td class="num" style="color:var(--blanco)">${eur(inv_t)}</td>
+      <td class="num" style="color:#90EE90">+${eur(util_inv_t)}</td>
+      <td class="num" style="color:#90EE90">+${eur(honor_t)}</td>
+      <td class="num" style="color:var(--naranja)">+${eur(total)}</td>
+      <td class="num" style="color:var(--naranja)">${inv_t>0?'+'+(util_inv_t/inv_t*100).toFixed(1)+'%':'—'}</td>
+    </tr>`;
+
+    panel.innerHTML = `
+      <!-- Header -->
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px">
+       <div><div class="page-hd-line"></div>
+        <h2 style="font-size:28px;margin-bottom:2px">DIGSA España</h2>
+        <p style="color:var(--negro3);font-size:13px;font-weight:300">Como inversora y como gestora · ${new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})}</p>
+       </div>
+      </div>
+
+      <!-- 4 KPIs -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px">
+       <div class="scard scard-accent">
+        <div class="scard-label">Capital invertido</div>
+        <div class="scard-value">${eur(inv_t)}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">En ${Object.keys(DS).length} pisos</div>
+       </div>
+       <div class="scard" style="border-top:3px solid var(--verde)">
+        <div class="scard-label">Como inversora</div>
+        <div class="scard-value" style="color:var(--verde)">+${eur(util_inv_t)}</div>
+        <div style="font-size:11px;color:var(--negro3);margin-top:4px">Utilidad neta (fee + imp.)</div>
+       </div>
+       <div class="scard" style="border-top:3px solid var(--verde)">
+        <div class="scard-label">Como gestora</div>
+        <div class="scard-value" style="color:var(--verde)">+${eur(honor_t)}</div>
+        <div style="font-size:11px;color:var(--negro3);margin-top:4px">GOP + Fee + Comercialización</div>
+       </div>
+       <div class="scard" style="border-top:3px solid var(--naranja);background:var(--naranja-light)">
+        <div class="scard-label" style="color:var(--naranja2)">Total DIGSA</div>
+        <div class="scard-value" style="color:var(--naranja)">+${eur(total)}</div>
+        <div style="font-size:11px;color:var(--naranja2);margin-top:4px">Inversora + Gestora</div>
+       </div>
+      </div>
+
+      <!-- Pisos activos -->
+      ${rows_a.length ? `
+      <div style="margin-bottom:24px">
+       <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--negro3);margin-bottom:12px">PISOS EN OBRA — ESTIMADO</div>
+       <div class="card" style="padding:0">
+        <table class="dtbl"><thead>${thead}</thead><tbody>${rows_a.join('')}</tbody></table>
+       </div>
+      </div>` : ''}
+
+      <!-- Pisos vendidos -->
+      ${rows_v.length ? `
+      <div style="margin-bottom:24px">
+       <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--negro3);margin-bottom:12px">PISOS VENDIDOS — REAL</div>
+       <div class="card" style="padding:0">
+        <table class="dtbl"><thead>${thead}</thead><tbody>${rows_v.join('')}${tfoot}</tbody></table>
+       </div>
+      </div>` : ''}
+
+      <!-- Fórmulas -->
+      <div class="card" style="background:var(--gris)">
+       <div class="card-hd"><h3>Cómo se calcula</h3></div>
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font-size:12px;line-height:2;color:var(--negro3)">
+        <div>
+         <strong style="color:var(--negro);display:block;margin-bottom:4px">Como inversora</strong>
+         Utilidad bruta = (Precio venta − Compra) × % DIGSA<br>
+         Fee = Utilidad × 15%<br>
+         Impuestos = (Utilidad − Fee) × 25%<br>
+         <strong style="color:var(--negro)">Utilidad neta = Utilidad − Fee − Impuestos</strong>
+        </div>
+        <div>
+         <strong style="color:var(--negro);display:block;margin-bottom:4px">Como gestora (honorarios)</strong>
+         Gastos operativos = Precio compra × 2%<br>
+         Fee de éxito = Utilidad bruta × 15%<br>
+         Comercialización = Utilidad bruta × 10%<br>
+         IVA = Comercialización × 21%<br>
+         <strong style="color:var(--negro)">Total = GOP + Fee + Com. + IVA</strong>
+        </div>
+       </div>
+      </div>`;
+
+  } catch(e) {
+    const panel = $('panel-dashboard');
+    if(panel) panel.innerHTML = `<div style="padding:40px;color:var(--rojo);text-align:center">${e.message}</div>`;
   }
 }
 
