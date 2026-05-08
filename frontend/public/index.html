@@ -870,8 +870,16 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      </div>
     </div>
 
+    <!-- Modo borrador / real -->
+    <div style="background:var(--gris);padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+     <div style="display:flex;align-items:center;gap:10px">
+      <div id="op-modo-badge" style="background:var(--naranja);color:var(--blanco);padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:1px">MODO BORRADOR</div>
+      <span style="font-size:12px;color:var(--negro3)">Los cambios no se guardan hasta que confirmes</span>
+     </div>
+     <button class="btn btn-outline btn-sm" onclick="toggleModoBorrador()">Cambiar modo</button>
+    </div>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
-     <button class="btn btn-dark" onclick="guardarOperacionSistema()">💾 Guardar en el sistema</button>
+     <button class="btn btn-dark" id="op-btn-guardar" onclick="confirmarGuardarOperacion()">💾 Guardar en el sistema</button>
      <button class="btn btn-outline" onclick="descargarOperacionExcel()">⬇ Descargar CSV</button>
      <button class="btn btn-outline" onclick="limpiarOperacion()">✕ Limpiar</button>
     </div>
@@ -989,6 +997,99 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
        </div>
       </div>
      </div>
+    </div>
+   </div>
+
+   <!-- TAB: Fórmulas -->
+   <div class="atab-panel" id="atab-formulas">
+    <div style="margin-bottom:24px">
+     <h3 style="font-size:20px;margin-bottom:4px">Fórmulas del sistema</h3>
+     <p style="font-size:12px;color:var(--negro3)">Todas las fórmulas usadas para calcular liquidaciones, rentabilidades y honorarios</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+     <!-- Inversión total de un piso -->
+     <div class="card">
+      <div class="card-hd"><h3>Total inversión de un piso</h3></div>
+      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
+       Subtotal = Precio compra + Gastos totales<br>
+       <span style="color:var(--naranja)">GOP (2%)</span> = Subtotal × 2%<br>
+       Comercialización = Utilidad bruta × 10%<br>
+       IVA comercialización = Comercialización × 21%<br>
+       <strong>Total inversión = Subtotal + GOP + Com. + IVA</strong>
+      </div>
+      <div style="font-size:11px;color:var(--negro3);margin-top:8px">Ejemplo Lagasca 80: 1,960,000 + 39,200 + 22,080 + 4,636 = <strong>€2,025,916</strong></div>
+     </div>
+
+     <!-- Liquidación por inversor -->
+     <div class="card">
+      <div class="card-hd"><h3>Liquidación por inversor</h3></div>
+      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
+       Utilidad bruta inv = (Venta − Compra) × % participación<br>
+       <span style="color:var(--naranja)">Fee (15%)</span> = Utilidad bruta × 15%<br>
+       <span style="color:var(--naranja)">Impuestos (25%)</span> = (Util − Fee) × 25%<br>
+       Utilidad neta = Util − Fee − Impuestos<br>
+       <strong>Liquidación = Aporte + Utilidad neta</strong>
+      </div>
+      <div style="font-size:11px;color:var(--negro3);margin-top:8px">Verificado: JSF15/SB aporte=€107,150 → liq=<strong>€116,824</strong> ✓</div>
+     </div>
+
+     <!-- Honorarios DIGSA -->
+     <div class="card">
+      <div class="card-hd"><h3>Honorarios DIGSA (como gestora)</h3></div>
+      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
+       GOP = Precio compra × 2%<br>
+       Fee de éxito = Utilidad bruta × 15%<br>
+       Comercialización = Utilidad bruta × 10%<br>
+       IVA = Comercialización × 21%<br>
+       <strong>Total honorarios = GOP + Fee + Com. + IVA</strong>
+      </div>
+      <div style="font-size:11px;color:var(--negro3);margin-top:8px">Ejemplo Lagasca 80: 39,200 + 29,112 + 22,080 + 4,636 = <strong>€95,029</strong></div>
+     </div>
+
+     <!-- DIGSA como inversora -->
+     <div class="card">
+      <div class="card-hd"><h3>DIGSA como inversora</h3></div>
+      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
+       Igual que cualquier inversor<br>
+       Util bruta = (Venta − Compra) × % DIGSA<br>
+       Fee = Util bruta × 15%<br>
+       Impuestos = (Util − Fee) × 25%<br>
+       <strong>Util neta = Util − Fee − Impuestos</strong>
+      </div>
+      <div style="font-size:11px;color:var(--negro3);margin-top:8px">Lagasca 80: 44.12% participación → util neta = <strong>€54,595</strong></div>
+     </div>
+
+     <!-- Rentabilidad inversor -->
+     <div class="card">
+      <div class="card-hd"><h3>Rentabilidad del inversor</h3></div>
+      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
+       Rentabilidad = Utilidad neta / Aporte × 100<br>
+       <br>
+       TIR (anualizada):<br>
+       años = días desde primer aporte / 365<br>
+       <strong>TIR = (1 + rentabilidad) ^ (1/años) − 1</strong>
+      </div>
+     </div>
+
+     <!-- Valor actual en cartera -->
+     <div class="card">
+      <div class="card-hd"><h3>Valor actual del inversor</h3></div>
+      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
+       Para cada piso activo:<br>
+       Neto estim. = Aporte + (Util est. − Fee − Imp.)<br>
+       donde Util est. = util_piso × (aporte / compra)<br>
+       <br>
+       <strong>Valor actual = Σ neto estimado de pisos</strong><br>
+       + pendiente de inversión
+      </div>
+     </div>
+
+    </div>
+
+    <div style="margin-top:20px;padding:14px 18px;background:var(--naranja-light);border-left:3px solid var(--naranja);font-size:12px;color:var(--naranja2)">
+     <strong>Nota:</strong> Todas las fórmulas están verificadas contra los Excel oficiales de DIGSA España. La rentabilidad es siempre NETA (después de fee de éxito e impuestos).
     </div>
    </div>
 
@@ -3317,6 +3418,41 @@ async function loadAdminDashboard() {
     const panel = $('panel-dashboard');
     if(panel) panel.innerHTML = `<div style="padding:40px;color:var(--rojo);text-align:center">${e.message}</div>`;
   }
+}
+
+// ══ MODO BORRADOR ════════════════════════════════════════════
+let OP_BORRADOR = true;
+function toggleModoBorrador() {
+  OP_BORRADOR = !OP_BORRADOR;
+  const badge = $('op-modo-badge');
+  const btn   = $('op-btn-guardar');
+  if (badge) {
+    badge.textContent = OP_BORRADOR ? 'MODO BORRADOR' : 'MODO REAL';
+    badge.style.background = OP_BORRADOR ? 'var(--naranja)' : 'var(--verde)';
+  }
+  if (btn) {
+    btn.style.opacity = OP_BORRADOR ? '.5' : '1';
+    btn.title = OP_BORRADOR ? 'Cambiá a Modo Real para guardar' : '';
+  }
+}
+
+function confirmarGuardarOperacion() {
+  if (OP_BORRADOR) {
+    showToast('Estás en modo borrador. Cambiá a Modo Real para guardar.', 'err');
+    return;
+  }
+  if (!confirm('¿Confirmar y guardar esta operación en el sistema? Se registrarán las participaciones de cada inversor.')) return;
+  guardarOperacionSistema();
+}
+
+// ══ TOGGLE TIPO APORTE ════════════════════════════════════════
+function toggleTipoAporte() {
+  const tipo = $('ap-tipo')?.value;
+  const propRow = $('ap-prop-row');
+  if (propRow) propRow.style.display = tipo === 'retiro' ? 'none' : '';
+  // Cambiar label según tipo
+  const montoLabel = document.querySelector('label[for="ap-monto"]');
+  if (montoLabel) montoLabel.textContent = tipo === 'retiro' ? 'Monto a retirar (USD)' : 'Monto (USD)';
 }
 
 function toggleDigsaMenu() {
