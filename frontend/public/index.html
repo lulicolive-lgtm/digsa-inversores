@@ -188,10 +188,9 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 .atab{padding:12px 20px;font-size:12px;color:var(--negro3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap;font-weight:600;letter-spacing:.5px}
 .atab:hover{color:var(--negro)}.atab.active{color:var(--naranja);border-bottom-color:var(--naranja);border-left-color:var(--naranja)!important;background:var(--naranja-light)}
 .atab-panel{display:none}.atab-panel.show{display:block}
-.aside-link{padding:12px 16px;font-size:12px;color:var(--negro2);cursor:pointer;border-bottom:1px solid var(--gris2);font-weight:600;transition:all .15s;border-left:3px solid transparent;display:block;line-height:1.3}
-.aside-link:hover{color:var(--negro);background:var(--gris);border-left-color:var(--gris3)}
+.aside-link{padding:12px 16px;font-size:12px;color:var(--negro3);cursor:pointer;border-bottom:1px solid var(--gris2);font-weight:500;transition:all .15s;border-left:3px solid transparent;display:block}
+.aside-link:hover{color:var(--negro);background:var(--gris)}
 .aside-link.active{color:var(--naranja);border-left-color:var(--naranja)!important;background:var(--naranja-light);font-weight:700}
-.aside-link.active span:last-child{color:var(--naranja2)!important;opacity:.7}
 /* Separadores de sección en sidebar */
 .aside-section{padding:10px 16px;font-size:9px;letter-spacing:2px;color:var(--negro3);font-weight:700;background:var(--gris);border-top:1px solid var(--borde);border-bottom:1px solid var(--borde)}
 /* Cards mejoradas */
@@ -560,11 +559,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <!-- Content -->
    <div style="flex:1;min-width:0">
    <div class="atab-panel show" id="atab-inversores">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
-     <div>
-      <h3 style="font-size:20px;margin-bottom:4px">Inversores</h3>
-      <p style="font-size:12px;color:var(--negro3)">Tabla con capital, pendiente y retorno de cada inversor</p>
-     </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
      <button class="btn btn-dark" onclick="openModal_newInversor()">+ Nuevo inversor</button>
     </div>
     <div class="card" style="padding:0">
@@ -573,7 +568,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
    <div class="atab-panel" id="atab-propiedades">
-    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Propiedades</h3><p style="font-size:12px;color:var(--negro3)">Todos los pisos · Clickeá "Ver operación" para ver estimado vs resultado final</p></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
      <select id="prop-orden" onchange="ordenarPropiedades()" style="border:1px solid var(--borde);padding:8px 12px;font-size:12px;background:var(--blanco)">
       <option value="nombre">Ordenar: A → Z</option>
@@ -591,7 +585,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
    <div class="atab-panel" id="atab-aportes">
-    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Movimientos de capital</h3><p style="font-size:12px;color:var(--negro3)">Aportes y retiros de todos los inversores · Filtrá por fecha, piso o inversor</p></div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <input type="month" id="ap-filter-fecha" placeholder="Mes" onchange="filtrarAportes()"
@@ -705,9 +698,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
    </div>
    <div class="atab-panel" id="atab-docs">
-    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Documentos</h3><p style="font-size:12px;color:var(--negro3)">Subí reportes y liquidaciones para cada inversor</p></div>
     <div class="card" style="max-width:600px">
-     <div class="card-hd"><h3>Subir nuevo documento</h3></div>
+     <div class="card-hd"><h3>Subir documento</h3></div>
      <div class="form-grid">
       <div class="fld fld-full"><label>Inversor</label><select id="doc-inv-sel"></select></div>
       <div class="fld fld-full"><label>Propiedad (opcional)</label><select id="doc-prop-sel"><option value="">— Ninguna —</option></select></div>
@@ -743,7 +735,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
    <!-- TAB: próxima propiedad -->
    <div class="atab-panel" id="atab-proxima">
-    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Próxima inversión</h3><p style="font-size:12px;color:var(--negro3)">Esta información aparece en el portal de todos los inversores bajo "Próxima inversión"</p></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
      <div class="card">
       <div class="card-hd"><h3>Información del proyecto</h3></div>
@@ -870,16 +861,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      </div>
     </div>
 
-    <!-- Modo borrador / real -->
-    <div style="background:var(--gris);padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
-     <div style="display:flex;align-items:center;gap:10px">
-      <div id="op-modo-badge" style="background:var(--naranja);color:var(--blanco);padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:1px">MODO BORRADOR</div>
-      <span style="font-size:12px;color:var(--negro3)">Los cambios no se guardan hasta que confirmes</span>
-     </div>
-     <button class="btn btn-outline btn-sm" onclick="toggleModoBorrador()">Cambiar modo</button>
-    </div>
     <div style="display:flex;gap:12px;flex-wrap:wrap">
-     <button class="btn btn-dark" id="op-btn-guardar" onclick="confirmarGuardarOperacion()">💾 Guardar en el sistema</button>
+     <button class="btn btn-dark" onclick="guardarOperacionSistema()">💾 Guardar en el sistema</button>
      <button class="btn btn-outline" onclick="descargarOperacionExcel()">⬇ Descargar CSV</button>
      <button class="btn btn-outline" onclick="limpiarOperacion()">✕ Limpiar</button>
     </div>
@@ -915,181 +898,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
       <button class="btn" style="background:var(--naranja);color:var(--blanco);font-weight:700" onclick="confirmarAsignacion()">✅ Confirmar y registrar</button>
       <button class="btn btn-outline" style="border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.6)" onclick="$('pendientes-resumen').style.display='none'">Cancelar</button>
      </div>
-    </div>
-   </div>
-
-   <!-- TAB: DIGSA Dashboard -->
-   <div class="atab-panel" id="atab-digsa">
-    <div style="margin-bottom:28px">
-     <h3 style="font-size:22px;margin-bottom:4px">Dashboard DIGSA España</h3>
-     <p style="font-size:13px;color:var(--negro3)">DIGSA participa como inversor Y cobra honorarios como gestor — son dos fuentes de ingreso distintas</p>
-    </div>
-
-    <!-- KPIs globales -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px" id="digsa-kpis">
-     <div class="scard scard-accent">
-      <div class="scard-label">Total invertido por DIGSA</div>
-      <div class="scard-value" id="dk-inv">—</div>
-     </div>
-     <div class="scard">
-      <div class="scard-label">Utilidad como inversor</div>
-      <div class="scard-value" id="dk-util" style="color:var(--verde)">—</div>
-     </div>
-     <div class="scard">
-      <div class="scard-label">Honorarios como gestor</div>
-      <div class="scard-value" id="dk-honor" style="color:var(--verde)">—</div>
-     </div>
-     <div class="scard" style="border:1px solid var(--naranja);background:var(--naranja-light)">
-      <div class="scard-label" style="color:var(--naranja2)">Total ingreso DIGSA</div>
-      <div class="scard-value" id="dk-total" style="color:var(--naranja)">—</div>
-     </div>
-    </div>
-
-    <!-- Tabla detalle por piso -->
-    <div class="card" style="padding:0">
-     <div style="padding:16px 20px;border-bottom:1px solid var(--borde);display:flex;justify-content:space-between;align-items:center">
-      <div style="font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--negro3)">DETALLE POR PISO</div>
-      <div style="display:flex;gap:16px;font-size:11px;color:var(--negro3)">
-       <span>🟢 En obra (estimado)</span>
-       <span>⬛ Vendido (real)</span>
-      </div>
-     </div>
-     <div class="tbl-wrap">
-      <table class="dtbl">
-       <thead>
-        <tr>
-         <th>Piso</th>
-         <th>Estado</th>
-         <th style="text-align:right">% DIGSA</th>
-         <th style="text-align:right">Inversión</th>
-         <th style="text-align:right">Utilidad inversor</th>
-         <th style="text-align:right">Honorarios gestor</th>
-         <th style="text-align:right">Total DIGSA</th>
-         <th style="text-align:right">Rent.</th>
-        </tr>
-       </thead>
-       <tbody id="digsa-table-body"></tbody>
-      </table>
-     </div>
-    </div>
-
-    <!-- Explicación de fórmulas -->
-    <div class="card" style="margin-top:20px;background:var(--gris)">
-     <div class="card-hd"><h3>Cómo se calculan los ingresos de DIGSA</h3></div>
-     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font-size:13px">
-      <div>
-       <div style="font-weight:600;margin-bottom:8px;color:var(--negro2)">Como inversor</div>
-       <div style="line-height:2;color:var(--negro3)">
-        DIGSA tiene un % de participación en cada piso<br>
-        Utilidad = (Precio venta - Precio compra) × % DS<br>
-        Se aplica fee 15% e impuestos 25% igual que inversores<br>
-        <strong style="color:var(--negro)">Utilidad neta = Utilidad × (1 - 15%) × (1 - 25%)</strong>
-       </div>
-      </div>
-      <div>
-       <div style="font-weight:600;margin-bottom:8px;color:var(--negro2)">Como gestor (honorarios)</div>
-       <div style="line-height:2;color:var(--negro3)">
-        Gastos operativos (GOP): 2% sobre precio de compra<br>
-        Fee de éxito: 15% sobre utilidad bruta del piso<br>
-        Gastos de comercialización: 10% sobre utilidad bruta<br>
-        IVA sobre comercialización: 21%<br>
-        <strong style="color:var(--negro)">Total = GOP + Fee + Comercialización + IVA</strong>
-       </div>
-      </div>
-     </div>
-    </div>
-   </div>
-
-   <!-- TAB: Fórmulas -->
-   <div class="atab-panel" id="atab-formulas">
-    <div style="margin-bottom:24px">
-     <h3 style="font-size:20px;margin-bottom:4px">Fórmulas del sistema</h3>
-     <p style="font-size:12px;color:var(--negro3)">Todas las fórmulas usadas para calcular liquidaciones, rentabilidades y honorarios</p>
-    </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-
-     <!-- Inversión total de un piso -->
-     <div class="card">
-      <div class="card-hd"><h3>Total inversión de un piso</h3></div>
-      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
-       Subtotal = Precio compra + Gastos totales<br>
-       <span style="color:var(--naranja)">GOP (2%)</span> = Subtotal × 2%<br>
-       Comercialización = Utilidad bruta × 10%<br>
-       IVA comercialización = Comercialización × 21%<br>
-       <strong>Total inversión = Subtotal + GOP + Com. + IVA</strong>
-      </div>
-      <div style="font-size:11px;color:var(--negro3);margin-top:8px">Ejemplo Lagasca 80: 1,960,000 + 39,200 + 22,080 + 4,636 = <strong>€2,025,916</strong></div>
-     </div>
-
-     <!-- Liquidación por inversor -->
-     <div class="card">
-      <div class="card-hd"><h3>Liquidación por inversor</h3></div>
-      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
-       Utilidad bruta inv = (Venta − Compra) × % participación<br>
-       <span style="color:var(--naranja)">Fee (15%)</span> = Utilidad bruta × 15%<br>
-       <span style="color:var(--naranja)">Impuestos (25%)</span> = (Util − Fee) × 25%<br>
-       Utilidad neta = Util − Fee − Impuestos<br>
-       <strong>Liquidación = Aporte + Utilidad neta</strong>
-      </div>
-      <div style="font-size:11px;color:var(--negro3);margin-top:8px">Verificado: JSF15/SB aporte=€107,150 → liq=<strong>€116,824</strong> ✓</div>
-     </div>
-
-     <!-- Honorarios DIGSA -->
-     <div class="card">
-      <div class="card-hd"><h3>Honorarios DIGSA (como gestora)</h3></div>
-      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
-       GOP = Precio compra × 2%<br>
-       Fee de éxito = Utilidad bruta × 15%<br>
-       Comercialización = Utilidad bruta × 10%<br>
-       IVA = Comercialización × 21%<br>
-       <strong>Total honorarios = GOP + Fee + Com. + IVA</strong>
-      </div>
-      <div style="font-size:11px;color:var(--negro3);margin-top:8px">Ejemplo Lagasca 80: 39,200 + 29,112 + 22,080 + 4,636 = <strong>€95,029</strong></div>
-     </div>
-
-     <!-- DIGSA como inversora -->
-     <div class="card">
-      <div class="card-hd"><h3>DIGSA como inversora</h3></div>
-      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
-       Igual que cualquier inversor<br>
-       Util bruta = (Venta − Compra) × % DIGSA<br>
-       Fee = Util bruta × 15%<br>
-       Impuestos = (Util − Fee) × 25%<br>
-       <strong>Util neta = Util − Fee − Impuestos</strong>
-      </div>
-      <div style="font-size:11px;color:var(--negro3);margin-top:8px">Lagasca 80: 44.12% participación → util neta = <strong>€54,595</strong></div>
-     </div>
-
-     <!-- Rentabilidad inversor -->
-     <div class="card">
-      <div class="card-hd"><h3>Rentabilidad del inversor</h3></div>
-      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
-       Rentabilidad = Utilidad neta / Aporte × 100<br>
-       <br>
-       TIR (anualizada):<br>
-       años = días desde primer aporte / 365<br>
-       <strong>TIR = (1 + rentabilidad) ^ (1/años) − 1</strong>
-      </div>
-     </div>
-
-     <!-- Valor actual en cartera -->
-     <div class="card">
-      <div class="card-hd"><h3>Valor actual del inversor</h3></div>
-      <div style="font-size:13px;line-height:2.2;font-family:monospace;background:var(--gris);padding:16px">
-       Para cada piso activo:<br>
-       Neto estim. = Aporte + (Util est. − Fee − Imp.)<br>
-       donde Util est. = util_piso × (aporte / compra)<br>
-       <br>
-       <strong>Valor actual = Σ neto estimado de pisos</strong><br>
-       + pendiente de inversión
-      </div>
-     </div>
-
-    </div>
-
-    <div style="margin-top:20px;padding:14px 18px;background:var(--naranja-light);border-left:3px solid var(--naranja);font-size:12px;color:var(--naranja2)">
-     <strong>Nota:</strong> Todas las fórmulas están verificadas contra los Excel oficiales de DIGSA España. La rentabilidad es siempre NETA (después de fee de éxito e impuestos).
     </div>
    </div>
 
@@ -1437,10 +1245,6 @@ function adminTab(tab) {
   $('atab-'+tab)?.classList.add('show');
   $('aside-'+tab)?.classList.add('active');
   if (tab==='docs') loadDocsAdmin();
-  if (tab==='aportes') loadAdminAportes();
-  if (tab==='liquidaciones') loadAdminLiquidaciones();
-  if (tab==='liquidar') loadLiquidarTab();
-  if (tab==='operacion') initOperacion();
 }
 
 async function startApp() {
@@ -1454,11 +1258,8 @@ async function startApp() {
   if (ME.rol==='admin') {
     document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
     document.querySelectorAll('.inversor-only').forEach(e=>e.style.display='none');
-    nav('admin');
-    loadAdmin();
+    nav('analisis');
   } else {
-    document.querySelectorAll('.admin-only').forEach(e=>e.style.display='none');
-    nav('dashboard');
     loadDashboard();
   }
 }
@@ -1511,72 +1312,32 @@ async function loadPortfolio() {
   const tbody=$('port-body');
   tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px"><div class="spinner"></div></td></tr>';
   try {
-    const [props, dash, liqs] = await Promise.all([
-      api('GET','/propiedades'),
-      api('GET','/dashboard'),
-      api('GET','/liquidaciones')
-    ]);
-    if (!props.length) {
-      tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--negro3)">Sin propiedades asignadas</td></tr>';
-      return;
-    }
+    const [props, dash] = await Promise.all([api('GET','/propiedades'), api('GET','/dashboard')]);
+    if (!props.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--negro3)">Sin propiedades asignadas</td></tr>'; return; }
     const parts = dash.participaciones || [];
-
-    // Separar activas y finalizadas
-    const activas    = props.filter(p => p.estado !== 'vendido');
-    const finalizadas = props.filter(p => p.estado === 'vendido');
-
-    let rows = '';
-
-    // Pisos activos con neto estimado
-    activas.forEach(p => {
+    tbody.innerHTML=props.map(p=>{
       const part = parts.find(pt => pt.propiedad_id === p.id);
-      if (!part) return; // no tiene participación en este piso
-      const aporte   = Number(part.monto_invertido);
-      const pct_part = Number(part.porcentaje);
+      const aporte = part ? Number(part.monto_invertido) : 0;
+      const pct_part = part ? Number(part.porcentaje) : 0;
       let neto = aporte;
       if (p.precio_compra && p.precio_venta && p.precio_compra > 0) {
         const util = (p.precio_venta - p.precio_compra) * pct_part;
-        const fee  = util * 0.15;
-        const imp  = (util - fee) * 0.25;
+        const fee = util * 0.15;
+        const imp = (util - fee) * 0.25;
         neto = aporte + util - fee - imp;
       }
-      const rent = aporte > 0 ? '+' + (((neto - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
-      rows += `<tr>
+      const rent = aporte > 0 ? (((neto - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
+      return `<tr>
         <td><strong>${p.nombre}</strong></td>
         <td>${statusBadge(p.estado)}</td>
         <td class="num">${eur(aporte)}</td>
-        <td>${(pct_part*100).toFixed(2)}%</td>
+        <td>${pct_part ? (pct_part*100).toFixed(2)+'%' : '—'}</td>
         <td class="num pos">${eur(neto)}</td>
-        <td class="pos">${rent}</td>
+        <td class="pos">${rent !== '—' ? '+'+rent : '—'}</td>
       </tr>`;
-    });
-
-    // Pisos finalizados con retorno real de liquidaciones
-    finalizadas.forEach(p => {
-      const liq = liqs.find(l => l.propiedad_id === p.id);
-      if (!liq) return; // no tiene liquidación registrada
-      const aporte  = Number(liq.aporte_usuario);
-      const retorno = Number(liq.total_retorno);
-      const rent    = aporte > 0 ? '+' + (((retorno - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
-      rows += `<tr style="opacity:.75">
-        <td><strong>${p.nombre}</strong></td>
-        <td>${statusBadge(p.estado)}</td>
-        <td class="num">${eur(aporte)}</td>
-        <td>${liq.porcentaje ? (liq.porcentaje*100).toFixed(2)+'%' : '—'}</td>
-        <td class="num pos">${eur(retorno)}</td>
-        <td class="pos">${rent}</td>
-      </tr>`;
-    });
-
-    tbody.innerHTML = rows || '<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--negro3)">Sin propiedades asignadas</td></tr>';
-
-    const totalActivas = activas.filter(p => parts.find(pt => pt.propiedad_id === p.id)).length;
-    if($('st-props')) $('st-props').textContent = totalActivas;
-    if($('st-props-port')) $('st-props-port').textContent = totalActivas;
-  } catch(e) {
-    tbody.innerHTML=`<tr><td colspan="6" style="color:var(--rojo);text-align:center;padding:28px">${e.message}</td></tr>`;
-  }
+    }).join('');
+    if($('st-props')) if($('st-props')) $('st-props').textContent = props.length;
+  } catch(e) { tbody.innerHTML=`<tr><td colspan="6" style="color:var(--rojo);text-align:center;padding:28px">${e.message}</td></tr>`; }
 }
 
 async function loadHistorial() {
@@ -1660,85 +1421,114 @@ async function loadDocumentos() {
   } catch(e) { tbody.innerHTML=`<tr><td colspan="4" style="color:var(--rojo);padding:28px">${e.message}</td></tr>`; }
 }
 
-
+async function loadAdmin() {
+  try {
+    const [stats,inversores,props]=await Promise.all([api('GET','/admin/estadisticas'),api('GET','/inversores'),api('GET','/propiedades')]);
+    INVERSORES_CACHE=inversores; PROPIEDADES_CACHE=props;
+    if($('ast-inv')) $('ast-inv').textContent=stats.inversores_activos;
+    if($('ast-prop')) $('ast-prop').textContent=stats.total_propiedades;
+    if($('ast-cap')) $('ast-cap').textContent=eur(stats.total_capital_gestionado);
+    if($('ast-ret')) $('ast-ret').textContent=eur(stats.total_retornado);
+    if($('ast-rentprom')) $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
+    // Calcular pendiente por inversor desde resumen
 async function renderInversoresConPendiente(inversores) {
   try {
     const resumen = await api('GET', '/admin/resumen-inversores');
     const aportes_todos = resumen.aportes || [];
-    const liqs_todas    = resumen.liquidaciones || [];
-    const parts_todas   = resumen.participaciones || [];
+    const liqs_todas = resumen.liquidaciones || [];
+    const parts_todas = resumen.participaciones || [];
+    
     let pendiente_total = 0;
 
-    function netoEst(aporte, compra, venta) {
-      if (!compra || !venta) return aporte;
-      const util = (venta - compra) * (aporte / compra);
-      const fee  = Math.max(0, util) * 0.15;
-      const imp  = Math.max(0, util - fee) * 0.25;
-      return aporte + util - fee - imp;
-    }
-
     $('admin-inv-body').innerHTML = inversores.map(inv => {
-      const ap_inv   = aportes_todos.filter(a => a.usuario_id === inv.id);
-      const liq_inv  = liqs_todas.filter(l => l.usuario_id === inv.id);
+      const ap_inv = aportes_todos.filter(a => a.usuario_id === inv.id);
+      const liq_inv = liqs_todas.filter(l => l.usuario_id === inv.id);
       const part_inv = parts_todas.filter(p => p.usuario_id === inv.id && p.propiedades?.estado !== 'vendido');
-      const en_cartera_neto = part_inv.reduce((s,p) => s + netoEst(Number(p.monto_invertido||0), Number(p.propiedades?.precio_compra||0), Number(p.propiedades?.precio_venta||0)), 0);
-      const en_cartera_ap   = part_inv.reduce((s,p) => s + Number(p.monto_invertido||0), 0);
-      const total_liq  = liq_inv.reduce((s,l) => s + Number(l.total_retorno||0), 0);
-      const total_ap   = ap_inv.filter(a=>a.tipo==='aporte').reduce((s,a) => s + Number(a.monto_normalizado||a.monto_eur||0), 0);
-      const retiros    = ap_inv.filter(a=>a.tipo==='retiro').reduce((s,a)  => s + Number(a.monto_normalizado||a.monto_eur||0), 0);
-      const pendiente  = part_inv.length ? 0 : Math.max(0, total_liq + total_ap - retiros - en_cartera_ap);
+
+      const en_cartera = part_inv.reduce((s, p) => s + Number(p.monto_invertido || 0), 0);
+      const total_liq = liq_inv.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
+      const retiros = ap_inv.filter(a => a.tipo === 'retiro').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0);
+      const pendiente = Math.max(0, total_liq - retiros - en_cartera + 
+        ap_inv.filter(a => a.tipo === 'aporte').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0) - en_cartera);
+      
+      // Fórmula del Excel: pendiente = valor_actual - neto_en_cartera
+      // Simplificado para la tabla: mostrar en_cartera y total_liq
       pendiente_total += pendiente;
-      const e = n => n > 0 ? '€'+Math.round(n).toLocaleString('es-ES') : '—';
+
+      const eur = n => n > 0 ? '€' + Math.round(n).toLocaleString('es-ES') : '—';
       return `<tr>
         <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
         <td style="color:var(--negro3)">${inv.email}</td>
-        <td class="num">${e(en_cartera_neto)}</td>
-        <td class="num" style="color:${pendiente>0?'var(--naranja)':'var(--negro3)'}">${pendiente>0?e(pendiente):'—'}</td>
-        <td class="num">${e(total_liq)}</td>
-        <td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td>
+        <td class="num">${eur(en_cartera)}</td>
+        <td class="num" style="color:${pendiente > 0 ? 'var(--naranja)' : 'var(--negro3)'}">${pendiente > 0 ? eur(pendiente) : '—'}</td>
+        <td class="num">${eur(total_liq)}</td>
+        <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
         <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
       </tr>`;
     }).join('');
-    if($('ast-pendiente')) $('ast-pendiente').textContent = pendiente_total>0 ? '€'+Math.round(pendiente_total).toLocaleString('es-ES') : '€0';
+
+    if ($('ast-pendiente')) $('ast-pendiente').textContent = pendiente_total > 0 
+      ? '€' + Math.round(pendiente_total).toLocaleString('es-ES') 
+      : '€0';
   } catch(e) {
     $('admin-inv-body').innerHTML = inversores.map(inv => `<tr>
       <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
       <td style="color:var(--negro3)">${inv.email}</td>
       <td colspan="3" style="color:var(--negro3)">—</td>
-      <td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td>
+      <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
       <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
     </tr>`).join('');
   }
 }
+    PROPS_CACHE_ADMIN = props; renderAdminProps(props);
+    const propsActivas=props.filter(p=>p.estado!=='vendido');
+    const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('liq-prop-sel').innerHTML=propOpts;
+    // Poblar checkboxes de destino (excluir el piso seleccionado)
+    // Poblar selector de piso para asignación
+  const propsActivas2 = props.filter(p => p.estado !== 'vendido');
+  if ($('asig-piso-sel')) {
+    $('asig-piso-sel').innerHTML = '<option value="">— Seleccionar —</option>' +
+      propsActivas2.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+  }
+  const fecha_hoy = new Date().toISOString().split('T')[0];
+  if ($('asig-fecha') && !$('asig-fecha').value) $('asig-fecha').value = fecha_hoy;
 
-async function loadAdmin() {
-  try {
-    const [statsRes, inversores, props] = await Promise.all([
-      api('GET', '/admin/estadisticas').catch(() => ({ inversores_activos:0, total_propiedades:0, total_capital_gestionado:0, total_retornado:0, rentabilidad_promedio:0 })),
-      api('GET', '/inversores'),
-      api('GET', '/propiedades')
-    ]);
-    const stats = statsRes || { inversores_activos:0, total_propiedades:0, total_capital_gestionado:0, total_retornado:0, rentabilidad_promedio:0 };
-    INVERSORES_CACHE = inversores;
-    PROPIEDADES_CACHE = props;
-    if($('ast-inv'))      $('ast-inv').textContent      = stats.inversores_activos;
-    if($('ast-prop'))     $('ast-prop').textContent     = props.filter(p=>p.estado!=='vendido').length;
-    if($('ast-cap'))      $('ast-cap').textContent      = eur(stats.total_capital_gestionado);
-    if($('ast-ret'))      $('ast-ret').textContent      = eur(stats.total_retornado);
-    if($('ast-rentprom')) $('ast-rentprom').textContent = '+'+stats.rentabilidad_promedio.toFixed(1)+'%';
-    // Poblar selectores globales
-    const invOpts = inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
-    if($('doc-inv-sel')) $('doc-inv-sel').innerHTML = invOpts;
-    if($('ap-inv-sel'))  $('ap-inv-sel').innerHTML  = invOpts;
-    if($('ap-prop-sel')) $('ap-prop-sel').innerHTML = '<option value="">— Aporte general —</option>' + props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    if($('doc-prop-sel')) $('doc-prop-sel').innerHTML = '<option value="">— Ninguna —</option>' + props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    if($('ap-fecha')) $('ap-fecha').value = new Date().toISOString().split('T')[0];
-    // Renderizar tabla de inversores con pendiente
-    renderInversoresConPendiente(inversores);
-    PROPS_CACHE_ADMIN = props;
-    renderAdminProps(props);
-  } catch(e) { showToast('Error admin: '+e.message, 'err'); }
+  const actualizarDestinos = () => {
+      const selId = $('liq-prop-sel').value;
+      const dest = propsActivas.filter(p => p.id !== selId);
+      // Modo automático - checkboxes
+      $('liq-destino-checks').innerHTML = dest.map(p => `
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)" onchange="previsualizarLiq()">
+          <span>${p.nombre}</span>
+          <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
+        </label>`).join('');
+      // Modo manual - inputs de porcentaje
+      $('liq-destino-manual-rows').innerHTML = dest.map(p => `
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+          <input type="checkbox" value="${p.id}" class="liq-manual-cb" style="accent-color:var(--naranja)" onchange="updateManualTotal()">
+          <span style="flex:1">${p.nombre}</span>
+          <input type="number" class="liq-manual-pct" data-id="${p.id}" min="0" max="100" step="1" placeholder="0"
+            style="width:70px;border:1px solid var(--borde);padding:5px 8px;font-size:12px;text-align:right" 
+            oninput="updateManualTotal()">
+          <span style="font-size:11px;color:var(--negro3)">%</span>
+        </div>`).join('');
+      previsualizarLiq();
+    };
+    actualizarDestinos();
+    $('liq-prop-sel').addEventListener('change', actualizarDestinos);
+    $('doc-prop-sel').innerHTML='<option value="">— Ninguna —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
+    $('doc-inv-sel').innerHTML=invOpts; $('ap-inv-sel').innerHTML=invOpts;
+    const act=await api('GET','/admin/actividad');
+    $('admin-aporte-body').innerHTML=(act.ultimos_aportes||[]).map(a=>`<tr><td>${fmt_date(a.fecha)}</td><td>${a.usuarios?.nombre} ${a.usuarios?.apellido}</td><td>${a.propiedades?.nombre||'General'}</td><td class="num pos">${eur(a.monto_usd)}</td><td><span class="badge badge-green">${a.tipo}</span></td></tr>`).join('');
+    $('ap-fecha').value=new Date().toISOString().split('T')[0];
+    $('liq-fecha').value=new Date().toISOString().split('T')[0];
+  } catch(e) { showToast('Error admin: '+e.message,'err'); }
 }
+
 async function loadAnalisis() {
   try {
     showLoading('Cargando análisis…');
@@ -1877,6 +1667,114 @@ async function loadAnalisis() {
   finally { hideLoading(); }
 }
 
+
+async function loadAdmin() {
+  try {
+    const [stats,inversores,props]=await Promise.all([api('GET','/admin/estadisticas'),api('GET','/inversores'),api('GET','/propiedades')]);
+    INVERSORES_CACHE=inversores; PROPIEDADES_CACHE=props;
+    if($('ast-inv')) $('ast-inv').textContent=stats.inversores_activos;
+    if($('ast-prop')) $('ast-prop').textContent=stats.total_propiedades;
+    if($('ast-cap')) $('ast-cap').textContent=eur(stats.total_capital_gestionado);
+    if($('ast-ret')) $('ast-ret').textContent=eur(stats.total_retornado);
+    if($('ast-rentprom')) $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
+    // Calcular pendiente por inversor desde resumen
+async function renderInversoresConPendiente(inversores) {
+  try {
+    const resumen = await api('GET', '/admin/resumen-inversores');
+    const aportes_todos = resumen.aportes || [];
+    const liqs_todas = resumen.liquidaciones || [];
+    const parts_todas = resumen.participaciones || [];
+    
+    let pendiente_total = 0;
+
+    $('admin-inv-body').innerHTML = inversores.map(inv => {
+      const ap_inv = aportes_todos.filter(a => a.usuario_id === inv.id);
+      const liq_inv = liqs_todas.filter(l => l.usuario_id === inv.id);
+      const part_inv = parts_todas.filter(p => p.usuario_id === inv.id && p.propiedades?.estado !== 'vendido');
+
+      const en_cartera = part_inv.reduce((s, p) => s + Number(p.monto_invertido || 0), 0);
+      const total_liq = liq_inv.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
+      const retiros = ap_inv.filter(a => a.tipo === 'retiro').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0);
+      const pendiente = Math.max(0, total_liq - retiros - en_cartera + 
+        ap_inv.filter(a => a.tipo === 'aporte').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0) - en_cartera);
+      
+      // Fórmula del Excel: pendiente = valor_actual - neto_en_cartera
+      // Simplificado para la tabla: mostrar en_cartera y total_liq
+      pendiente_total += pendiente;
+
+      const eur = n => n > 0 ? '€' + Math.round(n).toLocaleString('es-ES') : '—';
+      return `<tr>
+        <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
+        <td style="color:var(--negro3)">${inv.email}</td>
+        <td class="num">${eur(en_cartera)}</td>
+        <td class="num" style="color:${pendiente > 0 ? 'var(--naranja)' : 'var(--negro3)'}">${pendiente > 0 ? eur(pendiente) : '—'}</td>
+        <td class="num">${eur(total_liq)}</td>
+        <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
+      </tr>`;
+    }).join('');
+
+    if ($('ast-pendiente')) $('ast-pendiente').textContent = pendiente_total > 0 
+      ? '€' + Math.round(pendiente_total).toLocaleString('es-ES') 
+      : '€0';
+  } catch(e) {
+    $('admin-inv-body').innerHTML = inversores.map(inv => `<tr>
+      <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
+      <td style="color:var(--negro3)">${inv.email}</td>
+      <td colspan="3" style="color:var(--negro3)">—</td>
+      <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+      <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
+    </tr>`).join('');
+  }
+}
+    PROPS_CACHE_ADMIN = props; renderAdminProps(props);
+    const propsActivas=props.filter(p=>p.estado!=='vendido');
+    const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('liq-prop-sel').innerHTML=propOpts;
+    // Poblar checkboxes de destino (excluir el piso seleccionado)
+    const actualizarDestinos = () => {
+      const selId = $('liq-prop-sel').value;
+      const dest = propsActivas.filter(p => p.id !== selId);
+      // Modo automático - checkboxes
+      $('liq-destino-checks').innerHTML = dest.map(p => `
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)" onchange="previsualizarLiq()">
+          <span>${p.nombre}</span>
+          <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
+        </label>`).join('');
+      // Modo manual - inputs de porcentaje
+      $('liq-destino-manual-rows').innerHTML = dest.map(p => `
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+          <input type="checkbox" value="${p.id}" class="liq-manual-cb" style="accent-color:var(--naranja)" onchange="updateManualTotal()">
+          <span style="flex:1">${p.nombre}</span>
+          <input type="number" class="liq-manual-pct" data-id="${p.id}" min="0" max="100" step="1" placeholder="0"
+            style="width:70px;border:1px solid var(--borde);padding:5px 8px;font-size:12px;text-align:right" 
+            oninput="updateManualTotal()">
+          <span style="font-size:11px;color:var(--negro3)">%</span>
+        </div>`).join('');
+      previsualizarLiq();
+    };
+    actualizarDestinos();
+    $('liq-prop-sel').addEventListener('change', actualizarDestinos);
+    $('doc-prop-sel').innerHTML='<option value="">— Ninguna —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
+    $('doc-inv-sel').innerHTML=invOpts; $('ap-inv-sel').innerHTML=invOpts;
+    const act=await api('GET','/admin/actividad');
+    $('admin-aporte-body').innerHTML=(act.ultimos_aportes||[]).map(a=>`<tr><td>${fmt_date(a.fecha)}</td><td>${a.usuarios?.nombre} ${a.usuarios?.apellido}</td><td>${a.propiedades?.nombre||'General'}</td><td class="num pos">${eur(a.monto_usd)}</td><td><span class="badge badge-green">${a.tipo}</span></td></tr>`).join('');
+    $('ap-fecha').value=new Date().toISOString().split('T')[0];
+    $('liq-fecha').value=new Date().toISOString().split('T')[0];
+  } catch(e) { showToast('Error admin: '+e.message,'err'); }
+}
+
+
+// INVERSOR CRUD
+// INVERSOR CRUD
+function openModal_newInversor() {
+  $('inv-modal-title').textContent='Nuevo inversor'; $('inv-edit-id').value='';
+  ['inv-nombre','inv-apellido','inv-email','inv-tel','inv-pass'].forEach(id=>$(id).value='');
+  $('inv-activo').value='true'; openModal('modal-inversor');
+}
 async function editInversor(id) {
   const inv=INVERSORES_CACHE.find(i=>i.id===id); if(!inv) return;
   $('inv-modal-title').textContent='Editar inversor'; $('inv-edit-id').value=id;
@@ -2899,30 +2797,6 @@ async function verOperacion(propId) {
 // ══ APORTES ADMIN ══
 
 
-async function loadAdminAportes() {
-  try {
-    // Cargar aportes, propiedades e inversores en paralelo para tener todas las opciones
-    const [aportes, props, inversores] = await Promise.all([
-      api('GET', '/aportes'),
-      api('GET', '/propiedades'),
-      api('GET', '/inversores')
-    ]);
-    APORTES_CACHE_ADMIN = aportes || [];
-
-    // Poblar filtro de pisos desde todas las propiedades
-    if($('ap-filter-prop')) {
-      $('ap-filter-prop').innerHTML = '<option value="">Todos los pisos</option>' +
-        props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    }
-    // Poblar filtro de inversores desde todos los inversores
-    if($('ap-filter-inv')) {
-      $('ap-filter-inv').innerHTML = '<option value="">Todos los inversores</option>' +
-        inversores.filter(i=>i.rol!=='admin').map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
-    }
-    renderAportes(aportes);
-  } catch(e) { console.error('Error cargando aportes:', e); showToast('Error cargando movimientos','err'); }
-}
-
 function limpiarFiltrosAportes() {
   if($('ap-filter-fecha')) $('ap-filter-fecha').value = '';
   if($('ap-filter-prop'))  $('ap-filter-prop').value  = '';
@@ -2938,74 +2812,30 @@ function filtrarAportes() {
   if (fecha) items = items.filter(a => (a.fecha||'').startsWith(fecha));
   if (prop)  items = items.filter(a => a.propiedad_id === prop);
   if (inv)   items = items.filter(a => a.usuario_id === inv);
-  if (!items.length && (fecha||prop||inv)) {
-    const tbody = $('admin-aporte-body');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--negro3)">Sin resultados para ese filtro</td></tr>';
-    return;
-  }
   renderAportes(items);
 }
 
 function renderAportes(items) {
   const tbody = $('admin-aporte-body');
   if (!tbody) return;
-
-  // Detectar si algún aporte tiene USD real (distinto de EUR)
-  const hayUSD = items.some(a => a.monto_usd && a.monto_eur && Math.abs(Number(a.monto_usd) - Number(a.monto_eur)) > 1);
-
-  // Actualizar headers de la tabla según si hay USD o no
-  const thead = tbody.closest('table')?.querySelector('thead tr');
-  if (thead) {
-    thead.innerHTML = hayUSD
-      ? '<th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Monto USD</th><th>T/C</th><th>Monto EUR</th><th>Tipo</th><th>Acciones</th>'
-      : '<th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Monto</th><th>Tipo</th><th>Acciones</th>';
-  }
-
   const total_eur = items.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
   const total_usd = items.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_usd||0),0);
-
-  const esRetiro = a => a.tipo === 'retiro';
-  tbody.innerHTML = items.map(a => {
-    const monto_eur = Number(a.monto_eur || a.monto_usd || 0);
-    const monto_usd = Number(a.monto_usd || 0);
-    const tieneUSD = a.monto_usd && a.monto_eur && Math.abs(monto_usd - monto_eur) > 1;
-    const clase = esRetiro(a) ? 'neg' : 'pos';
-    const signo = esRetiro(a) ? '−' : '+';
-    if (hayUSD) {
-      return `<tr>
-        <td>${fmt_date(a.fecha)}</td>
-        <td><strong>${a.usuarios?.nombre||''} ${a.usuarios?.apellido||''}</strong></td>
-        <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
-        <td class="num ${clase}">${tieneUSD ? signo+' USD '+Math.abs(monto_usd).toLocaleString('es-ES',{minimumFractionDigits:2}) : '—'}</td>
-        <td style="color:var(--negro3)">${tieneUSD && a.tipo_cambio ? Number(a.tipo_cambio).toFixed(4) : '—'}</td>
-        <td class="num ${clase}">${signo} €${Math.abs(monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-        <td><span class="badge ${esRetiro(a)?'badge-red':'badge-green'}">${a.tipo}</span></td>
-        <td><button class="btn btn-outline btn-sm" onclick="editAporte('${a.id}')">Editar</button></td>
-      </tr>`;
-    } else {
-      return `<tr>
-        <td>${fmt_date(a.fecha)}</td>
-        <td><strong>${a.usuarios?.nombre||''} ${a.usuarios?.apellido||''}</strong></td>
-        <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
-        <td class="num ${clase}">${signo} €${Math.abs(monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-        <td><span class="badge ${esRetiro(a)?'badge-red':'badge-green'}">${a.tipo}</span></td>
-        <td><button class="btn btn-outline btn-sm" onclick="editAporte('${a.id}')">Editar</button></td>
-      </tr>`;
-    }
-  }).join('') + (hayUSD
-    ? `<tr style="background:var(--gris);font-weight:700;border-top:2px solid var(--borde)">
-        <td colspan="3"><strong>TOTAL APORTADO</strong></td>
-        <td class="num">USD ${total_usd.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-        <td></td>
-        <td class="num">€${total_eur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-        <td colspan="2"></td>
-      </tr>`
-    : `<tr style="background:var(--gris);font-weight:700;border-top:2px solid var(--borde)">
-        <td colspan="3"><strong>TOTAL APORTADO</strong></td>
-        <td class="num">€${total_eur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-        <td colspan="2"></td>
-      </tr>`
-  );
+  tbody.innerHTML = items.map(a => `<tr>
+    <td>${fmt_date(a.fecha)}</td>
+    <td><strong>${a.usuarios?.nombre||''} ${a.usuarios?.apellido||''}</strong></td>
+    <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
+    <td class="num">${a.monto_usd ? eur(a.monto_usd) : '—'}</td>
+    <td style="color:var(--negro3)">${a.tipo_cambio||'—'}</td>
+    <td class="num">${a.monto_eur ? '€'+Number(a.monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2}) : '—'}</td>
+    <td><span class="badge ${a.tipo==='retiro'?'badge-red':'badge-green'}">${a.tipo}</span></td>
+    <td><button class="btn btn-outline btn-sm" onclick="editAporte('${a.id}')">Editar</button></td>
+  </tr>`).join('') + `<tr style="background:var(--gris);font-weight:700">
+    <td colspan="3"><strong>TOTAL</strong></td>
+    <td class="num">${eur(total_usd)}</td>
+    <td></td>
+    <td class="num">€${total_eur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+    <td colspan="2"></td>
+  </tr>`;
 }
 
 // EDITAR LIQUIDACIÓN
@@ -3095,366 +2925,6 @@ async function saveLiquidacion() {
     }
     loadAdminLiquidaciones();
   } catch(e) { showToast(e.message, 'err'); } finally { hideLoading(); }
-}
-
-async function loadLiquidarTab() {
-  try {
-    const [props, inversores] = await Promise.all([
-      api('GET', '/propiedades'),
-      api('GET', '/inversores')
-    ]);
-
-    // liq-prop-sel: solo propiedades ACTIVAS (para liquidar)
-    const activas = props.filter(p => p.estado !== 'vendido');
-    const vendidas = props.filter(p => p.estado === 'vendido');
-
-    if ($('liq-prop-sel')) {
-      $('liq-prop-sel').innerHTML = '<option value="">— Seleccionar propiedad —</option>' +
-        activas.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-    }
-
-    // asig-piso-sel: solo propiedades activas (destino de fondos)
-    if ($('asig-piso-sel')) {
-      $('asig-piso-sel').innerHTML = '<option value="">— Seleccionar piso destino —</option>' +
-        activas.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-    }
-
-    // Destino de fondos al liquidar: activas excluyendo la seleccionada
-    PROPIEDADES_CACHE = props;
-
-    const fecha_hoy = new Date().toISOString().split('T')[0];
-    if ($('liq-fecha') && !$('liq-fecha').value) $('liq-fecha').value = fecha_hoy;
-    if ($('asig-fecha') && !$('asig-fecha').value) $('asig-fecha').value = fecha_hoy;
-
-    // Actualizar destinos cuando cambia el piso seleccionado
-    const actualizarDestinos = () => {
-      const selId = $('liq-prop-sel')?.value;
-      const dest = activas.filter(p => p.id !== selId);
-      if ($('liq-destino-checks')) {
-        $('liq-destino-checks').innerHTML = dest.map(p => `
-          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-            <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)">
-            <span>${p.nombre}</span>
-            <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
-          </label>`).join('');
-      }
-      if ($('liq-destino-manual-rows')) {
-        $('liq-destino-manual-rows').innerHTML = dest.map(p => `
-          <div style="display:flex;align-items:center;gap:10px;font-size:13px">
-            <input type="checkbox" value="${p.id}" class="liq-manual-cb" style="accent-color:var(--naranja)" onchange="updateManualTotal()">
-            <span style="flex:1">${p.nombre}</span>
-            <input type="number" class="liq-manual-pct" data-id="${p.id}" min="0" max="100" step="1" placeholder="0"
-              style="width:70px;border:1px solid var(--borde);padding:5px 8px;font-size:12px;text-align:right"
-              oninput="updateManualTotal()">
-            <span style="font-size:11px;color:var(--negro3)">%</span>
-          </div>`).join('');
-      }
-      previsualizarLiq();
-    };
-
-    $('liq-prop-sel')?.removeEventListener('change', actualizarDestinos);
-    $('liq-prop-sel')?.addEventListener('change', actualizarDestinos);
-    actualizarDestinos();
-
-  } catch(e) { console.error('loadLiquidarTab error:', e); }
-}
-
-// ══ DIGSA DASHBOARD ══════════════════════════════════════════
-async function loadDiGSADashboard() {
-  const tbody = $('digsa-table-body');
-  if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px"><div class="spinner"></div></td></tr>';
-
-  try {
-    const props = await api('GET', '/propiedades');
-
-    // Datos de DIGSA por piso (del Excel — % participación real de cada piso)
-    const DIGSA_DATA = {
-      'Alcalá 146':              { pct: 0.5787, inv: 144872,  honor_vendido: true  },
-      'Jardín San Federico 15':  { pct: 0.5620, inv: 669503,  honor_vendido: true  },
-      'DRC 48':                  { pct: 0.5661, inv: 128401,  honor_vendido: true  },
-      'Villa 4 2° Dcha':         { pct: 0.5832, inv: 317767,  honor_vendido: true  },
-      'Ayala 134':               { pct: 0.4679, inv: 532320,  honor_vendido: true  },
-      'Don Ramón de la Cruz 98': { pct: 0.4411, inv: 365944,  honor_vendido: true  },
-      'Ayala 154':               { pct: 0.5455, inv: 434043,  honor_vendido: true  },
-      'Ayala 78':                { pct: 0.4895, inv: 220250,  honor_vendido: true  },
-      'Lagasca 58':              { pct: 0.5333, inv: 938722,  honor_vendido: false },
-      'Lagasca 80':              { pct: 0.4412, inv: 893935,  honor_vendido: false },
-      'Hermosilla 131':          { pct: 0.4818, inv: 383423,  honor_vendido: false },
-    };
-
-    let total_inv = 0, total_util = 0, total_honor = 0;
-    const rows = [];
-
-    props.forEach(p => {
-      const ds = DIGSA_DATA[p.nombre];
-      if (!ds) return;
-
-      const comp  = Number(p.precio_compra || 0);
-      const venta = Number(p.precio_venta  || 0);
-      const util_bruta_piso = venta - comp;
-      const vendido = p.estado === 'vendido';
-
-      // Como inversor
-      const util_inv_bruta = util_bruta_piso * ds.pct;
-      const fee_inv  = Math.max(0, util_inv_bruta) * 0.15;
-      const imp_inv  = Math.max(0, util_inv_bruta - fee_inv) * 0.25;
-      const util_inv = util_inv_bruta - fee_inv - imp_inv;
-
-      // Como gestor (honorarios)
-      let honor = 0;
-      if (comp > 0 && (vendido || !ds.honor_vendido)) {
-        const gop = comp * 0.02;
-        const com = Math.max(0, util_bruta_piso) * 0.10;
-        const iva = com * 0.21;
-        const fee = Math.max(0, util_bruta_piso) * 0.15;
-        honor = gop + com + iva + fee;
-      } else if (comp > 0) {
-        // Estimado para pisos en obra
-        const gop = comp * 0.02;
-        const util_est = venta - comp;
-        const com = Math.max(0, util_est) * 0.10;
-        const iva = com * 0.21;
-        const fee = Math.max(0, util_est) * 0.15;
-        honor = gop + com + iva + fee;
-      }
-
-      const total = util_inv + honor;
-      const rent  = ds.inv > 0 ? (util_inv / ds.inv * 100).toFixed(1) : 0;
-
-      total_inv   += ds.inv;
-      total_util  += util_inv;
-      total_honor += honor;
-
-      const es_estimado = !vendido;
-      rows.push(`<tr style="${es_estimado ? 'opacity:.85' : ''}">
-        <td><strong>${p.nombre}</strong>${es_estimado ? ' <span style="font-size:10px;color:var(--negro3)">(estimado)</span>' : ''}</td>
-        <td>${statusBadge(p.estado)}</td>
-        <td class="num">${(ds.pct*100).toFixed(1)}%</td>
-        <td class="num">${eur(ds.inv)}</td>
-        <td class="num ${util_inv>0?'pos':''}">${util_inv>0?'+':''}${eur(util_inv)}</td>
-        <td class="num pos">+${eur(honor)}</td>
-        <td class="num" style="font-weight:700;color:var(--naranja)">+${eur(total)}</td>
-        <td class="num ${rent>0?'pos':''}">${rent>0?'+'+rent+'%':'—'}</td>
-      </tr>`);
-    });
-
-    // Fila total
-    const total_total = total_util + total_honor;
-    rows.push(`<tr style="background:var(--negro);color:var(--blanco);font-weight:700">
-      <td colspan="3"><strong>TOTAL DIGSA ESPAÑA</strong></td>
-      <td class="num" style="color:var(--blanco)">${eur(total_inv)}</td>
-      <td class="num" style="color:var(--verde)">+${eur(total_util)}</td>
-      <td class="num" style="color:var(--verde)">+${eur(total_honor)}</td>
-      <td class="num" style="color:var(--naranja)">+${eur(total_total)}</td>
-      <td class="num" style="color:var(--naranja)">${total_inv>0?'+'+(total_util/total_inv*100).toFixed(1)+'%':'—'}</td>
-    </tr>`);
-
-    tbody.innerHTML = rows.join('');
-
-    // Actualizar KPIs
-    if($('dk-inv'))   $('dk-inv').textContent   = eur(total_inv);
-    if($('dk-util'))  $('dk-util').textContent  = '+' + eur(total_util);
-    if($('dk-honor')) $('dk-honor').textContent = '+' + eur(total_honor);
-    if($('dk-total')) $('dk-total').textContent = '+' + eur(total_util + total_honor);
-
-  } catch(e) {
-    if(tbody) tbody.innerHTML = `<tr><td colspan="8" style="color:var(--rojo);padding:20px;text-align:center">${e.message}</td></tr>`;
-    console.error('DIGSA dashboard error:', e);
-  }
-}
-
-async function loadAdminDashboard() {
-  const panel = $('panel-dashboard');
-  if (!panel) return;
-
-  panel.innerHTML = `<div style="text-align:center;padding:40px"><div class="spinner"></div></div>`;
-
-  try {
-    const props = await api('GET', '/propiedades');
-
-    // Datos DIGSA por piso (del Excel)
-    const DS = {
-      'Alcalá 146':              { pct:0.5787, inv:144872  },
-      'Jardín San Federico 15':  { pct:0.5620, inv:669503  },
-      'DRC 48':                  { pct:0.5661, inv:128401  },
-      'Villa 4 2° Dcha':         { pct:0.5832, inv:317767  },
-      'Ayala 134':               { pct:0.4679, inv:532320  },
-      'Don Ramón de la Cruz 98': { pct:0.4411, inv:365944  },
-      'Ayala 154':               { pct:0.5455, inv:434043  },
-      'Ayala 78':                { pct:0.4895, inv:220250  },
-      'Lagasca 58':              { pct:0.5333, inv:938722  },
-      'Lagasca 80':              { pct:0.4412, inv:893935  },
-      'Hermosilla 131':          { pct:0.4818, inv:383423  },
-    };
-
-    let inv_t=0, util_inv_t=0, honor_t=0;
-    const rows_v=[], rows_a=[];
-
-    props.forEach(p => {
-      const ds = DS[p.nombre];
-      if (!ds) return;
-      const comp  = Number(p.precio_compra||0);
-      const venta = Number(p.precio_venta||0);
-      const util_piso = venta - comp;
-
-      // Como inversor
-      const util_b = util_piso * ds.pct;
-      const fee_i  = Math.max(0, util_b) * 0.15;
-      const imp_i  = Math.max(0, util_b - fee_i) * 0.25;
-      const util_n = util_b - fee_i - imp_i;
-
-      // Como gestor
-      const gop   = comp * 0.02;
-      const com   = Math.max(0, util_piso) * 0.10;
-      const iva   = com * 0.21;
-      const fee_g = Math.max(0, util_piso) * 0.15;
-      const honor = gop + com + iva + fee_g;
-
-      inv_t      += ds.inv;
-      util_inv_t += util_n;
-      honor_t    += honor;
-
-      const est = p.estado !== 'vendido';
-      const tag = est ? '<span style="font-size:10px;background:var(--naranja-light);color:var(--naranja2);padding:1px 6px;margin-left:6px">EST.</span>' : '';
-      const row = `<tr>
-        <td><strong>${p.nombre}</strong>${tag}</td>
-        <td class="num">${(ds.pct*100).toFixed(1)}%</td>
-        <td class="num">${eur(ds.inv)}</td>
-        <td class="num pos">+${eur(util_n)}</td>
-        <td class="num pos">+${eur(honor)}</td>
-        <td class="num" style="font-weight:700;color:var(--naranja)">+${eur(util_n+honor)}</td>
-        <td class="num pos">${ds.inv>0?'+'+(util_n/ds.inv*100).toFixed(1)+'%':'—'}</td>
-      </tr>`;
-      est ? rows_a.push(row) : rows_v.push(row);
-    });
-
-    const total = util_inv_t + honor_t;
-    const thead = `<tr>
-      <th>Piso</th><th>% DIGSA</th><th>Inversión</th>
-      <th>Utilidad inversora</th><th>Honorarios gestora</th>
-      <th>Total DIGSA</th><th>Rent.</th></tr>`;
-    const tfoot = `<tr style="background:var(--negro);color:var(--blanco);font-weight:700">
-      <td colspan="2"><strong>TOTAL</strong></td>
-      <td class="num" style="color:var(--blanco)">${eur(inv_t)}</td>
-      <td class="num" style="color:#90EE90">+${eur(util_inv_t)}</td>
-      <td class="num" style="color:#90EE90">+${eur(honor_t)}</td>
-      <td class="num" style="color:var(--naranja)">+${eur(total)}</td>
-      <td class="num" style="color:var(--naranja)">${inv_t>0?'+'+(util_inv_t/inv_t*100).toFixed(1)+'%':'—'}</td>
-    </tr>`;
-
-    panel.innerHTML = `
-      <!-- Header -->
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px">
-       <div><div class="page-hd-line"></div>
-        <h2 style="font-size:28px;margin-bottom:2px">DIGSA España</h2>
-        <p style="color:var(--negro3);font-size:13px;font-weight:300">Como inversora y como gestora · ${new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})}</p>
-       </div>
-      </div>
-
-      <!-- 4 KPIs -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px">
-       <div class="scard scard-accent">
-        <div class="scard-label">Capital invertido</div>
-        <div class="scard-value">${eur(inv_t)}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:4px">En ${Object.keys(DS).length} pisos</div>
-       </div>
-       <div class="scard" style="border-top:3px solid var(--verde)">
-        <div class="scard-label">Como inversora</div>
-        <div class="scard-value" style="color:var(--verde)">+${eur(util_inv_t)}</div>
-        <div style="font-size:11px;color:var(--negro3);margin-top:4px">Utilidad neta (fee + imp.)</div>
-       </div>
-       <div class="scard" style="border-top:3px solid var(--verde)">
-        <div class="scard-label">Como gestora</div>
-        <div class="scard-value" style="color:var(--verde)">+${eur(honor_t)}</div>
-        <div style="font-size:11px;color:var(--negro3);margin-top:4px">GOP + Fee + Comercialización</div>
-       </div>
-       <div class="scard" style="border-top:3px solid var(--naranja);background:var(--naranja-light)">
-        <div class="scard-label" style="color:var(--naranja2)">Total DIGSA</div>
-        <div class="scard-value" style="color:var(--naranja)">+${eur(total)}</div>
-        <div style="font-size:11px;color:var(--naranja2);margin-top:4px">Inversora + Gestora</div>
-       </div>
-      </div>
-
-      <!-- Pisos activos -->
-      ${rows_a.length ? `
-      <div style="margin-bottom:24px">
-       <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--negro3);margin-bottom:12px">PISOS EN OBRA — ESTIMADO</div>
-       <div class="card" style="padding:0">
-        <table class="dtbl"><thead>${thead}</thead><tbody>${rows_a.join('')}</tbody></table>
-       </div>
-      </div>` : ''}
-
-      <!-- Pisos vendidos -->
-      ${rows_v.length ? `
-      <div style="margin-bottom:24px">
-       <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--negro3);margin-bottom:12px">PISOS VENDIDOS — REAL</div>
-       <div class="card" style="padding:0">
-        <table class="dtbl"><thead>${thead}</thead><tbody>${rows_v.join('')}${tfoot}</tbody></table>
-       </div>
-      </div>` : ''}
-
-      <!-- Fórmulas -->
-      <div class="card" style="background:var(--gris)">
-       <div class="card-hd"><h3>Cómo se calcula</h3></div>
-       <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font-size:12px;line-height:2;color:var(--negro3)">
-        <div>
-         <strong style="color:var(--negro);display:block;margin-bottom:4px">Como inversora</strong>
-         Utilidad bruta = (Precio venta − Compra) × % DIGSA<br>
-         Fee = Utilidad × 15%<br>
-         Impuestos = (Utilidad − Fee) × 25%<br>
-         <strong style="color:var(--negro)">Utilidad neta = Utilidad − Fee − Impuestos</strong>
-        </div>
-        <div>
-         <strong style="color:var(--negro);display:block;margin-bottom:4px">Como gestora (honorarios)</strong>
-         Gastos operativos = Precio compra × 2%<br>
-         Fee de éxito = Utilidad bruta × 15%<br>
-         Comercialización = Utilidad bruta × 10%<br>
-         IVA = Comercialización × 21%<br>
-         <strong style="color:var(--negro)">Total = GOP + Fee + Com. + IVA</strong>
-        </div>
-       </div>
-      </div>`;
-
-  } catch(e) {
-    const panel = $('panel-dashboard');
-    if(panel) panel.innerHTML = `<div style="padding:40px;color:var(--rojo);text-align:center">${e.message}</div>`;
-  }
-}
-
-// ══ MODO BORRADOR ════════════════════════════════════════════
-let OP_BORRADOR = true;
-function toggleModoBorrador() {
-  OP_BORRADOR = !OP_BORRADOR;
-  const badge = $('op-modo-badge');
-  const btn   = $('op-btn-guardar');
-  if (badge) {
-    badge.textContent = OP_BORRADOR ? 'MODO BORRADOR' : 'MODO REAL';
-    badge.style.background = OP_BORRADOR ? 'var(--naranja)' : 'var(--verde)';
-  }
-  if (btn) {
-    btn.style.opacity = OP_BORRADOR ? '.5' : '1';
-    btn.title = OP_BORRADOR ? 'Cambiá a Modo Real para guardar' : '';
-  }
-}
-
-function confirmarGuardarOperacion() {
-  if (OP_BORRADOR) {
-    showToast('Estás en modo borrador. Cambiá a Modo Real para guardar.', 'err');
-    return;
-  }
-  if (!confirm('¿Confirmar y guardar esta operación en el sistema? Se registrarán las participaciones de cada inversor.')) return;
-  guardarOperacionSistema();
-}
-
-// ══ TOGGLE TIPO APORTE ════════════════════════════════════════
-function toggleTipoAporte() {
-  const tipo = $('ap-tipo')?.value;
-  const propRow = $('ap-prop-row');
-  if (propRow) propRow.style.display = tipo === 'retiro' ? 'none' : '';
-  // Cambiar label según tipo
-  const montoLabel = document.querySelector('label[for="ap-monto"]');
-  if (montoLabel) montoLabel.textContent = tipo === 'retiro' ? 'Monto a retirar (USD)' : 'Monto (USD)';
 }
 
 function toggleDigsaMenu() {
