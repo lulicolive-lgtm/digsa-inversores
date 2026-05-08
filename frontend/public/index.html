@@ -2812,15 +2812,26 @@ async function verOperacion(propId) {
 
 async function loadAdminAportes() {
   try {
-    const aportes = await api('GET', '/aportes');
+    // Cargar aportes, propiedades e inversores en paralelo para tener todas las opciones
+    const [aportes, props, inversores] = await Promise.all([
+      api('GET', '/aportes'),
+      api('GET', '/propiedades'),
+      api('GET', '/inversores')
+    ]);
     APORTES_CACHE_ADMIN = aportes || [];
-    // Poblar filtros
-    const props_u = [...new Map(aportes.filter(a=>a.propiedades).map(a=>[a.propiedad_id, a.propiedades])).entries()];
-    const invs_u  = [...new Map(aportes.filter(a=>a.usuarios).map(a=>[a.usuario_id, a.usuarios])).entries()];
-    if($('ap-filter-prop')) $('ap-filter-prop').innerHTML = '<option value="">Todos los pisos</option>' + props_u.map(([id,p])=>`<option value="${id}">${p.nombre}</option>`).join('');
-    if($('ap-filter-inv'))  $('ap-filter-inv').innerHTML  = '<option value="">Todos los inversores</option>' + invs_u.map(([id,u])=>`<option value="${id}">${u.nombre} ${u.apellido}</option>`).join('');
+
+    // Poblar filtro de pisos desde todas las propiedades
+    if($('ap-filter-prop')) {
+      $('ap-filter-prop').innerHTML = '<option value="">Todos los pisos</option>' +
+        props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    }
+    // Poblar filtro de inversores desde todos los inversores
+    if($('ap-filter-inv')) {
+      $('ap-filter-inv').innerHTML = '<option value="">Todos los inversores</option>' +
+        inversores.filter(i=>i.rol!=='admin').map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
+    }
     renderAportes(aportes);
-  } catch(e) { console.error('Error cargando aportes:', e); }
+  } catch(e) { console.error('Error cargando aportes:', e); showToast('Error cargando movimientos','err'); }
 }
 
 function limpiarFiltrosAportes() {
@@ -2838,6 +2849,11 @@ function filtrarAportes() {
   if (fecha) items = items.filter(a => (a.fecha||'').startsWith(fecha));
   if (prop)  items = items.filter(a => a.propiedad_id === prop);
   if (inv)   items = items.filter(a => a.usuario_id === inv);
+  if (!items.length && (fecha||prop||inv)) {
+    const tbody = $('admin-aporte-body');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--negro3)">Sin resultados para ese filtro</td></tr>';
+    return;
+  }
   renderAportes(items);
 }
 
