@@ -431,13 +431,9 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div><div class="page-hd-line"></div><h2 id="prox-titulo">Próxima inversión · Lagasca 80</h2><p id="prox-subtitulo">Madrid · Flipping residencial</p></div>
    </div>
 
-   <!-- Banner próxima -->
-   <div style="background:var(--negro);padding:28px 36px;margin-bottom:28px">
-    <div style="font-size:10px;letter-spacing:2.5px;color:var(--naranja);font-weight:700;margin-bottom:8px">NUEVA OPORTUNIDAD</div>
-    <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco)" id="prox-titulo-banner">Lagasca 80</div>
-    <span id="prox-countdown" style="display:none"></span>
-    <span id="prox-fecha-banner" style="display:none"></span>
-   </div>
+   <span id="prox-countdown" style="display:none"></span>
+   <span id="prox-fecha-banner" style="display:none"></span>
+   <span id="prox-titulo-banner" style="display:none"></span>
 
    <!-- KPIs -->
    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px">
@@ -488,7 +484,10 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <!-- Planos -->
     <div style="display:flex;flex-direction:column;gap:20px">
      <div class="card" style="flex:1">
-      <div class="card-hd"><h3>Plano actual</h3></div>
+      <div class="card-hd">
+       <h3>Plano actual</h3>
+       <a id="prox-plano-actual-dl" style="display:none;font-size:12px;color:var(--naranja);font-weight:600;cursor:pointer" download="plano_actual.png">⬇ Descargar</a>
+      </div>
       <div id="prox-plano-actual-wrap" style="background:var(--gris);border:2px dashed var(--borde);height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--negro3)">
        <div style="font-size:32px">📐</div>
        <div style="font-size:12px;font-weight:300">Plano disponible próximamente</div>
@@ -515,7 +514,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <div>
       <div style="font-size:15px;font-weight:600;color:var(--negro)" id="prox-mapa-label">Lagasca 80, Madrid</div>
       <div style="font-size:13px;font-weight:300">Barrio de Salamanca · 28001 Madrid</div>
-      <a href="https://maps.google.com/?q=Lagasca+80+Madrid" target="_blank" style="font-size:12px;color:var(--naranja);font-weight:600;margin-top:6px;display:inline-block">Ver en Google Maps →</a>
+      <a id="prox-maps-link" href="https://maps.google.com/?q=Lagasca+80+Madrid" target="_blank" style="font-size:12px;color:var(--naranja);font-weight:600;margin-top:6px;display:inline-block">Ver en Google Maps →</a>
      </div>
     </div>
    </div>
@@ -2357,6 +2356,7 @@ async function cargarDatosProxima() {
 function aplicarDatosProxima(d) {
   const fmt = n => n ? '€' + Number(n).toLocaleString('es-ES') : '—';
   if ($('prox-titulo')) $('prox-titulo').textContent = 'Próxima inversión · ' + (d.nombre || 'Lagasca 80');
+  if ($('prox-subtitulo')) $('prox-subtitulo').textContent = (d.ubic || 'Madrid') + ' · Flipping residencial';
   if ($('prox-titulo-banner')) $('prox-titulo-banner').textContent = (d.nombre || '') + (d.ubic ? ' · ' + d.ubic : ' · Madrid');
   if ($('prox-precio-venta')) $('prox-precio-venta').textContent = fmt(d.pventa);
   if ($('prox-compra')) $('prox-compra').textContent = fmt(d.compra);
@@ -2367,6 +2367,11 @@ function aplicarDatosProxima(d) {
   if ($('prox-ubicacion')) $('prox-ubicacion').textContent = d.ubic || '—';
   if ($('prox-duracion-display')) $('prox-duracion-display').textContent = d.duracion || '—';
   if ($('prox-mapa-label')) $('prox-mapa-label').textContent = (d.nombre || 'Lagasca 80') + ', Madrid';
+  const mapsLink = $('prox-maps-link');
+  if (mapsLink) {
+    const query = encodeURIComponent((d.ubic || d.nombre || 'Lagasca 80') + ', Madrid');
+    mapsLink.href = 'https://maps.google.com/?q=' + query;
+  }
   if (d.fecha) {
     const dt = new Date(d.fecha + 'T00:00:00');
     const label = dt.toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
@@ -2378,8 +2383,11 @@ function aplicarDatosProxima(d) {
     if ($('prox-countdown')) $('prox-countdown').textContent = cdTxt;
     if ($('prox-countdown-kpi')) $('prox-countdown-kpi').textContent = cdTxt;
   }
-  if (d.plano_actual && $('prox-plano-actual-wrap'))
+  if (d.plano_actual && $('prox-plano-actual-wrap')) {
     $('prox-plano-actual-wrap').innerHTML = `<img src="${d.plano_actual}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
+    const dlA = $('prox-plano-actual-dl');
+    if (dlA) { dlA.style.display = 'inline'; dlA.href = d.plano_actual; }
+  }
   if (d.plano_prop && $('prox-plano-prop-wrap')) {
     $('prox-plano-prop-wrap').innerHTML = `<img src="${d.plano_prop}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
     const dlBtn = $('prox-plano-prop-dl');
