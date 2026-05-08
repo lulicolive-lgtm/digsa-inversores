@@ -1434,114 +1434,84 @@ async function loadDocumentos() {
   } catch(e) { tbody.innerHTML=`<tr><td colspan="4" style="color:var(--rojo);padding:28px">${e.message}</td></tr>`; }
 }
 
-async function loadAdmin() {
-  try {
-    const [stats,inversores,props]=await Promise.all([api('GET','/admin/estadisticas'),api('GET','/inversores'),api('GET','/propiedades')]);
-    INVERSORES_CACHE=inversores; PROPIEDADES_CACHE=props;
-    if($('ast-inv')) $('ast-inv').textContent=stats.inversores_activos;
-    if($('ast-prop')) $('ast-prop').textContent=stats.total_propiedades;
-    if($('ast-cap')) $('ast-cap').textContent=eur(stats.total_capital_gestionado);
-    if($('ast-ret')) $('ast-ret').textContent=eur(stats.total_retornado);
-    if($('ast-rentprom')) $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
-    // Calcular pendiente por inversor desde resumen
+
 async function renderInversoresConPendiente(inversores) {
   try {
     const resumen = await api('GET', '/admin/resumen-inversores');
     const aportes_todos = resumen.aportes || [];
-    const liqs_todas = resumen.liquidaciones || [];
-    const parts_todas = resumen.participaciones || [];
-    
+    const liqs_todas    = resumen.liquidaciones || [];
+    const parts_todas   = resumen.participaciones || [];
     let pendiente_total = 0;
 
+    function netoEst(aporte, compra, venta) {
+      if (!compra || !venta) return aporte;
+      const util = (venta - compra) * (aporte / compra);
+      const fee  = Math.max(0, util) * 0.15;
+      const imp  = Math.max(0, util - fee) * 0.25;
+      return aporte + util - fee - imp;
+    }
+
     $('admin-inv-body').innerHTML = inversores.map(inv => {
-      const ap_inv = aportes_todos.filter(a => a.usuario_id === inv.id);
-      const liq_inv = liqs_todas.filter(l => l.usuario_id === inv.id);
+      const ap_inv   = aportes_todos.filter(a => a.usuario_id === inv.id);
+      const liq_inv  = liqs_todas.filter(l => l.usuario_id === inv.id);
       const part_inv = parts_todas.filter(p => p.usuario_id === inv.id && p.propiedades?.estado !== 'vendido');
-
-      const en_cartera = part_inv.reduce((s, p) => s + Number(p.monto_invertido || 0), 0);
-      const total_liq = liq_inv.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
-      const retiros = ap_inv.filter(a => a.tipo === 'retiro').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0);
-      const pendiente = Math.max(0, total_liq - retiros - en_cartera + 
-        ap_inv.filter(a => a.tipo === 'aporte').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0) - en_cartera);
-      
-      // Fórmula del Excel: pendiente = valor_actual - neto_en_cartera
-      // Simplificado para la tabla: mostrar en_cartera y total_liq
+      const en_cartera_neto = part_inv.reduce((s,p) => s + netoEst(Number(p.monto_invertido||0), Number(p.propiedades?.precio_compra||0), Number(p.propiedades?.precio_venta||0)), 0);
+      const en_cartera_ap   = part_inv.reduce((s,p) => s + Number(p.monto_invertido||0), 0);
+      const total_liq  = liq_inv.reduce((s,l) => s + Number(l.total_retorno||0), 0);
+      const total_ap   = ap_inv.filter(a=>a.tipo==='aporte').reduce((s,a) => s + Number(a.monto_normalizado||a.monto_eur||0), 0);
+      const retiros    = ap_inv.filter(a=>a.tipo==='retiro').reduce((s,a)  => s + Number(a.monto_normalizado||a.monto_eur||0), 0);
+      const pendiente  = part_inv.length ? 0 : Math.max(0, total_liq + total_ap - retiros - en_cartera_ap);
       pendiente_total += pendiente;
-
-      const eur = n => n > 0 ? '€' + Math.round(n).toLocaleString('es-ES') : '—';
+      const e = n => n > 0 ? '€'+Math.round(n).toLocaleString('es-ES') : '—';
       return `<tr>
         <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
         <td style="color:var(--negro3)">${inv.email}</td>
-        <td class="num">${eur(en_cartera)}</td>
-        <td class="num" style="color:${pendiente > 0 ? 'var(--naranja)' : 'var(--negro3)'}">${pendiente > 0 ? eur(pendiente) : '—'}</td>
-        <td class="num">${eur(total_liq)}</td>
-        <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+        <td class="num">${e(en_cartera_neto)}</td>
+        <td class="num" style="color:${pendiente>0?'var(--naranja)':'var(--negro3)'}">${pendiente>0?e(pendiente):'—'}</td>
+        <td class="num">${e(total_liq)}</td>
+        <td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td>
         <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
       </tr>`;
     }).join('');
-
-    if ($('ast-pendiente')) $('ast-pendiente').textContent = pendiente_total > 0 
-      ? '€' + Math.round(pendiente_total).toLocaleString('es-ES') 
-      : '€0';
+    if($('ast-pendiente')) $('ast-pendiente').textContent = pendiente_total>0 ? '€'+Math.round(pendiente_total).toLocaleString('es-ES') : '€0';
   } catch(e) {
     $('admin-inv-body').innerHTML = inversores.map(inv => `<tr>
       <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
       <td style="color:var(--negro3)">${inv.email}</td>
       <td colspan="3" style="color:var(--negro3)">—</td>
-      <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
+      <td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td>
       <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
     </tr>`).join('');
   }
 }
-    PROPS_CACHE_ADMIN = props; renderAdminProps(props);
-    const propsActivas=props.filter(p=>p.estado!=='vendido');
-    const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    $('liq-prop-sel').innerHTML=propOpts;
-    // Poblar checkboxes de destino (excluir el piso seleccionado)
-    // Poblar selector de piso para asignación
-  const propsActivas2 = props.filter(p => p.estado !== 'vendido');
-  if ($('asig-piso-sel')) {
-    $('asig-piso-sel').innerHTML = '<option value="">— Seleccionar —</option>' +
-      propsActivas2.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-  }
-  const fecha_hoy = new Date().toISOString().split('T')[0];
-  if ($('asig-fecha') && !$('asig-fecha').value) $('asig-fecha').value = fecha_hoy;
 
-  const actualizarDestinos = () => {
-      const selId = $('liq-prop-sel').value;
-      const dest = propsActivas.filter(p => p.id !== selId);
-      // Modo automático - checkboxes
-      $('liq-destino-checks').innerHTML = dest.map(p => `
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)" onchange="previsualizarLiq()">
-          <span>${p.nombre}</span>
-          <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
-        </label>`).join('');
-      // Modo manual - inputs de porcentaje
-      $('liq-destino-manual-rows').innerHTML = dest.map(p => `
-        <div style="display:flex;align-items:center;gap:10px;font-size:13px">
-          <input type="checkbox" value="${p.id}" class="liq-manual-cb" style="accent-color:var(--naranja)" onchange="updateManualTotal()">
-          <span style="flex:1">${p.nombre}</span>
-          <input type="number" class="liq-manual-pct" data-id="${p.id}" min="0" max="100" step="1" placeholder="0"
-            style="width:70px;border:1px solid var(--borde);padding:5px 8px;font-size:12px;text-align:right" 
-            oninput="updateManualTotal()">
-          <span style="font-size:11px;color:var(--negro3)">%</span>
-        </div>`).join('');
-      previsualizarLiq();
-    };
-    actualizarDestinos();
-    $('liq-prop-sel').addEventListener('change', actualizarDestinos);
-    $('doc-prop-sel').innerHTML='<option value="">— Ninguna —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
-    $('doc-inv-sel').innerHTML=invOpts; $('ap-inv-sel').innerHTML=invOpts;
-    const act=await api('GET','/admin/actividad');
-    if(APORTES_CACHE_ADMIN.length) renderAportes(APORTES_CACHE_ADMIN);
-    $('ap-fecha').value=new Date().toISOString().split('T')[0];
-    $('liq-fecha').value=new Date().toISOString().split('T')[0];
-  } catch(e) { showToast('Error admin: '+e.message,'err'); }
+async function loadAdmin() {
+  try {
+    const [stats, inversores, props] = await Promise.all([
+      api('GET', '/admin/estadisticas'),
+      api('GET', '/inversores'),
+      api('GET', '/propiedades')
+    ]);
+    INVERSORES_CACHE = inversores;
+    PROPIEDADES_CACHE = props;
+    if($('ast-inv'))      $('ast-inv').textContent      = stats.inversores_activos;
+    if($('ast-prop'))     $('ast-prop').textContent     = props.filter(p=>p.estado!=='vendido').length;
+    if($('ast-cap'))      $('ast-cap').textContent      = eur(stats.total_capital_gestionado);
+    if($('ast-ret'))      $('ast-ret').textContent      = eur(stats.total_retornado);
+    if($('ast-rentprom')) $('ast-rentprom').textContent = '+'+stats.rentabilidad_promedio.toFixed(1)+'%';
+    // Poblar selectores globales
+    const invOpts = inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
+    if($('doc-inv-sel')) $('doc-inv-sel').innerHTML = invOpts;
+    if($('ap-inv-sel'))  $('ap-inv-sel').innerHTML  = invOpts;
+    if($('ap-prop-sel')) $('ap-prop-sel').innerHTML = '<option value="">— Aporte general —</option>' + props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    if($('doc-prop-sel')) $('doc-prop-sel').innerHTML = '<option value="">— Ninguna —</option>' + props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    if($('ap-fecha')) $('ap-fecha').value = new Date().toISOString().split('T')[0];
+    // Renderizar tabla de inversores con pendiente
+    renderInversoresConPendiente(inversores);
+    PROPS_CACHE_ADMIN = props;
+    renderAdminProps(props);
+  } catch(e) { showToast('Error admin: '+e.message, 'err'); }
 }
-
 async function loadAnalisis() {
   try {
     showLoading('Cargando análisis…');
@@ -1680,114 +1650,6 @@ async function loadAnalisis() {
   finally { hideLoading(); }
 }
 
-
-async function loadAdmin() {
-  try {
-    const [stats,inversores,props]=await Promise.all([api('GET','/admin/estadisticas'),api('GET','/inversores'),api('GET','/propiedades')]);
-    INVERSORES_CACHE=inversores; PROPIEDADES_CACHE=props;
-    if($('ast-inv')) $('ast-inv').textContent=stats.inversores_activos;
-    if($('ast-prop')) $('ast-prop').textContent=stats.total_propiedades;
-    if($('ast-cap')) $('ast-cap').textContent=eur(stats.total_capital_gestionado);
-    if($('ast-ret')) $('ast-ret').textContent=eur(stats.total_retornado);
-    if($('ast-rentprom')) $('ast-rentprom').textContent='+'+stats.rentabilidad_promedio.toFixed(1)+'%';
-    // Calcular pendiente por inversor desde resumen
-async function renderInversoresConPendiente(inversores) {
-  try {
-    const resumen = await api('GET', '/admin/resumen-inversores');
-    const aportes_todos = resumen.aportes || [];
-    const liqs_todas = resumen.liquidaciones || [];
-    const parts_todas = resumen.participaciones || [];
-    
-    let pendiente_total = 0;
-
-    $('admin-inv-body').innerHTML = inversores.map(inv => {
-      const ap_inv = aportes_todos.filter(a => a.usuario_id === inv.id);
-      const liq_inv = liqs_todas.filter(l => l.usuario_id === inv.id);
-      const part_inv = parts_todas.filter(p => p.usuario_id === inv.id && p.propiedades?.estado !== 'vendido');
-
-      const en_cartera = part_inv.reduce((s, p) => s + Number(p.monto_invertido || 0), 0);
-      const total_liq = liq_inv.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
-      const retiros = ap_inv.filter(a => a.tipo === 'retiro').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0);
-      const pendiente = Math.max(0, total_liq - retiros - en_cartera + 
-        ap_inv.filter(a => a.tipo === 'aporte').reduce((s, a) => s + Number(a.monto_normalizado || 0), 0) - en_cartera);
-      
-      // Fórmula del Excel: pendiente = valor_actual - neto_en_cartera
-      // Simplificado para la tabla: mostrar en_cartera y total_liq
-      pendiente_total += pendiente;
-
-      const eur = n => n > 0 ? '€' + Math.round(n).toLocaleString('es-ES') : '—';
-      return `<tr>
-        <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
-        <td style="color:var(--negro3)">${inv.email}</td>
-        <td class="num">${eur(en_cartera)}</td>
-        <td class="num" style="color:${pendiente > 0 ? 'var(--naranja)' : 'var(--negro3)'}">${pendiente > 0 ? eur(pendiente) : '—'}</td>
-        <td class="num">${eur(total_liq)}</td>
-        <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
-        <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
-      </tr>`;
-    }).join('');
-
-    if ($('ast-pendiente')) $('ast-pendiente').textContent = pendiente_total > 0 
-      ? '€' + Math.round(pendiente_total).toLocaleString('es-ES') 
-      : '€0';
-  } catch(e) {
-    $('admin-inv-body').innerHTML = inversores.map(inv => `<tr>
-      <td><strong>${inv.nombre} ${inv.apellido}</strong></td>
-      <td style="color:var(--negro3)">${inv.email}</td>
-      <td colspan="3" style="color:var(--negro3)">—</td>
-      <td>${inv.activo ? '<span class="badge badge-green">Activo</span>' : '<span class="badge badge-red">Inactivo</span>'}</td>
-      <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
-    </tr>`).join('');
-  }
-}
-    PROPS_CACHE_ADMIN = props; renderAdminProps(props);
-    const propsActivas=props.filter(p=>p.estado!=='vendido');
-    const propOpts=propsActivas.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    $('liq-prop-sel').innerHTML=propOpts;
-    // Poblar checkboxes de destino (excluir el piso seleccionado)
-    const actualizarDestinos = () => {
-      const selId = $('liq-prop-sel').value;
-      const dest = propsActivas.filter(p => p.id !== selId);
-      // Modo automático - checkboxes
-      $('liq-destino-checks').innerHTML = dest.map(p => `
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-          <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)" onchange="previsualizarLiq()">
-          <span>${p.nombre}</span>
-          <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
-        </label>`).join('');
-      // Modo manual - inputs de porcentaje
-      $('liq-destino-manual-rows').innerHTML = dest.map(p => `
-        <div style="display:flex;align-items:center;gap:10px;font-size:13px">
-          <input type="checkbox" value="${p.id}" class="liq-manual-cb" style="accent-color:var(--naranja)" onchange="updateManualTotal()">
-          <span style="flex:1">${p.nombre}</span>
-          <input type="number" class="liq-manual-pct" data-id="${p.id}" min="0" max="100" step="1" placeholder="0"
-            style="width:70px;border:1px solid var(--borde);padding:5px 8px;font-size:12px;text-align:right" 
-            oninput="updateManualTotal()">
-          <span style="font-size:11px;color:var(--negro3)">%</span>
-        </div>`).join('');
-      previsualizarLiq();
-    };
-    actualizarDestinos();
-    $('liq-prop-sel').addEventListener('change', actualizarDestinos);
-    $('doc-prop-sel').innerHTML='<option value="">— Ninguna —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
-    $('doc-inv-sel').innerHTML=invOpts; $('ap-inv-sel').innerHTML=invOpts;
-    const act=await api('GET','/admin/actividad');
-    if(APORTES_CACHE_ADMIN.length) renderAportes(APORTES_CACHE_ADMIN);
-    $('ap-fecha').value=new Date().toISOString().split('T')[0];
-    $('liq-fecha').value=new Date().toISOString().split('T')[0];
-  } catch(e) { showToast('Error admin: '+e.message,'err'); }
-}
-
-
-// INVERSOR CRUD
-// INVERSOR CRUD
-function openModal_newInversor() {
-  $('inv-modal-title').textContent='Nuevo inversor'; $('inv-edit-id').value='';
-  ['inv-nombre','inv-apellido','inv-email','inv-tel','inv-pass'].forEach(id=>$(id).value='');
-  $('inv-activo').value='true'; openModal('modal-inversor');
-}
 async function editInversor(id) {
   const inv=INVERSORES_CACHE.find(i=>i.id===id); if(!inv) return;
   $('inv-modal-title').textContent='Editar inversor'; $('inv-edit-id').value=id;
