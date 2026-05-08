@@ -431,27 +431,20 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div><div class="page-hd-line"></div><h2 id="prox-titulo">Próxima inversión · Lagasca 80</h2><p id="prox-subtitulo">Madrid · Flipping residencial</p></div>
    </div>
 
-   <!-- Banner motivador -->
-   <div style="background:var(--negro);padding:24px 36px;display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+   <!-- Banner próxima -->
+   <div style="background:var(--negro);padding:28px 36px;display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:24px">
     <div>
-     <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco);margin-bottom:6px">Tu inversión sigue girando.</div>
-     <div style="font-size:13px;color:rgba(255,255,255,.5);font-weight:300;max-width:560px">Una nueva oportunidad en el Barrio de Salamanca. Si querés hacer un aporte adicional, este es el momento — <strong style="color:rgba(255,255,255,.8)"><span id="prox-countdown"></span></strong> para participar.</div>
-    </div>
-    <div style="text-align:right;flex-shrink:0">
-     <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:4px">CIERRE</div>
-     <div style="font-family:'Playfair Display',serif;font-size:24px;color:var(--naranja)" id="prox-fecha-banner">1 jun 2026</div>
+     <div style="font-size:10px;letter-spacing:2.5px;color:var(--naranja);font-weight:700;margin-bottom:8px">NUEVA OPORTUNIDAD</div>
+     <div style="font-family:'Playfair Display',serif;font-size:20px;color:var(--blanco);margin-bottom:6px" id="prox-titulo-banner">Barrio de Salamanca · Madrid</div>
+     <div style="font-size:13px;color:rgba(255,255,255,.5);font-weight:300;max-width:500px">Si querés participar, el plazo de aporte cierra el <strong style="color:rgba(255,255,255,.8)" id="prox-fecha-banner">—</strong> · <span id="prox-countdown" style="color:var(--naranja)"></span></div>
     </div>
    </div>
 
-   <!-- 5 KPIs según docs -->
-   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px">
+   <!-- KPIs -->
+   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px">
     <div class="scard">
      <div class="scard-label">Valor de compra</div>
      <div class="scard-value" id="prox-compra">—</div>
-    </div>
-    <div class="scard">
-     <div class="scard-label">Gastos operativos</div>
-     <div class="scard-value" id="prox-gastos-op">—</div>
     </div>
     <div class="scard scard-accent">
      <div class="scard-label">Valor estimado de venta</div>
@@ -461,9 +454,10 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      <div class="scard-label">Rentabilidad estimada</div>
      <div class="scard-value" id="prox-rentabilidad" style="color:var(--naranja)">—</div>
     </div>
-    <div class="scard">
-     <div class="scard-label">Fecha límite de aporte</div>
-     <div class="scard-value" id="prox-fecha-display">—</div>
+    <div class="scard" style="border:1px solid var(--naranja-light)">
+     <div class="scard-label">Fecha límite</div>
+     <div class="scard-value" id="prox-fecha-display" style="font-size:16px">—</div>
+     <div style="font-size:11px;color:var(--naranja);margin-top:4px" id="prox-countdown-kpi"></div>
     </div>
    </div>
 
@@ -502,7 +496,10 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
       </div>
      </div>
      <div class="card" style="flex:1">
-      <div class="card-hd"><h3>Plano propuesto</h3></div>
+      <div class="card-hd">
+       <h3>Plano propuesto</h3>
+       <a id="prox-plano-prop-dl" style="display:none;font-size:12px;color:var(--naranja);font-weight:600;cursor:pointer" download="plano_propuesto.png">⬇ Descargar</a>
+      </div>
       <div id="prox-plano-prop-wrap" style="background:var(--gris);border:2px dashed var(--borde);height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--negro3)">
        <div style="font-size:32px">🏗️</div>
        <div style="font-size:12px;font-weight:300">Plano disponible próximamente</div>
@@ -2361,6 +2358,7 @@ async function cargarDatosProxima() {
 function aplicarDatosProxima(d) {
   const fmt = n => n ? '€' + Number(n).toLocaleString('es-ES') : '—';
   if ($('prox-titulo')) $('prox-titulo').textContent = 'Próxima inversión · ' + (d.nombre || 'Lagasca 80');
+  if ($('prox-titulo-banner')) $('prox-titulo-banner').textContent = (d.nombre || '') + (d.ubic ? ' · ' + d.ubic : ' · Madrid');
   if ($('prox-precio-venta')) $('prox-precio-venta').textContent = fmt(d.pventa);
   if ($('prox-compra')) $('prox-compra').textContent = fmt(d.compra);
   if ($('prox-gastos-op')) $('prox-gastos-op').textContent = fmt(d.gastos);
@@ -2377,12 +2375,17 @@ function aplicarDatosProxima(d) {
     if ($('prox-fecha-banner')) $('prox-fecha-banner').textContent = label;
     // Countdown
     const dias = Math.ceil((dt - new Date()) / 86400000);
-    if ($('prox-countdown')) $('prox-countdown').textContent = dias > 0 ? `quedan ${dias} días` : 'plazo vencido';
+    const cdTxt = dias > 0 ? `quedan ${dias} días` : 'plazo vencido';
+    if ($('prox-countdown')) $('prox-countdown').textContent = cdTxt;
+    if ($('prox-countdown-kpi')) $('prox-countdown-kpi').textContent = cdTxt;
   }
   if (d.plano_actual && $('prox-plano-actual-wrap'))
     $('prox-plano-actual-wrap').innerHTML = `<img src="${d.plano_actual}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
-  if (d.plano_prop && $('prox-plano-prop-wrap'))
+  if (d.plano_prop && $('prox-plano-prop-wrap')) {
     $('prox-plano-prop-wrap').innerHTML = `<img src="${d.plano_prop}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
+    const dlBtn = $('prox-plano-prop-dl');
+    if (dlBtn) { dlBtn.style.display = 'inline'; dlBtn.href = d.plano_prop; }
+  }
 }
 
 // Cargar al inicio y actualizar countdown
