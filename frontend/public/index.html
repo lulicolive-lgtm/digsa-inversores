@@ -1532,7 +1532,7 @@ async function renderInversoresConPendiente(inversores) {
     const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
     $('doc-inv-sel').innerHTML=invOpts; $('ap-inv-sel').innerHTML=invOpts;
     const act=await api('GET','/admin/actividad');
-    $('admin-aporte-body').innerHTML=(act.ultimos_aportes||[]).map(a=>`<tr><td>${fmt_date(a.fecha)}</td><td>${a.usuarios?.nombre} ${a.usuarios?.apellido}</td><td>${a.propiedades?.nombre||'General'}</td><td class="num pos">${eur(a.monto_usd)}</td><td><span class="badge badge-green">${a.tipo}</span></td></tr>`).join('');
+    if(APORTES_CACHE_ADMIN.length) renderAportes(APORTES_CACHE_ADMIN);
     $('ap-fecha').value=new Date().toISOString().split('T')[0];
     $('liq-fecha').value=new Date().toISOString().split('T')[0];
   } catch(e) { showToast('Error admin: '+e.message,'err'); }
@@ -1770,7 +1770,7 @@ async function renderInversoresConPendiente(inversores) {
     const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
     $('doc-inv-sel').innerHTML=invOpts; $('ap-inv-sel').innerHTML=invOpts;
     const act=await api('GET','/admin/actividad');
-    $('admin-aporte-body').innerHTML=(act.ultimos_aportes||[]).map(a=>`<tr><td>${fmt_date(a.fecha)}</td><td>${a.usuarios?.nombre} ${a.usuarios?.apellido}</td><td>${a.propiedades?.nombre||'General'}</td><td class="num pos">${eur(a.monto_usd)}</td><td><span class="badge badge-green">${a.tipo}</span></td></tr>`).join('');
+    if(APORTES_CACHE_ADMIN.length) renderAportes(APORTES_CACHE_ADMIN);
     $('ap-fecha').value=new Date().toISOString().split('T')[0];
     $('liq-fecha').value=new Date().toISOString().split('T')[0];
   } catch(e) { showToast('Error admin: '+e.message,'err'); }
@@ -2827,24 +2827,63 @@ function filtrarAportes() {
 function renderAportes(items) {
   const tbody = $('admin-aporte-body');
   if (!tbody) return;
+
+  // Detectar si algún aporte tiene USD real (distinto de EUR)
+  const hayUSD = items.some(a => a.monto_usd && a.monto_eur && Math.abs(Number(a.monto_usd) - Number(a.monto_eur)) > 1);
+
+  // Actualizar headers de la tabla según si hay USD o no
+  const thead = tbody.closest('table')?.querySelector('thead tr');
+  if (thead) {
+    thead.innerHTML = hayUSD
+      ? '<th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Monto USD</th><th>T/C</th><th>Monto EUR</th><th>Tipo</th><th>Acciones</th>'
+      : '<th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Monto</th><th>Tipo</th><th>Acciones</th>';
+  }
+
   const total_eur = items.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
   const total_usd = items.filter(a=>a.tipo!=='retiro').reduce((s,a)=>s+Number(a.monto_usd||0),0);
-  tbody.innerHTML = items.map(a => `<tr>
-    <td>${fmt_date(a.fecha)}</td>
-    <td><strong>${a.usuarios?.nombre||''} ${a.usuarios?.apellido||''}</strong></td>
-    <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
-    <td class="num">${a.monto_usd ? eur(a.monto_usd) : '—'}</td>
-    <td style="color:var(--negro3)">${a.tipo_cambio||'—'}</td>
-    <td class="num">${a.monto_eur ? '€'+Number(a.monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2}) : '—'}</td>
-    <td><span class="badge ${a.tipo==='retiro'?'badge-red':'badge-green'}">${a.tipo}</span></td>
-    <td><button class="btn btn-outline btn-sm" onclick="editAporte('${a.id}')">Editar</button></td>
-  </tr>`).join('') + `<tr style="background:var(--gris);font-weight:700">
-    <td colspan="3"><strong>TOTAL</strong></td>
-    <td class="num">${eur(total_usd)}</td>
-    <td></td>
-    <td class="num">€${total_eur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-    <td colspan="2"></td>
-  </tr>`;
+
+  const esRetiro = a => a.tipo === 'retiro';
+  tbody.innerHTML = items.map(a => {
+    const monto_eur = Number(a.monto_eur || a.monto_usd || 0);
+    const monto_usd = Number(a.monto_usd || 0);
+    const tieneUSD = a.monto_usd && a.monto_eur && Math.abs(monto_usd - monto_eur) > 1;
+    const clase = esRetiro(a) ? 'neg' : 'pos';
+    const signo = esRetiro(a) ? '−' : '+';
+    if (hayUSD) {
+      return `<tr>
+        <td>${fmt_date(a.fecha)}</td>
+        <td><strong>${a.usuarios?.nombre||''} ${a.usuarios?.apellido||''}</strong></td>
+        <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
+        <td class="num ${clase}">${tieneUSD ? signo+' USD '+Math.abs(monto_usd).toLocaleString('es-ES',{minimumFractionDigits:2}) : '—'}</td>
+        <td style="color:var(--negro3)">${tieneUSD && a.tipo_cambio ? Number(a.tipo_cambio).toFixed(4) : '—'}</td>
+        <td class="num ${clase}">${signo} €${Math.abs(monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+        <td><span class="badge ${esRetiro(a)?'badge-red':'badge-green'}">${a.tipo}</span></td>
+        <td><button class="btn btn-outline btn-sm" onclick="editAporte('${a.id}')">Editar</button></td>
+      </tr>`;
+    } else {
+      return `<tr>
+        <td>${fmt_date(a.fecha)}</td>
+        <td><strong>${a.usuarios?.nombre||''} ${a.usuarios?.apellido||''}</strong></td>
+        <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
+        <td class="num ${clase}">${signo} €${Math.abs(monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+        <td><span class="badge ${esRetiro(a)?'badge-red':'badge-green'}">${a.tipo}</span></td>
+        <td><button class="btn btn-outline btn-sm" onclick="editAporte('${a.id}')">Editar</button></td>
+      </tr>`;
+    }
+  }).join('') + (hayUSD
+    ? `<tr style="background:var(--gris);font-weight:700;border-top:2px solid var(--borde)">
+        <td colspan="3"><strong>TOTAL APORTADO</strong></td>
+        <td class="num">USD ${total_usd.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+        <td></td>
+        <td class="num">€${total_eur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+        <td colspan="2"></td>
+      </tr>`
+    : `<tr style="background:var(--gris);font-weight:700;border-top:2px solid var(--borde)">
+        <td colspan="3"><strong>TOTAL APORTADO</strong></td>
+        <td class="num">€${total_eur.toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+        <td colspan="2"></td>
+      </tr>`
+  );
 }
 
 // EDITAR LIQUIDACIÓN
