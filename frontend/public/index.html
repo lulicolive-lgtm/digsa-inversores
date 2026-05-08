@@ -1254,6 +1254,8 @@ function adminTab(tab) {
   $('atab-'+tab)?.classList.add('show');
   $('aside-'+tab)?.classList.add('active');
   if (tab==='docs') loadDocsAdmin();
+  if (tab==='aportes') loadAdminAportes();
+  if (tab==='liquidaciones') loadAdminLiquidaciones();
 }
 
 async function startApp() {
@@ -2805,6 +2807,19 @@ async function verOperacion(propId) {
 
 // ══ APORTES ADMIN ══
 
+
+async function loadAdminAportes() {
+  try {
+    const aportes = await api('GET', '/aportes');
+    APORTES_CACHE_ADMIN = aportes || [];
+    // Poblar filtros
+    const props_u = [...new Map(aportes.filter(a=>a.propiedades).map(a=>[a.propiedad_id, a.propiedades])).entries()];
+    const invs_u  = [...new Map(aportes.filter(a=>a.usuarios).map(a=>[a.usuario_id, a.usuarios])).entries()];
+    if($('ap-filter-prop')) $('ap-filter-prop').innerHTML = '<option value="">Todos los pisos</option>' + props_u.map(([id,p])=>`<option value="${id}">${p.nombre}</option>`).join('');
+    if($('ap-filter-inv'))  $('ap-filter-inv').innerHTML  = '<option value="">Todos los inversores</option>' + invs_u.map(([id,u])=>`<option value="${id}">${u.nombre} ${u.apellido}</option>`).join('');
+    renderAportes(aportes);
+  } catch(e) { console.error('Error cargando aportes:', e); }
+}
 
 function limpiarFiltrosAportes() {
   if($('ap-filter-fecha')) $('ap-filter-fecha').value = '';
