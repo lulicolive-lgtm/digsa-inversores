@@ -910,6 +910,88 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
 
+   <!-- TAB: DIGSA Dashboard -->
+   <div class="atab-panel" id="atab-digsa">
+    <div style="margin-bottom:28px">
+     <h3 style="font-size:22px;margin-bottom:4px">Dashboard DIGSA España</h3>
+     <p style="font-size:13px;color:var(--negro3)">DIGSA participa como inversor Y cobra honorarios como gestor — son dos fuentes de ingreso distintas</p>
+    </div>
+
+    <!-- KPIs globales -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px" id="digsa-kpis">
+     <div class="scard scard-accent">
+      <div class="scard-label">Total invertido por DIGSA</div>
+      <div class="scard-value" id="dk-inv">—</div>
+     </div>
+     <div class="scard">
+      <div class="scard-label">Utilidad como inversor</div>
+      <div class="scard-value" id="dk-util" style="color:var(--verde)">—</div>
+     </div>
+     <div class="scard">
+      <div class="scard-label">Honorarios como gestor</div>
+      <div class="scard-value" id="dk-honor" style="color:var(--verde)">—</div>
+     </div>
+     <div class="scard" style="border:1px solid var(--naranja);background:var(--naranja-light)">
+      <div class="scard-label" style="color:var(--naranja2)">Total ingreso DIGSA</div>
+      <div class="scard-value" id="dk-total" style="color:var(--naranja)">—</div>
+     </div>
+    </div>
+
+    <!-- Tabla detalle por piso -->
+    <div class="card" style="padding:0">
+     <div style="padding:16px 20px;border-bottom:1px solid var(--borde);display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:12px;font-weight:600;letter-spacing:.5px;color:var(--negro3)">DETALLE POR PISO</div>
+      <div style="display:flex;gap:16px;font-size:11px;color:var(--negro3)">
+       <span>🟢 En obra (estimado)</span>
+       <span>⬛ Vendido (real)</span>
+      </div>
+     </div>
+     <div class="tbl-wrap">
+      <table class="dtbl">
+       <thead>
+        <tr>
+         <th>Piso</th>
+         <th>Estado</th>
+         <th style="text-align:right">% DIGSA</th>
+         <th style="text-align:right">Inversión</th>
+         <th style="text-align:right">Utilidad inversor</th>
+         <th style="text-align:right">Honorarios gestor</th>
+         <th style="text-align:right">Total DIGSA</th>
+         <th style="text-align:right">Rent.</th>
+        </tr>
+       </thead>
+       <tbody id="digsa-table-body"></tbody>
+      </table>
+     </div>
+    </div>
+
+    <!-- Explicación de fórmulas -->
+    <div class="card" style="margin-top:20px;background:var(--gris)">
+     <div class="card-hd"><h3>Cómo se calculan los ingresos de DIGSA</h3></div>
+     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font-size:13px">
+      <div>
+       <div style="font-weight:600;margin-bottom:8px;color:var(--negro2)">Como inversor</div>
+       <div style="line-height:2;color:var(--negro3)">
+        DIGSA tiene un % de participación en cada piso<br>
+        Utilidad = (Precio venta - Precio compra) × % DS<br>
+        Se aplica fee 15% e impuestos 25% igual que inversores<br>
+        <strong style="color:var(--negro)">Utilidad neta = Utilidad × (1 - 15%) × (1 - 25%)</strong>
+       </div>
+      </div>
+      <div>
+       <div style="font-weight:600;margin-bottom:8px;color:var(--negro2)">Como gestor (honorarios)</div>
+       <div style="line-height:2;color:var(--negro3)">
+        Gastos operativos (GOP): 2% sobre precio de compra<br>
+        Fee de éxito: 15% sobre utilidad bruta del piso<br>
+        Gastos de comercialización: 10% sobre utilidad bruta<br>
+        IVA sobre comercialización: 21%<br>
+        <strong style="color:var(--negro)">Total = GOP + Fee + Comercialización + IVA</strong>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+
    </div><!-- /content -->
    </div><!-- /sidebar layout -->
 
@@ -2970,6 +3052,111 @@ async function loadLiquidarTab() {
     actualizarDestinos();
 
   } catch(e) { console.error('loadLiquidarTab error:', e); }
+}
+
+// ══ DIGSA DASHBOARD ══════════════════════════════════════════
+async function loadDiGSADashboard() {
+  const tbody = $('digsa-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px"><div class="spinner"></div></td></tr>';
+
+  try {
+    const props = await api('GET', '/propiedades');
+
+    // Datos de DIGSA por piso (del Excel — % participación real de cada piso)
+    const DIGSA_DATA = {
+      'Alcalá 146':              { pct: 0.5787, inv: 144872,  honor_vendido: true  },
+      'Jardín San Federico 15':  { pct: 0.5620, inv: 669503,  honor_vendido: true  },
+      'DRC 48':                  { pct: 0.5661, inv: 128401,  honor_vendido: true  },
+      'Villa 4 2° Dcha':         { pct: 0.5832, inv: 317767,  honor_vendido: true  },
+      'Ayala 134':               { pct: 0.4679, inv: 532320,  honor_vendido: true  },
+      'Don Ramón de la Cruz 98': { pct: 0.4411, inv: 365944,  honor_vendido: true  },
+      'Ayala 154':               { pct: 0.5455, inv: 434043,  honor_vendido: true  },
+      'Ayala 78':                { pct: 0.4895, inv: 220250,  honor_vendido: true  },
+      'Lagasca 58':              { pct: 0.5333, inv: 938722,  honor_vendido: false },
+      'Lagasca 80':              { pct: 0.4412, inv: 893935,  honor_vendido: false },
+      'Hermosilla 131':          { pct: 0.4818, inv: 383423,  honor_vendido: false },
+    };
+
+    let total_inv = 0, total_util = 0, total_honor = 0;
+    const rows = [];
+
+    props.forEach(p => {
+      const ds = DIGSA_DATA[p.nombre];
+      if (!ds) return;
+
+      const comp  = Number(p.precio_compra || 0);
+      const venta = Number(p.precio_venta  || 0);
+      const util_bruta_piso = venta - comp;
+      const vendido = p.estado === 'vendido';
+
+      // Como inversor
+      const util_inv_bruta = util_bruta_piso * ds.pct;
+      const fee_inv  = Math.max(0, util_inv_bruta) * 0.15;
+      const imp_inv  = Math.max(0, util_inv_bruta - fee_inv) * 0.25;
+      const util_inv = util_inv_bruta - fee_inv - imp_inv;
+
+      // Como gestor (honorarios)
+      let honor = 0;
+      if (comp > 0 && (vendido || !ds.honor_vendido)) {
+        const gop = comp * 0.02;
+        const com = Math.max(0, util_bruta_piso) * 0.10;
+        const iva = com * 0.21;
+        const fee = Math.max(0, util_bruta_piso) * 0.15;
+        honor = gop + com + iva + fee;
+      } else if (comp > 0) {
+        // Estimado para pisos en obra
+        const gop = comp * 0.02;
+        const util_est = venta - comp;
+        const com = Math.max(0, util_est) * 0.10;
+        const iva = com * 0.21;
+        const fee = Math.max(0, util_est) * 0.15;
+        honor = gop + com + iva + fee;
+      }
+
+      const total = util_inv + honor;
+      const rent  = ds.inv > 0 ? (util_inv / ds.inv * 100).toFixed(1) : 0;
+
+      total_inv   += ds.inv;
+      total_util  += util_inv;
+      total_honor += honor;
+
+      const es_estimado = !vendido;
+      rows.push(`<tr style="${es_estimado ? 'opacity:.85' : ''}">
+        <td><strong>${p.nombre}</strong>${es_estimado ? ' <span style="font-size:10px;color:var(--negro3)">(estimado)</span>' : ''}</td>
+        <td>${statusBadge(p.estado)}</td>
+        <td class="num">${(ds.pct*100).toFixed(1)}%</td>
+        <td class="num">${eur(ds.inv)}</td>
+        <td class="num ${util_inv>0?'pos':''}">${util_inv>0?'+':''}${eur(util_inv)}</td>
+        <td class="num pos">+${eur(honor)}</td>
+        <td class="num" style="font-weight:700;color:var(--naranja)">+${eur(total)}</td>
+        <td class="num ${rent>0?'pos':''}">${rent>0?'+'+rent+'%':'—'}</td>
+      </tr>`);
+    });
+
+    // Fila total
+    const total_total = total_util + total_honor;
+    rows.push(`<tr style="background:var(--negro);color:var(--blanco);font-weight:700">
+      <td colspan="3"><strong>TOTAL DIGSA ESPAÑA</strong></td>
+      <td class="num" style="color:var(--blanco)">${eur(total_inv)}</td>
+      <td class="num" style="color:var(--verde)">+${eur(total_util)}</td>
+      <td class="num" style="color:var(--verde)">+${eur(total_honor)}</td>
+      <td class="num" style="color:var(--naranja)">+${eur(total_total)}</td>
+      <td class="num" style="color:var(--naranja)">${total_inv>0?'+'+(total_util/total_inv*100).toFixed(1)+'%':'—'}</td>
+    </tr>`);
+
+    tbody.innerHTML = rows.join('');
+
+    // Actualizar KPIs
+    if($('dk-inv'))   $('dk-inv').textContent   = eur(total_inv);
+    if($('dk-util'))  $('dk-util').textContent  = '+' + eur(total_util);
+    if($('dk-honor')) $('dk-honor').textContent = '+' + eur(total_honor);
+    if($('dk-total')) $('dk-total').textContent = '+' + eur(total_util + total_honor);
+
+  } catch(e) {
+    if(tbody) tbody.innerHTML = `<tr><td colspan="8" style="color:var(--rojo);padding:20px;text-align:center">${e.message}</td></tr>`;
+    console.error('DIGSA dashboard error:', e);
+  }
 }
 
 function toggleDigsaMenu() {
