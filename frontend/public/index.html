@@ -1422,11 +1422,11 @@ function nav(panel) {
   document.querySelectorAll('.tn-link').forEach(l=>l.classList.remove('active'));
   const p=$('panel-'+panel); if(p) p.classList.add('show');
   const l=document.querySelector(`[data-panel="${panel}"]`); if(l) l.classList.add('active');
-  if (panel==='dashboard') loadDashboard();
+  if (panel==='dashboard') { if(ME?.rol==='admin') loadAdminDashboard(); else loadDashboard(); }
   if (panel==='portfolio') loadPortfolio();
   if (panel==='historial') loadHistorial();
   if (panel==='documentos') loadDocumentos();
-  if (panel==='admin' && ME?.rol==='admin') loadAdmin();
+  if (panel==='admin' && ME?.rol==='admin') { loadAdmin(); adminTab('inversores'); }
   if (panel==='analisis' && ME?.rol==='admin') loadAnalisis();
   if (panel==='proxima') cargarDatosProxima();
 }
@@ -1454,8 +1454,8 @@ async function startApp() {
   if (ME.rol==='admin') {
     document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
     document.querySelectorAll('.inversor-only').forEach(e=>e.style.display='none');
-    nav('admin');
-    loadAdmin();
+    nav('dashboard');
+    loadAdminDashboard();
   } else {
     document.querySelectorAll('.admin-only').forEach(e=>e.style.display='none');
     nav('dashboard');
