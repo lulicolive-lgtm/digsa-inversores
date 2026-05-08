@@ -1454,15 +1454,16 @@ async function startApp() {
   if (ME.rol==='admin') {
     document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
     document.querySelectorAll('.inversor-only').forEach(e=>e.style.display='none');
-    nav('dashboard');
-    loadDashboard();
+    nav('admin');
+    loadAdmin();
   } else {
+    document.querySelectorAll('.admin-only').forEach(e=>e.style.display='none');
+    nav('dashboard');
     loadDashboard();
   }
 }
 
 async function loadDashboard() {
-  if (ME?.rol === 'admin') { await loadAdminDashboard(); return; }
   try {
     const d=await api('GET','/dashboard'), r=d.resumen;
     $('st-invertido').textContent=eur(r.inversion_inicial||r.total_invertido||0);
