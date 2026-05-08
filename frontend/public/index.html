@@ -1256,6 +1256,8 @@ function adminTab(tab) {
   if (tab==='docs') loadDocsAdmin();
   if (tab==='aportes') loadAdminAportes();
   if (tab==='liquidaciones') loadAdminLiquidaciones();
+  if (tab==='liquidar') loadLiquidarTab();
+  if (tab==='operacion') initOperacion();
 }
 
 async function startApp() {
@@ -1530,7 +1532,7 @@ async function renderInversoresConPendiente(inversores) {
     actualizarDestinos();
     $('liq-prop-sel').addEventListener('change', actualizarDestinos);
     $('doc-prop-sel').innerHTML='<option value="">— Ninguna —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
     $('doc-inv-sel').innerHTML=invOpts; $('ap-inv-sel').innerHTML=invOpts;
     const act=await api('GET','/admin/actividad');
@@ -1768,7 +1770,7 @@ async function renderInversoresConPendiente(inversores) {
     actualizarDestinos();
     $('liq-prop-sel').addEventListener('change', actualizarDestinos);
     $('doc-prop-sel').innerHTML='<option value="">— Ninguna —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
-    $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
+    $('ap-prop-sel').innerHTML='<option value="">— Aporte general —</option>'+props.filter(p=>p.estado!=='vendido').map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('');
     const invOpts=inversores.filter(i=>i.activo).map(i=>`<option value="${i.id}">${i.nombre} ${i.apellido}</option>`).join('');
     $('doc-inv-sel').innerHTML=invOpts; $('ap-inv-sel').innerHTML=invOpts;
     const act=await api('GET','/admin/actividad');
@@ -2988,6 +2990,68 @@ async function saveLiquidacion() {
     }
     loadAdminLiquidaciones();
   } catch(e) { showToast(e.message, 'err'); } finally { hideLoading(); }
+}
+
+async function loadLiquidarTab() {
+  try {
+    const [props, inversores] = await Promise.all([
+      api('GET', '/propiedades'),
+      api('GET', '/inversores')
+    ]);
+
+    // liq-prop-sel: solo propiedades ACTIVAS (para liquidar)
+    const activas = props.filter(p => p.estado !== 'vendido');
+    const vendidas = props.filter(p => p.estado === 'vendido');
+
+    if ($('liq-prop-sel')) {
+      $('liq-prop-sel').innerHTML = '<option value="">— Seleccionar propiedad —</option>' +
+        activas.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+    }
+
+    // asig-piso-sel: solo propiedades activas (destino de fondos)
+    if ($('asig-piso-sel')) {
+      $('asig-piso-sel').innerHTML = '<option value="">— Seleccionar piso destino —</option>' +
+        activas.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+    }
+
+    // Destino de fondos al liquidar: activas excluyendo la seleccionada
+    PROPIEDADES_CACHE = props;
+
+    const fecha_hoy = new Date().toISOString().split('T')[0];
+    if ($('liq-fecha') && !$('liq-fecha').value) $('liq-fecha').value = fecha_hoy;
+    if ($('asig-fecha') && !$('asig-fecha').value) $('asig-fecha').value = fecha_hoy;
+
+    // Actualizar destinos cuando cambia el piso seleccionado
+    const actualizarDestinos = () => {
+      const selId = $('liq-prop-sel')?.value;
+      const dest = activas.filter(p => p.id !== selId);
+      if ($('liq-destino-checks')) {
+        $('liq-destino-checks').innerHTML = dest.map(p => `
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" value="${p.id}" style="accent-color:var(--naranja)">
+            <span>${p.nombre}</span>
+            <span style="font-size:11px;color:var(--negro3);margin-left:auto">${p.precio_compra ? '€'+Number(p.precio_compra).toLocaleString('es-ES') : ''}</span>
+          </label>`).join('');
+      }
+      if ($('liq-destino-manual-rows')) {
+        $('liq-destino-manual-rows').innerHTML = dest.map(p => `
+          <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+            <input type="checkbox" value="${p.id}" class="liq-manual-cb" style="accent-color:var(--naranja)" onchange="updateManualTotal()">
+            <span style="flex:1">${p.nombre}</span>
+            <input type="number" class="liq-manual-pct" data-id="${p.id}" min="0" max="100" step="1" placeholder="0"
+              style="width:70px;border:1px solid var(--borde);padding:5px 8px;font-size:12px;text-align:right"
+              oninput="updateManualTotal()">
+            <span style="font-size:11px;color:var(--negro3)">%</span>
+          </div>`).join('');
+      }
+      previsualizarLiq();
+    };
+
+    $('liq-prop-sel')?.removeEventListener('change', actualizarDestinos);
+    $('liq-prop-sel')?.addEventListener('change', actualizarDestinos);
+    actualizarDestinos();
+
+  } catch(e) { console.error('loadLiquidarTab error:', e); }
 }
 
 function toggleDigsaMenu() {
