@@ -74,3 +74,21 @@ router.get('/resumen-inversores', authMiddleware, adminOnly, async (req, res) =>
 });
 
 module.exports = router;
+
+// GET /api/admin/proxima
+router.get('/proxima', authMiddleware, async (req, res) => {
+  const { data } = await supabase.from('configuracion').select('valor').eq('clave', 'proxima_inversion').single();
+  res.json(data ? JSON.parse(data.valor) : {});
+});
+
+// POST /api/admin/proxima
+router.post('/proxima', authMiddleware, adminOnly, async (req, res) => {
+  const valor = JSON.stringify(req.body);
+  const { data: existing } = await supabase.from('configuracion').select('id').eq('clave', 'proxima_inversion').single();
+  if (existing) {
+    await supabase.from('configuracion').update({ valor }).eq('clave', 'proxima_inversion');
+  } else {
+    await supabase.from('configuracion').insert([{ clave: 'proxima_inversion', valor }]);
+  }
+  res.json({ ok: true });
+});
