@@ -1713,11 +1713,12 @@ async function renderInversoresConPendiente(inversores) {
 
 async function loadAdmin() {
   try {
-    const [stats, inversores, props] = await Promise.all([
-      api('GET', '/admin/estadisticas'),
+    const [statsRes, inversores, props] = await Promise.all([
+      api('GET', '/admin/estadisticas').catch(() => ({ inversores_activos:0, total_propiedades:0, total_capital_gestionado:0, total_retornado:0, rentabilidad_promedio:0 })),
       api('GET', '/inversores'),
       api('GET', '/propiedades')
     ]);
+    const stats = statsRes || { inversores_activos:0, total_propiedades:0, total_capital_gestionado:0, total_retornado:0, rentabilidad_promedio:0 };
     INVERSORES_CACHE = inversores;
     PROPIEDADES_CACHE = props;
     if($('ast-inv'))      $('ast-inv').textContent      = stats.inversores_activos;
