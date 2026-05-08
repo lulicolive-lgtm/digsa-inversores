@@ -2297,7 +2297,7 @@ async function subirDocumento() {
 // Guardar datos en sessionStorage (persiste mientras la sesión esté abierta)
 const PROX_KEY = 'digsa_proxima_inversion';
 
-function guardarProxima() {
+async function guardarProxima() {
   const datos = {
     nombre:   $('prox-nombre')?.value || '',
     ubic:     $('prox-ubic')?.value || '',
@@ -2310,47 +2310,52 @@ function guardarProxima() {
     rent:     $('prox-rent-est')?.value || '',
     fecha:    $('prox-fecha')?.value || '',
   };
-  sessionStorage.setItem(PROX_KEY, JSON.stringify(datos));
 
   // Leer planos si se subieron
-  const leerImg = (inputId, key) => {
+  const leerImg = (inputId, key) => new Promise(resolve => {
     const file = $(inputId)?.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const d = JSON.parse(sessionStorage.getItem(PROX_KEY) || '{}');
-        d[key] = e.target.result;
-        sessionStorage.setItem(PROX_KEY, JSON.stringify(d));
-        aplicarDatosProxima(d);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  leerImg('prox-plano-actual', 'plano_actual');
-  leerImg('prox-plano-prop', 'plano_prop');
+    if (!file) return resolve(null);
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
 
-  aplicarDatosProxima(datos);
-  const msg = $('prox-save-msg');
-  if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 3000); }
-  showToast('✓ Publicado para todos los inversores');
+  datos.plano_actual = await leerImg('prox-plano-actual', 'plano_actual');
+  datos.plano_prop   = await leerImg('prox-plano-prop', 'plano_prop');
+
+  try {
+    showLoading('Publicando…');
+    await api('POST', '/admin/proxima', datos);
+    aplicarDatosProxima(datos);
+    hideLoading();
+    const msg = $('prox-save-msg');
+    if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 3000); }
+    showToast('✓ Publicado para todos los inversores');
+  } catch(e) {
+    hideLoading();
+    showToast('Error al guardar: ' + e.message, 'err');
+  }
 }
 
-function cargarDatosProxima() {
-  const raw = sessionStorage.getItem(PROX_KEY);
-  if (!raw) return;
-  const d = JSON.parse(raw);
-  // Rellenar admin form si está visible
-  if ($('prox-nombre')) $('prox-nombre').value = d.nombre || '';
-  if ($('prox-ubic')) $('prox-ubic').value = d.ubic || '';
-  if ($('prox-m2')) $('prox-m2').value = d.m2 || '';
-  if ($('prox-duracion')) $('prox-duracion').value = d.duracion || '';
-  if ($('prox-desc-admin')) $('prox-desc-admin').value = d.desc || '';
-  if ($('prox-compra-val')) $('prox-compra-val').value = d.compra || '';
-  if ($('prox-gastos-val')) $('prox-gastos-val').value = d.gastos || '';
-  if ($('prox-pventa')) $('prox-pventa').value = d.pventa || '';
-  if ($('prox-rent-est')) $('prox-rent-est').value = d.rent || '';
-  if ($('prox-fecha')) $('prox-fecha').value = d.fecha || '';
-  aplicarDatosProxima(d);
+async function cargarDatosProxima() {
+  try {
+    const d = await api('GET', '/admin/proxima');
+    if (!d || !Object.keys(d).length) return;
+    // Rellenar admin form si está visible
+    if ($('prox-nombre'))    $('prox-nombre').value    = d.nombre || '';
+    if ($('prox-ubic'))      $('prox-ubic').value      = d.ubic || '';
+    if ($('prox-m2'))        $('prox-m2').value        = d.m2 || '';
+    if ($('prox-duracion'))  $('prox-duracion').value  = d.duracion || '';
+    if ($('prox-desc-admin'))$('prox-desc-admin').value= d.desc || '';
+    if ($('prox-compra-val'))$('prox-compra-val').value= d.compra || '';
+    if ($('prox-gastos-val'))$('prox-gastos-val').value= d.gastos || '';
+    if ($('prox-pventa'))    $('prox-pventa').value    = d.pventa || '';
+    if ($('prox-rent-est'))  $('prox-rent-est').value  = d.rent || '';
+    if ($('prox-fecha'))     $('prox-fecha').value     = d.fecha || '';
+    aplicarDatosProxima(d);
+  } catch(e) {
+    console.log('Sin datos de próxima inversión');
+  }
 }
 
 function aplicarDatosProxima(d) {
