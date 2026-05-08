@@ -317,16 +317,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
      DIGSA <span style="font-size:9px;opacity:.6">▾</span>
     </button>
     <div id="digsa-dropdown" style="display:none;position:absolute;right:0;top:42px;background:var(--blanco);border:1px solid var(--borde);min-width:220px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.1)">
-     <a href="https://digsa.es" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
-      <span style="font-size:17px">🌐</span> digsa.es
-     </a>
-     <a href="https://www.instagram.com/digsa.es?igsh=MWJwMzB1ejV0N3RscA%3D%3D&utm_source=qr" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
-      <span style="font-size:17px">📷</span> Instagram
-     </a>
-     <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
-      <span style="font-size:17px">🎵</span> TikTok
-     </a>
-
     </div>
    </div>
    <div class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
@@ -431,9 +421,13 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div><div class="page-hd-line"></div><h2 id="prox-titulo">Próxima inversión · Lagasca 80</h2><p id="prox-subtitulo">Madrid · Flipping residencial</p></div>
    </div>
 
-   <span id="prox-countdown" style="display:none"></span>
-   <span id="prox-fecha-banner" style="display:none"></span>
-   <span id="prox-titulo-banner" style="display:none"></span>
+   <!-- Banner próxima -->
+   <div style="background:var(--negro);padding:28px 36px;margin-bottom:28px">
+    <div style="font-size:10px;letter-spacing:2.5px;color:var(--naranja);font-weight:700;margin-bottom:8px">NUEVA OPORTUNIDAD</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco)" id="prox-titulo-banner">Lagasca 80</div>
+    <span id="prox-countdown" style="display:none"></span>
+    <span id="prox-fecha-banner" style="display:none"></span>
+   </div>
 
    <!-- KPIs -->
    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px">
@@ -484,10 +478,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <!-- Planos -->
     <div style="display:flex;flex-direction:column;gap:20px">
      <div class="card" style="flex:1">
-      <div class="card-hd">
-       <h3>Plano actual</h3>
-       <a id="prox-plano-actual-dl" style="display:none;font-size:12px;color:var(--naranja);font-weight:600;cursor:pointer" download="plano_actual.png">⬇ Descargar</a>
-      </div>
+      <div class="card-hd"><h3>Plano actual</h3></div>
       <div id="prox-plano-actual-wrap" style="background:var(--gris);border:2px dashed var(--borde);height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--negro3)">
        <div style="font-size:32px">📐</div>
        <div style="font-size:12px;font-weight:300">Plano disponible próximamente</div>
@@ -2383,11 +2374,8 @@ function aplicarDatosProxima(d) {
     if ($('prox-countdown')) $('prox-countdown').textContent = cdTxt;
     if ($('prox-countdown-kpi')) $('prox-countdown-kpi').textContent = cdTxt;
   }
-  if (d.plano_actual && $('prox-plano-actual-wrap')) {
+  if (d.plano_actual && $('prox-plano-actual-wrap'))
     $('prox-plano-actual-wrap').innerHTML = `<img src="${d.plano_actual}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
-    const dlA = $('prox-plano-actual-dl');
-    if (dlA) { dlA.style.display = 'inline'; dlA.href = d.plano_actual; }
-  }
   if (d.plano_prop && $('prox-plano-prop-wrap')) {
     $('prox-plano-prop-wrap').innerHTML = `<img src="${d.plano_prop}" style="width:100%;height:100%;object-fit:contain;padding:8px">`;
     const dlBtn = $('prox-plano-prop-dl');
@@ -3489,6 +3477,29 @@ function toggleNotifs() { showToast('Próximamente: panel de notificaciones'); }
 
 if (TOKEN) startApp();
 </script>
+<!-- Footer -->
+<footer style="background:var(--negro);color:rgba(255,255,255,.5);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:300">
+ <div>
+  <div style="color:var(--blanco);font-family:'Playfair Display',serif;font-size:15px;margin-bottom:6px">DIGSA España</div>
+  <div>Villanueva 27, Madrid · La Pampa 1517 3°C, Buenos Aires</div>
+  <div style="margin-top:4px"><a href="mailto:admin@digsa.es" style="color:var(--naranja);text-decoration:none">admin@digsa.es</a></div>
+ </div>
+ <div style="display:flex;align-items:center;gap:24px">
+  <a href="https://digsa.es" target="_blank" style="color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:6px;font-size:13px" onmouseover="this.style.color='var(--blanco)'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
+   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+   digsa.es
+  </a>
+  <a href="https://www.instagram.com/digsa.es?igsh=MWJwMzB1ejV0N3RscA%3D%3D&utm_source=qr" target="_blank" style="color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:6px;font-size:13px" onmouseover="this.style.color='var(--blanco)'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
+   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+   Instagram
+  </a>
+  <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" style="color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:6px;font-size:13px" onmouseover="this.style.color='var(--blanco)'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
+   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 12a4 4 0 104 4V4a5 5 0 005 5"/></svg>
+   TikTok
+  </a>
+ </div>
+</footer>
+
 <!-- Modal editar liquidación -->
 <div id="modal-liq-edit" class="modal" style="display:none">
  <div class="modal-box" style="max-width:560px">
