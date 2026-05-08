@@ -1325,32 +1325,72 @@ async function loadPortfolio() {
   const tbody=$('port-body');
   tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px"><div class="spinner"></div></td></tr>';
   try {
-    const [props, dash] = await Promise.all([api('GET','/propiedades'), api('GET','/dashboard')]);
-    if (!props.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--negro3)">Sin propiedades asignadas</td></tr>'; return; }
+    const [props, dash, liqs] = await Promise.all([
+      api('GET','/propiedades'),
+      api('GET','/dashboard'),
+      api('GET','/liquidaciones')
+    ]);
+    if (!props.length) {
+      tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--negro3)">Sin propiedades asignadas</td></tr>';
+      return;
+    }
     const parts = dash.participaciones || [];
-    tbody.innerHTML=props.map(p=>{
+
+    // Separar activas y finalizadas
+    const activas    = props.filter(p => p.estado !== 'vendido');
+    const finalizadas = props.filter(p => p.estado === 'vendido');
+
+    let rows = '';
+
+    // Pisos activos con neto estimado
+    activas.forEach(p => {
       const part = parts.find(pt => pt.propiedad_id === p.id);
-      const aporte = part ? Number(part.monto_invertido) : 0;
-      const pct_part = part ? Number(part.porcentaje) : 0;
+      if (!part) return; // no tiene participación en este piso
+      const aporte   = Number(part.monto_invertido);
+      const pct_part = Number(part.porcentaje);
       let neto = aporte;
       if (p.precio_compra && p.precio_venta && p.precio_compra > 0) {
         const util = (p.precio_venta - p.precio_compra) * pct_part;
-        const fee = util * 0.15;
-        const imp = (util - fee) * 0.25;
+        const fee  = util * 0.15;
+        const imp  = (util - fee) * 0.25;
         neto = aporte + util - fee - imp;
       }
-      const rent = aporte > 0 ? (((neto - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
-      return `<tr>
+      const rent = aporte > 0 ? '+' + (((neto - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
+      rows += `<tr>
         <td><strong>${p.nombre}</strong></td>
         <td>${statusBadge(p.estado)}</td>
         <td class="num">${eur(aporte)}</td>
-        <td>${pct_part ? (pct_part*100).toFixed(2)+'%' : '—'}</td>
+        <td>${(pct_part*100).toFixed(2)}%</td>
         <td class="num pos">${eur(neto)}</td>
-        <td class="pos">${rent !== '—' ? '+'+rent : '—'}</td>
+        <td class="pos">${rent}</td>
       </tr>`;
-    }).join('');
-    if($('st-props')) if($('st-props')) $('st-props').textContent = props.length;
-  } catch(e) { tbody.innerHTML=`<tr><td colspan="6" style="color:var(--rojo);text-align:center;padding:28px">${e.message}</td></tr>`; }
+    });
+
+    // Pisos finalizados con retorno real de liquidaciones
+    finalizadas.forEach(p => {
+      const liq = liqs.find(l => l.propiedad_id === p.id);
+      if (!liq) return; // no tiene liquidación registrada
+      const aporte  = Number(liq.aporte_usuario);
+      const retorno = Number(liq.total_retorno);
+      const rent    = aporte > 0 ? '+' + (((retorno - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
+      rows += `<tr style="opacity:.75">
+        <td><strong>${p.nombre}</strong></td>
+        <td>${statusBadge(p.estado)}</td>
+        <td class="num">${eur(aporte)}</td>
+        <td>${liq.porcentaje ? (liq.porcentaje*100).toFixed(2)+'%' : '—'}</td>
+        <td class="num pos">${eur(retorno)}</td>
+        <td class="pos">${rent}</td>
+      </tr>`;
+    });
+
+    tbody.innerHTML = rows || '<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--negro3)">Sin propiedades asignadas</td></tr>';
+
+    const totalActivas = activas.filter(p => parts.find(pt => pt.propiedad_id === p.id)).length;
+    if($('st-props')) $('st-props').textContent = totalActivas;
+    if($('st-props-port')) $('st-props-port').textContent = totalActivas;
+  } catch(e) {
+    tbody.innerHTML=`<tr><td colspan="6" style="color:var(--rojo);text-align:center;padding:28px">${e.message}</td></tr>`;
+  }
 }
 
 async function loadHistorial() {
