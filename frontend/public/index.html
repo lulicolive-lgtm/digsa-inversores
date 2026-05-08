@@ -1264,7 +1264,14 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="fld"><label>Apellido</label><input id="inv-apellido" placeholder="García"></div>
     <div class="fld"><label>Email</label><input id="inv-email" type="email" placeholder="juan@email.com"></div>
     <div class="fld"><label>Teléfono</label><input id="inv-tel" placeholder="+34 600 000 000"></div>
-    <div class="fld"><label>Contraseña (sugerida: apellido en minúsculas)</label><input id="inv-pass" type="password" placeholder="Ej: garcia"></div>
+    <div class="fld fld-full" id="inv-pass-row">
+     <label id="inv-pass-label">Contraseña</label>
+     <div style="display:flex;gap:8px">
+      <input id="inv-pass" type="password" placeholder="Nueva contraseña" style="flex:1">
+      <button type="button" id="inv-pass-toggle" onclick="togglePassVisibility()" style="padding:0 12px;border:1px solid var(--borde);background:var(--gris);cursor:pointer;font-size:11px;white-space:nowrap">👁 Ver</button>
+     </div>
+     <div id="inv-pass-hint" style="font-size:11px;color:var(--negro3);margin-top:4px">Dejar vacío para no cambiar la contraseña actual</div>
+    </div>
     <div class="fld"><label>Estado</label><select id="inv-activo"><option value="true">Activo</option><option value="false">Inactivo</option></select></div>
    </div>
   </div>
@@ -1855,11 +1862,27 @@ async function loadAnalisis() {
 async function editInversor(id) {
   const inv=INVERSORES_CACHE.find(i=>i.id===id); if(!inv) return;
   $('inv-modal-title').textContent='Editar inversor'; $('inv-edit-id').value=id;
+  if($('inv-pass')) $('inv-pass').value = '';
+  if($('inv-pass-hint')) $('inv-pass-hint').style.display = 'block';
+  if($('inv-pass-label')) $('inv-pass-label').textContent = 'Nueva contraseña (opcional)';
   $('inv-nombre').value=inv.nombre; $('inv-apellido').value=inv.apellido;
   $('inv-email').value=inv.email; $('inv-tel').value=inv.telefono||'';
   $('inv-pass').value=''; $('inv-activo').value=String(inv.activo);
   openModal('modal-inversor');
 }
+function togglePassVisibility() {
+  const inp = $('inv-pass');
+  const btn = $('inv-pass-toggle');
+  if (!inp) return;
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    if (btn) btn.textContent = '🙈 Ocultar';
+  } else {
+    inp.type = 'password';
+    if (btn) btn.textContent = '👁 Ver';
+  }
+}
+
 async function saveInversor() {
   const id=$('inv-edit-id').value;
   const body={nombre:$('inv-nombre').value,apellido:$('inv-apellido').value,email:$('inv-email').value,telefono:$('inv-tel').value,activo:$('inv-activo').value==='true'};
