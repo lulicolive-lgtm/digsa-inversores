@@ -188,9 +188,10 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 .atab{padding:12px 20px;font-size:12px;color:var(--negro3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap;font-weight:600;letter-spacing:.5px}
 .atab:hover{color:var(--negro)}.atab.active{color:var(--naranja);border-bottom-color:var(--naranja);border-left-color:var(--naranja)!important;background:var(--naranja-light)}
 .atab-panel{display:none}.atab-panel.show{display:block}
-.aside-link{padding:12px 16px;font-size:12px;color:var(--negro3);cursor:pointer;border-bottom:1px solid var(--gris2);font-weight:500;transition:all .15s;border-left:3px solid transparent;display:block}
-.aside-link:hover{color:var(--negro);background:var(--gris)}
+.aside-link{padding:12px 16px;font-size:12px;color:var(--negro2);cursor:pointer;border-bottom:1px solid var(--gris2);font-weight:600;transition:all .15s;border-left:3px solid transparent;display:block;line-height:1.3}
+.aside-link:hover{color:var(--negro);background:var(--gris);border-left-color:var(--gris3)}
 .aside-link.active{color:var(--naranja);border-left-color:var(--naranja)!important;background:var(--naranja-light);font-weight:700}
+.aside-link.active span:last-child{color:var(--naranja2)!important;opacity:.7}
 /* Separadores de sección en sidebar */
 .aside-section{padding:10px 16px;font-size:9px;letter-spacing:2px;color:var(--negro3);font-weight:700;background:var(--gris);border-top:1px solid var(--borde);border-bottom:1px solid var(--borde)}
 /* Cards mejoradas */
@@ -383,10 +384,12 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
   <!-- PORTFOLIO -->
   <div class="panel" id="panel-portfolio">
-   <div class="page-hd"><div><div class="page-hd-line"></div><h2>Mi Portfolio</h2><p>Estado actual de tus inversiones inmobiliarias</p></div></div>
-   <div class="tbl-wrap card" style="padding:0">
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+    <div><div class="page-hd-line"></div><h2 style="font-size:28px;margin-bottom:4px">Mi Portfolio</h2><p style="color:var(--negro3);font-size:13px;font-weight:300">Estado actual de tus inversiones · <span id="st-props-port">—</span> propiedades activas</p></div>
+   </div>
+   <div class="card" style="padding:0">
     <table class="dtbl">
-     <thead><tr><th>Propiedad</th><th>Estado</th><th>Mi aporte</th><th>Participación</th><th>Neto estimado</th><th>Rentabilidad</th></tr></thead>
+     <thead><tr><th>Propiedad</th><th>Estado</th><th>Mi aporte</th><th>% Participación</th><th>Neto estimado</th><th>Rentabilidad neta</th></tr></thead>
      <tbody id="port-body"></tbody>
     </table>
    </div>
@@ -394,7 +397,9 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
   <!-- HISTORIAL -->
   <div class="panel" id="panel-historial">
-   <div class="page-hd"><div><div class="page-hd-line"></div><h2>Historial de aportes</h2><p>Todos tus movimientos de capital</p></div></div>
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+    <div><div class="page-hd-line"></div><h2 style="font-size:28px;margin-bottom:4px">Historial de aportes</h2><p style="color:var(--negro3);font-size:13px;font-weight:300">Todos tus movimientos de capital</p></div>
+   </div>
    <div class="card" style="padding:0">
     <div class="tbl-wrap">
      <table class="dtbl">
@@ -407,7 +412,9 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
   <!-- DOCUMENTOS -->
   <div class="panel" id="panel-documentos">
-   <div class="page-hd"><div><div class="page-hd-line"></div><h2>Documentos</h2><p>Reportes e inversiones finalizadas disponibles para descarga</p></div></div>
+   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+    <div><div class="page-hd-line"></div><h2 style="font-size:28px;margin-bottom:4px">Documentos</h2><p style="color:var(--negro3);font-size:13px;font-weight:300">Reportes y liquidaciones disponibles para descarga</p></div>
+   </div>
    <div class="card" style="padding:0">
     <div class="tbl-wrap">
      <table class="dtbl">
@@ -553,7 +560,11 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <!-- Content -->
    <div style="flex:1;min-width:0">
    <div class="atab-panel show" id="atab-inversores">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px">
+     <div>
+      <h3 style="font-size:20px;margin-bottom:4px">Inversores</h3>
+      <p style="font-size:12px;color:var(--negro3)">Tabla con capital, pendiente y retorno de cada inversor</p>
+     </div>
      <button class="btn btn-dark" onclick="openModal_newInversor()">+ Nuevo inversor</button>
     </div>
     <div class="card" style="padding:0">
@@ -562,6 +573,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
    <div class="atab-panel" id="atab-propiedades">
+    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Propiedades</h3><p style="font-size:12px;color:var(--negro3)">Todos los pisos · Clickeá "Ver operación" para ver estimado vs resultado final</p></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
      <select id="prop-orden" onchange="ordenarPropiedades()" style="border:1px solid var(--borde);padding:8px 12px;font-size:12px;background:var(--blanco)">
       <option value="nombre">Ordenar: A → Z</option>
@@ -579,6 +591,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
    <div class="atab-panel" id="atab-aportes">
+    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Movimientos de capital</h3><p style="font-size:12px;color:var(--negro3)">Aportes y retiros de todos los inversores · Filtrá por fecha, piso o inversor</p></div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
       <input type="month" id="ap-filter-fecha" placeholder="Mes" onchange="filtrarAportes()"
@@ -692,8 +705,9 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
    </div>
    <div class="atab-panel" id="atab-docs">
+    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Documentos</h3><p style="font-size:12px;color:var(--negro3)">Subí reportes y liquidaciones para cada inversor</p></div>
     <div class="card" style="max-width:600px">
-     <div class="card-hd"><h3>Subir documento</h3></div>
+     <div class="card-hd"><h3>Subir nuevo documento</h3></div>
      <div class="form-grid">
       <div class="fld fld-full"><label>Inversor</label><select id="doc-inv-sel"></select></div>
       <div class="fld fld-full"><label>Propiedad (opcional)</label><select id="doc-prop-sel"><option value="">— Ninguna —</option></select></div>
@@ -729,6 +743,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
    <!-- TAB: próxima propiedad -->
    <div class="atab-panel" id="atab-proxima">
+    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Próxima inversión</h3><p style="font-size:12px;color:var(--negro3)">Esta información aparece en el portal de todos los inversores bajo "Próxima inversión"</p></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
      <div class="card">
       <div class="card-hd"><h3>Información del proyecto</h3></div>
@@ -1365,7 +1380,7 @@ async function loadHistorial() {
           <td>${fmt_date(a.fecha)}</td>
           <td><span class="badge ${esRetiro?'badge-red':'badge-green'}">${a.tipo}</span></td>
           <td>${a.propiedades?.nombre||'<span style="color:var(--negro3)">General</span>'}</td>
-          <td class="num ${clase}">${signo} €${Math.abs(Number(a.monto_usd||0)).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+          <td class="num ${clase}">${signo} USD ${Math.abs(Number(a.monto_usd||0)).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
           <td style="color:var(--negro3)">${a.tipo_cambio&&a.tipo_cambio!=1?Number(a.tipo_cambio).toFixed(4):'—'}</td>
           <td class="num ${clase}">${signo} €${Math.abs(montoEur).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
           <td style="color:var(--negro3);font-size:12px">${a.descripcion||'—'}</td>
