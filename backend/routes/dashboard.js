@@ -30,7 +30,7 @@ router.get('/', authMiddleware, async (req, res) => {
     return s + aporte;
   }, 0);
   const en_pisos = pisos_activos.reduce((s, p) => s + Number(p.monto_invertido || 0), 0);
-  const pendiente = pisos_activos.length > 0 ? 0 : Math.max(0, inversion_inicial + total_retornado - retiros - en_pisos);
+  const pendiente = Math.max(0, inversion_inicial + total_retornado - retiros - en_pisos);
   const valor_actual = valor_en_cartera + pendiente;
   const rentabilidad_total = inversion_inicial > 0 ? (valor_actual - inversion_inicial) / inversion_inicial : 0;
   const primer_aporte = aportes.filter(a => a.tipo === 'aporte').slice(-1)[0];
