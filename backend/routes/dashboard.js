@@ -25,40 +25,7 @@ router.get('/', authMiddleware, async (req, res) => {
   const valor_en_cartera = pisos_activos.reduce((s, p) => {
     const prop = p.propiedades;
     const aporte = Number(p.monto_invertido || 0);
-    if (prop?.precio_venta && prop?.precio_compra && Number(prop.precio_compra) > 0) {
-      const util_inv = (Number(prop.precio_venta) - Number(prop.precio_compra)) * (aporte / Number(prop.precio_compra));
-      const fee = Math.max(0, util_inv) * 0.15;
-      const imp = Math.max(0, util_inv - f
-cd ~/Desktop/digsa
-cat > backend/routes/dashboard.js << 'JSEOF'
-const router = require('express').Router();
-const supabase = require('../utils/supabase');
-const { authMiddleware } = require('../middleware/auth');
-
-router.get('/', authMiddleware, async (req, res) => {
-  const uid = req.user.id;
-  const [partRes, aportesRes, liqRes, notifRes, reporteRes] = await Promise.all([
-    supabase.from('participaciones').select('*, propiedades(*)').eq('usuario_id', uid).eq('activo', true),
-    supabase.from('aportes').select('*, propiedades(nombre)').eq('usuario_id', uid).order('fecha', { ascending: false }),
-    supabase.from('liquidaciones').select('*, propiedades(nombre)').eq('usuario_id', uid).eq('publicado', true).order('fecha', { ascending: false }),
-    supabase.from('notificaciones').select('*').eq('usuario_id', uid).eq('leida', false).order('created_at', { ascending: false }).limit(10),
-    supabase.from('documentos').select('metadata,fecha').eq('usuario_id', uid).eq('tipo', 'reporte').eq('publicado', true).order('fecha', { ascending: false }).limit(1)
-  ]);
-  const participaciones = partRes.data || [];
-  const aportes = aportesRes.data || [];
-  const liquidaciones = liqRes.data || [];
-  const inversion_inicial = aportes.reduce((s, a) => {
-    if (a.tipo === 'aporte') return s + Number(a.monto_eur || a.monto_usd || 0);
-    if (a.tipo === 'retiro_capital') return s - Number(a.monto_eur || a.monto_usd || 0);
-    return s;
-  }, 0);
-  const retiros = aportes.filter(a => a.tipo === 'retiro' || a.tipo === 'retiro_capital').reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
-  const total_retornado = liquidaciones.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
-  const pisos_activos = participaciones.filter(p => p.propiedades?.estado !== 'vendido');
-  const valor_en_cartera = pisos_activos.reduce((s, p) => {
-    const prop = p.propiedades;
-    const aporte = Number(p.monto_invertido || 0);
-    if (prop?.precio_venta && prop?.precio_compra && Number(prop.precio_compra) > 0) {
+    if (prop && prop.precio_venta && prop.precio_compra && Number(prop.precio_compra) > 0) {
       const util_inv = (Number(prop.precio_venta) - Number(prop.precio_compra)) * (aporte / Number(prop.precio_compra));
       const fee = Math.max(0, util_inv) * 0.15;
       const imp = Math.max(0, util_inv - fee) * 0.25;
@@ -78,11 +45,11 @@ router.get('/', authMiddleware, async (req, res) => {
     if (anos > 0) tir = Math.pow(1 + rentabilidad_total, 1 / anos) - 1;
   }
   let resumenFinal = { inversion_inicial, valor_actual, rentabilidad_total, tir, retiros, pendiente, propiedades_activas: pisos_activos.length, total_retornado };
-  const ultimoReporte = reporteRes?.data?.[0];
-  if (ultimoReporte?.metadata) {
+  const ultimoReporte = reporteRes && reporteRes.data && reporteRes.data[0];
+  if (ultimoReporte && ultimoReporte.metadata) {
     try {
       const meta = JSON.parse(ultimoReporte.metadata);
-      resumenFinal = { ...resumenFinal, ...meta, retiros, propiedades_activas: pisos_activos.length };
+      resumenFinal = Object.assign({}, resumenFinal, meta, { retiros, propiedades_activas: pisos_activos.length });
     } catch(e) {}
   }
   res.json({ resumen: resumenFinal, participaciones, aportes, liquidaciones, notificaciones: notifRes.data || [] });
