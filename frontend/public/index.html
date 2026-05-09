@@ -862,9 +862,24 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
    <!-- TAB: liquidaciones históricas -->
    <div class="atab-panel" id="atab-liquidaciones">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-     <h3 style="font-size:18px">Inversiones finalizadas</h3>
+    <div style="margin-bottom:24px">
+     <h3 style="font-size:20px;margin-bottom:4px">Inversiones finalizadas</h3>
+     <p style="font-size:12px;color:var(--negro3)">Revisá los borradores antes de publicar. Los inversores solo ven las liquidaciones publicadas.</p>
     </div>
+
+    <!-- Borradores pendientes -->
+    <div id="borradores-wrap" style="display:none;margin-bottom:24px">
+     <div style="background:var(--naranja-light);border:2px solid var(--naranja);padding:0;margin-bottom:4px">
+      <div style="background:var(--naranja);padding:12px 20px;display:flex;align-items:center;justify-content:space-between">
+       <div style="color:var(--blanco);font-weight:700;font-size:13px">⏳ BORRADORES PENDIENTES DE PUBLICACIÓN</div>
+       <div style="font-size:11px;color:rgba(255,255,255,.8)">Los inversores NO ven esto todavía</div>
+      </div>
+      <div id="borradores-body" style="padding:16px 20px"></div>
+     </div>
+    </div>
+
+    <!-- Historial publicado -->
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--negro3);margin-bottom:10px">HISTORIAL PUBLICADO</div>
     <div class="card" style="padding:0">
      <table class="dtbl">
       <thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Aporte</th><th>Retorno total</th><th>Utilidad neta</th><th>Acciones</th></tr></thead>
@@ -3033,18 +3048,93 @@ async function loadAdminLiquidaciones() {
     LIQ_CACHE_ADMIN = liqs || [];
     const tbody = $('admin-liq-body');
     if (!tbody) return;
-    tbody.innerHTML = LIQ_CACHE_ADMIN.map(l => `<tr>
+
+    // Separar borradores de publicados
+    const borradores = LIQ_CACHE_ADMIN.filter(l => !l.publicado);
+    const publicados  = LIQ_CACHE_ADMIN.filter(l => l.publicado);
+
+    // Agrupar borradores por propiedad
+    const porPiso = {};
+    borradores.forEach(l => {
+      const pid = l.propiedad_id;
+      if (!porPiso[pid]) porPiso[pid] = { nombre: l.propiedades?.nombre, liqs: [], total_retorno: 0 };
+      porPiso[pid].liqs.push(l);
+      porPiso[pid].total_retorno += Number(l.total_retorno || 0);
+    });
+
+    const borradoresWrap = $('borradores-wrap');
+    const borradoresBody = $('borradores-body');
+    if (borradoresWrap && borradoresBody) {
+      if (Object.keys(porPiso).length > 0) {
+        borradoresWrap.style.display = 'block';
+        borradoresBody.innerHTML = Object.entries(porPiso).map(([pid, data]) => `
+          <div style="background:var(--blanco);padding:14px;margin-bottom:12px;border:1px solid rgba(255,77,15,.2)">
+           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div>
+             <strong style="font-size:14px">${data.nombre}</strong>
+             <span style="font-size:11px;color:var(--negro3);margin-left:8px">${data.liqs.length} inversores · Total: €${Math.round(data.total_retorno).toLocaleString('es-ES')}</span>
+            </div>
+            <div style="display:flex;gap:8px">
+             <button class="btn btn-outline btn-sm" onclick="verBorrador('${pid}')">👁 Revisar</button>
+             <button class="btn btn-dark btn-sm" onclick="publicarLiquidaciones('${pid}', '${data.nombre}')">✓ Publicar a inversores</button>
+            </div>
+           </div>
+           <table style="width:100%;font-size:12px;border-collapse:collapse">
+            <tr style="background:var(--gris)">
+             <th style="padding:5px 8px;text-align:left;font-weight:600">Inversor</th>
+             <th style="padding:5px 8px;text-align:right;font-weight:600">Aporte</th>
+             <th style="padding:5px 8px;text-align:right;font-weight:600">Retorno</th>
+             <th style="padding:5px 8px;text-align:right;font-weight:600">Utilidad neta</th>
+             <th style="padding:5px 8px;text-align:right;font-weight:600">PDF</th>
+            </tr>
+            ${data.liqs.map(l => `<tr style="border-top:1px solid var(--gris2)">
+             <td style="padding:5px 8px">${l.usuarios?.nombre||''} ${l.usuarios?.apellido||''}</td>
+             <td style="padding:5px 8px;text-align:right">€${Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+             <td style="padding:5px 8px;text-align:right;color:var(--verde);font-weight:600">€${Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+             <td style="padding:5px 8px;text-align:right">€${Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+             <td style="padding:5px 8px;text-align:right">${l.pdf_url ? `<a href="${l.pdf_url}" target="_blank" style="color:var(--naranja);font-size:11px;font-weight:600">⬇ PDF</a>` : '<span style="color:var(--negro3)">—</span>'}</td>
+            </tr>`).join('')}
+           </table>
+          </div>`).join('');
+      } else {
+        borradoresWrap.style.display = 'none';
+      }
+    }
+
+    // Tabla publicados
+    tbody.innerHTML = publicados.map(l => `<tr>
       <td>${fmt_date(l.fecha)}</td>
       <td><strong>${l.usuarios?.nombre||''} ${l.usuarios?.apellido||''}</strong></td>
       <td>${l.propiedades?.nombre||'—'}</td>
       <td class="num">€${Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
       <td class="num pos">€${Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
       <td class="num">€${Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="editLiquidacion('${l.id}')">Editar</button>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones</td></tr>';
+      <td><button class="btn btn-outline btn-sm" onclick="editLiquidacion('${l.id}')">Editar</button></td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones publicadas</td></tr>';
+
   } catch(e) { console.error(e); }
+}
+
+async function publicarLiquidaciones(propiedad_id, nombre_piso) {
+  if (!confirm(`¿Publicar las liquidaciones de "${nombre_piso}" a todos los inversores?
+
+Esto las hará visibles en sus portales y enviará notificaciones.`)) return;
+  try {
+    showLoading('Publicando…');
+    const r = await api('POST', `/liquidaciones/publicar/${propiedad_id}`);
+    hideLoading();
+    showToast(`✓ Liquidaciones publicadas — ${r.publicadas} inversores notificados`);
+    loadAdminLiquidaciones();
+  } catch(e) {
+    hideLoading();
+    showToast(e.message, 'err');
+  }
+}
+
+function verBorrador(propiedad_id) {
+  // Ir al tab de liquidaciones con filtro del piso
+  adminTab('liquidaciones');
+  showToast('Revisá la tabla de abajo para ver el historial publicado');
 }
 
 async function editLiquidacion(id) {
