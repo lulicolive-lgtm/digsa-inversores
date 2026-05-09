@@ -1497,9 +1497,15 @@ async function loadDashboard() {
     }
     const liqs=d.liquidaciones||[];
     if (liqs.length) {
+      // También cargar documentos para asociar a liquidaciones sin pdf_url
+      const docsLiq = await api('GET','/documentos').catch(()=>[]);
       $('dash-liq-body').innerHTML=liqs.map(l=>{
         const rent=l.aporte_usuario>0?((l.total_retorno-l.aporte_usuario)/l.aporte_usuario*100).toFixed(1):0;
-        return `<tr><td>${l.propiedades?.nombre||'—'}</td><td>${fmt_date(l.fecha)}</td><td class="num">${eur(l.aporte_usuario)}</td><td class="num">${eur(l.total_retorno)}</td><td class="${rent>=0?'pos':'neg'}">${rent>=0?'+':''}${rent}%</td><td>${l.pdf_url?`<a href="${l.pdf_url}" target="_blank" class="dl-btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>PDF</a>`:`<span style="color:var(--negro3);font-size:12px">—</span>`}</td></tr>`;
+        // Buscar documento asociado si no hay pdf_url directo
+        const doc = !l.pdf_url ? docsLiq.find(d=>d.propiedad_id===l.propiedad_id && d.tipo==='liquidacion') : null;
+        const pdfUrl = l.pdf_url || doc?.url;
+        const dlBtn = pdfUrl ? `<a href="${pdfUrl}" target="_blank" class="dl-btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>PDF</a>` : `<span style="color:var(--negro3);font-size:12px">—</span>`;
+        return `<tr><td>${l.propiedades?.nombre||'—'}</td><td>${fmt_date(l.fecha)}</td><td class="num">${eur(l.aporte_usuario)}</td><td class="num">${eur(l.total_retorno)}</td><td class="${rent>=0?'pos':'neg'}">${rent>=0?'+':''}${rent}%</td><td>${dlBtn}</td></tr>`;
       }).join('');
     }
   } catch(e) { showToast('Error: '+e.message,'err'); }
