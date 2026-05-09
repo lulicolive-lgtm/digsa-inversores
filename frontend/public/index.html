@@ -395,8 +395,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    </div>
    <div class="card" style="padding:0">
     <div class="tbl-wrap">
-     <table class="dtbl">
-      <thead><tr><th style="width:200px">Propiedad</th><th style="width:100px">Fecha</th><th style="width:90px">Tipo</th><th>Documento</th></tr></thead>
+     <table class="dtbl" style="width:100%;table-layout:fixed">
+      <thead><tr><th style="width:35%">Propiedad</th><th style="width:15%">Fecha</th><th style="width:12%">Tipo</th><th style="width:38%">Documento</th></tr></thead>
       <tbody id="docs-tbody"></tbody>
      </table>
     </div>
@@ -1647,7 +1647,7 @@ async function loadDocumentos() {
     docs.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
     const iconMap={reporte:'',liquidacion:'',contrato:'',otro:''};
     tbody.innerHTML=docs.map(d=>`<tr>
-      <td style="color:var(--negro3);font-size:12px;min-width:200px">${
+      <td style="color:var(--negro3);font-size:12px">${
   (() => {
     const p = d.propiedades?.nombre ||
       (d.nombre?.includes('DRC98') && d.nombre?.includes('AY154') && d.nombre?.includes('AY78') ? 'Don Ramón de la Cruz 98, Ayala 154 y Ayala 78' :
