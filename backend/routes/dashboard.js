@@ -14,7 +14,7 @@ router.get('/', authMiddleware, async (req, res) => {
   const participaciones = partRes.data || [];
   const aportes = aportesRes.data || [];
   const liquidaciones = liqRes.data || [];
-  const inversion_inicial = aportes.filter(a=>a.tipo==='aporte').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
+  const inversion_inicial = aportes.reduce((s,a)=>a.tipo==='aporte'?s+Number(a.monto_eur||a.monto_usd||0):a.tipo==='retiro_capital'?s-Number(a.monto_eur||a.monto_usd||0):s,0);
   const retiros = aportes.filter(a => a.tipo === 'retiro').reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
   const total_retornado = liquidaciones.reduce((s, l) => s + Number(l.total_retorno || 0), 0);
   const pisos_activos = participaciones.filter(p => p.propiedades?.estado !== 'vendido');

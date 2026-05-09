@@ -18,7 +18,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient) {
     const liquidaciones   = liqRes.data || [];
 
     // Calcular datos del reporte
-    const inversion_inicial = aportes.filter(a=>a.tipo==='aporte').reduce((s,a)=>s+Number(a.monto_eur||a.monto_usd||0),0);
+    const inversion_inicial = aportes.reduce((s,a)=>a.tipo==='aporte'?s+Number(a.monto_eur||a.monto_usd||0):a.tipo==='retiro_capital'?s-Number(a.monto_eur||a.monto_usd||0):s,0);
 
     const retiros = aportes
       .filter(a => a.tipo === 'retiro')
