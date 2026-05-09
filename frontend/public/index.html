@@ -1550,18 +1550,21 @@ async function loadPortfolio() {
       </tr>`;
     });
 
-    // Pisos finalizados con retorno real de liquidaciones
+    // Pisos finalizados — con retorno real si está publicado, o aporte si está en borrador
     finalizadas.forEach(p => {
       const liq = liqs.find(l => l.propiedad_id === p.id);
-      if (!liq) return; // no tiene liquidación registrada
-      const aporte  = Number(liq.aporte_usuario);
-      const retorno = Number(liq.total_retorno);
-      const rent    = aporte > 0 ? '+' + (((retorno - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
-      rows += `<tr style="opacity:.75">
-        <td><strong>${p.nombre}</strong></td>
+      // Buscar participación (puede estar inactiva)
+      const part = parts.find(pt => pt.propiedad_id === p.id) || {};
+      const aporte  = liq ? Number(liq.aporte_usuario) : Number(part.monto_invertido || p.mi_inversion || 0);
+      const retorno = liq ? Number(liq.total_retorno) : aporte;
+      const pct     = liq ? liq.porcentaje : part.porcentaje || p.mi_porcentaje;
+      const rent    = liq && aporte > 0 ? '+' + (((retorno - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
+      const pendiente_tag = !liq ? '<span style="font-size:10px;color:var(--naranja);margin-left:6px">pendiente</span>' : '';
+      rows += `<tr style="opacity:.8">
+        <td><strong>${p.nombre}</strong>${pendiente_tag}</td>
         <td>${statusBadge(p.estado)}</td>
         <td class="num">${eur(aporte)}</td>
-        <td>${liq.porcentaje ? (liq.porcentaje*100).toFixed(2)+'%' : '—'}</td>
+        <td>${pct ? (Number(pct)*100).toFixed(2)+'%' : '—'}</td>
         <td class="num pos">${eur(retorno)}</td>
         <td class="pos">${rent}</td>
       </tr>`;

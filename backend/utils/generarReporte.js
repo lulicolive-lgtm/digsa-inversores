@@ -120,7 +120,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient) {
       const { data: docExist } = await sb.from('documentos')
         .select('id').eq('usuario_id', userId).eq('nombre', `Reporte de Inversión ${mes_año}`).single();
       if (docExist) {
-        await sb.from('documentos').update({ url: urlData.publicUrl, fecha }).eq('id', docExist.id);
+        await sb.from('documentos').update({ url: urlData.publicUrl, fecha, publicado: false }).eq('id', docExist.id);
       } else {
         await sb.from('documentos').insert([{
           usuario_id: userId,
@@ -128,6 +128,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient) {
           tipo: 'reporte',
           url: urlData.publicUrl,
           fecha,
+          publicado: false,
         }]);
       }
     }
