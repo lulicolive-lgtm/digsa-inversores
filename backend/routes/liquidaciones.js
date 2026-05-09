@@ -122,6 +122,13 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
     resultados.push({ usuario_id: user.id, nombre: `${user.nombre} ${user.apellido}`, total_retorno, aporte });
   }
 
+  // Si no hay destino, registrar retorno como pendiente
+  if (destino_ids.length === 0) {
+    for (const res of resultados) {
+      await supabase.from('aportes').insert([{ usuario_id: res.usuario_id, propiedad_id, monto_eur: res.total_retorno, monto_usd: res.total_retorno, fecha, tipo: 'pendiente', descripcion: `Liquidacion pendiente de reinversion` }]);
+    }
+  }
+
   await supabase.from('propiedades').update({ estado: 'vendido', precio_venta: precio_v, fecha_venta: fecha }).eq('id', propiedad_id);
   await supabase.from('participaciones').update({ activo: false }).eq('propiedad_id', propiedad_id);
 
