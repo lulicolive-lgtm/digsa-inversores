@@ -1473,7 +1473,7 @@ async function loadDashboard() {
       if($('dash-pendiente')) if($('dash-pendiente')) $('dash-pendiente').textContent=eur(r.pendiente);
     }
     const notifs=d.notificaciones||[];
-    if (notifs.length) { if($('notif-badge')) $('notif-badge').textContent=notifs.length; $('notif-badge').style.display='flex'; }
+    if (notifs.length && $('notif-badge')) { $('notif-badge').textContent=notifs.length; $('notif-badge').style.display='flex'; }
     const activas=(d.participaciones||[]).filter(p=>p.propiedades?.estado!=='vendido');
     if (activas.length) {
       $('dash-props-list').innerHTML=activas.slice(0,5).map(p=>`
