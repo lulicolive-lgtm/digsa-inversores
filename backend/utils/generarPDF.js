@@ -1,120 +1,113 @@
 /**
- * DIGSA — Generador de PDFs de Liquidación y Reporte
- * Usa PDFKit para generar PDFs con diseño profesional
+ * DIGSA — Generador de PDFs
+ * Liquidación y Reporte de Inversión
  */
 const PDFDocument = require('pdfkit');
 
-// Colores DIGSA
+const W = 595.28;
+const H = 841.89;
+const MAR = 45;
 const NEGRO   = '#1A1A1A';
 const NARANJA = '#FF4D0F';
 const BLANCO  = '#FFFFFF';
-const GRIS    = '#F5F5F5';
-const GRIS2   = '#E0E0E0';
+const GRIS    = '#F7F7F7';
+const GRIS2   = '#E8E8E8';
 const VERDE   = '#1A6B3C';
-const AZUL_OSC= '#1A2B3C';
+const NEGRO2  = '#2E2E2E';
 
-const W = 595.28; // A4 width
-const H = 841.89; // A4 height
-const MAR = 45;   // margen
-
-const fmt = n => '€' + Number(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const fmtPct = n => (n >= 0 ? '+' : '') + (Number(n) * 100).toFixed(2) + '%';
+const fmtEur = n => '€' + Number(n || 0).toLocaleString('es-ES', { minimumFractionDigits: 2 });
+const fmtPct = n => (Number(n || 0) >= 0 ? '+' : '') + (Number(n || 0) * 100).toFixed(2) + '%';
 const fmtDate = d => {
   if (!d) return '—';
-  const date = new Date(d);
-  return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+  try {
+    return new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+  } catch { return d; }
 };
 
-// ─── HELPERS ────────────────────────────────────────────────────────────────
+// ── HEADER ──────────────────────────────────────────────────────────────────
+function drawHeader(doc, titulo, nombre, fecha) {
+  doc.rect(0, 0, W, 100).fill(NEGRO);
+  doc.rect(0, 100, W, 3).fill(NARANJA);
 
-function headerPage(doc, titulo, subtitulo, fecha) {
-  // Fondo negro header
-  doc.rect(0, 0, W, 110).fill(NEGRO);
-  // Línea naranja
-  doc.rect(0, 110, W, 4).fill(NARANJA);
-  
-  // Logo texto DIGSA
-  doc.fillColor(BLANCO).fontSize(22).font('Helvetica-Bold')
-     .text('DIGSA', MAR, 28, { continued: false });
-  doc.fillColor(NARANJA).fontSize(8).font('Helvetica')
-     .text('ESPAÑA', MAR, 52, { characterSpacing: 3 });
+  // Logo
+  doc.fillColor(BLANCO).font('Helvetica-Bold').fontSize(22).text('DIGSA', MAR, 28);
+  doc.fillColor(NARANJA).font('Helvetica').fontSize(7).text('E S P A Ñ A', MAR, 53, { characterSpacing: 2 });
 
-  // Título derecha
-  doc.fillColor(BLANCO).fontSize(16).font('Helvetica-Bold')
-     .text(titulo, W/2, 25, { width: W/2 - MAR, align: 'right' });
-  doc.fillColor('rgba(255,255,255,0.6)').fontSize(10).font('Helvetica')
-     .text(subtitulo, W/2, 48, { width: W/2 - MAR, align: 'right' });
-  if (fecha) {
-    doc.fillColor(NARANJA).fontSize(9)
-       .text(fecha, W/2, 68, { width: W/2 - MAR, align: 'right' });
-  }
+  // Título + nombre + fecha
+  doc.fillColor(BLANCO).font('Helvetica-Bold').fontSize(14)
+     .text(titulo, 0, 22, { align: 'right', width: W - MAR });
+  doc.fillColor('rgba(255,255,255,0.65)').font('Helvetica').fontSize(10)
+     .text(nombre, 0, 42, { align: 'right', width: W - MAR });
+  doc.fillColor(NARANJA).font('Helvetica').fontSize(9)
+     .text(fecha, 0, 60, { align: 'right', width: W - MAR });
 }
 
-function footerPage(doc, pageNum, totalPages) {
-  const y = H - 45;
-  doc.rect(0, y - 8, W, 53).fill(NEGRO);
-  doc.fillColor('rgba(255,255,255,0.4)').fontSize(8).font('Helvetica')
-     .text('Villanueva 27, Madrid  ·  La Pampa 1517 3°C, Buenos Aires  ·  digsa.es', 
-            MAR, y + 4, { width: W - MAR*2, align: 'center' });
+// ── FOOTER ──────────────────────────────────────────────────────────────────
+function drawFooter(doc, pag, total) {
+  const y = H - 42;
+  doc.rect(0, y, W, 42).fill(NEGRO2);
+  doc.fillColor('rgba(255,255,255,0.4)').font('Helvetica').fontSize(7.5)
+     .text('Villanueva 27, Madrid  ·  La Pampa 1517 3°C, Buenos Aires  ·  digsa.es',
+            MAR, y + 8, { width: W - MAR*2, align: 'center' });
+  doc.fillColor('rgba(255,255,255,0.25)').fontSize(7)
+     .text('Rentabilidad NETA después de fee de éxito (15%) e impuestos (25%)',
+            MAR, y + 22, { width: W - MAR*2, align: 'center' });
   doc.fillColor('rgba(255,255,255,0.3)').fontSize(7)
-     .text(`Pág. ${pageNum} / ${totalPages}`, W - MAR - 40, y + 4);
-  doc.fillColor('rgba(255,255,255,0.2)').fontSize(7)
-     .text('La rentabilidad estimada es NETA (después de fee de éxito e impuestos)', 
-            MAR, y + 18, { width: W - MAR*2, align: 'center' });
+     .text(`${pag} / ${total}`, W - MAR - 20, y + 8);
 }
 
-function kpiBox(doc, x, y, w, h, label, valor, color = NEGRO) {
-  doc.rect(x, y, w, h).fill(GRIS).stroke(GRIS2);
+// ── KPI BOX ─────────────────────────────────────────────────────────────────
+function drawKPI(doc, x, y, w, h, label, valor, color = NEGRO, bgColor = GRIS) {
+  doc.rect(x, y, w, h).fill(bgColor);
   doc.rect(x, y, w, 3).fill(color);
-  doc.fillColor(NEGRO).fontSize(7).font('Helvetica')
-     .text(label.toUpperCase(), x + 10, y + 10, { width: w - 20, characterSpacing: 0.5 });
-  doc.fillColor(color).fontSize(16).font('Helvetica-Bold')
+  doc.fillColor('#888').font('Helvetica').fontSize(7)
+     .text(label.toUpperCase(), x + 10, y + 10, { width: w - 20, characterSpacing: 0.3 });
+  doc.fillColor(color).font('Helvetica-Bold').fontSize(15)
      .text(valor, x + 10, y + 22, { width: w - 20 });
 }
 
-function sectionTitle(doc, y, texto) {
-  doc.rect(MAR, y, W - MAR*2, 22).fill(NEGRO);
-  doc.fillColor(BLANCO).fontSize(9).font('Helvetica-Bold')
-     .text(texto.toUpperCase(), MAR + 10, y + 7, { characterSpacing: 1 });
-  return y + 22;
-}
-
-function tableHeader(doc, y, cols) {
-  // cols: [{x, w, label, align}]
-  doc.rect(MAR, y, W - MAR*2, 20).fill('#2A2A2A');
-  cols.forEach(col => {
-    doc.fillColor(BLANCO).fontSize(8).font('Helvetica-Bold')
-       .text(col.label, col.x + 4, y + 6, { width: col.w - 8, align: col.align || 'left' });
-  });
+// ── SECTION TITLE ────────────────────────────────────────────────────────────
+function drawSection(doc, y, texto) {
+  doc.rect(MAR, y, W - MAR*2, 20).fill(NEGRO);
+  doc.fillColor(BLANCO).font('Helvetica-Bold').fontSize(8)
+     .text(texto.toUpperCase(), MAR + 10, y + 6, { characterSpacing: 0.8 });
   return y + 20;
 }
 
-function tableRow(doc, y, cols, values, bgColor = null) {
-  if (bgColor) doc.rect(MAR, y, W - MAR*2, 18).fill(bgColor);
-  else doc.rect(MAR, y, W - MAR*2, 0.5).fill(GRIS2);
-  cols.forEach((col, i) => {
-    const val = values[i] || '—';
-    const color = col.color || NEGRO;
-    doc.fillColor(color).fontSize(8).font(col.bold ? 'Helvetica-Bold' : 'Helvetica')
-       .text(String(val), col.x + 4, y + 5, { width: col.w - 8, align: col.align || 'left' });
+// ── TABLE ────────────────────────────────────────────────────────────────────
+function drawTableHeader(doc, y, cols) {
+  doc.rect(MAR, y, W - MAR*2, 18).fill('#333333');
+  cols.forEach(col => {
+    doc.fillColor(BLANCO).font('Helvetica-Bold').fontSize(7.5)
+       .text(col.label, col.x + 3, y + 5, { width: col.w - 6, align: col.align || 'left' });
   });
   return y + 18;
 }
 
-// ─── GENERADOR DE LIQUIDACIÓN ────────────────────────────────────────────────
+function drawTableRow(doc, y, cols, vals, bg = null, textColor = NEGRO) {
+  const h = 17;
+  if (bg) doc.rect(MAR, y, W - MAR*2, h).fill(bg);
+  else {
+    doc.moveTo(MAR, y + h).lineTo(W - MAR, y + h).stroke(GRIS2);
+  }
+  cols.forEach((col, i) => {
+    const v = vals[i] !== undefined ? String(vals[i]) : '—';
+    const c = col.color || textColor;
+    doc.fillColor(c).font(col.bold ? 'Helvetica-Bold' : 'Helvetica').fontSize(8)
+       .text(v, col.x + 3, y + 4, { width: col.w - 6, align: col.align || 'left' });
+  });
+  return y + h;
+}
 
+// ════════════════════════════════════════════════════════════════════════════
+// PDF LIQUIDACIÓN
+// ════════════════════════════════════════════════════════════════════════════
 async function generarPDFLiquidacion(data) {
-  const {
-    usuario,          // { nombre, apellido, email }
-    propiedad,        // { nombre, direccion }
-    fecha,            // fecha de liquidación
-    liquidaciones,    // [{ piso, aporte, utilidad_bruta, fee, impuestos, util_neta, total }]
-    total_aporte,     // total aportado
-    total_retorno,    // total retorno
-    total_utilidad,   // total utilidad neta
-  } = data;
-
-  const TOTAL_PAGES = Math.ceil(liquidaciones.length / 6) + 2; // páginas de detalle + portada + gracias
+  const { usuario, propiedad, fecha, liquidaciones, total_aporte, total_retorno, total_utilidad } = data;
+  const nombre_completo = `${usuario.nombre} ${usuario.apellido}`;
+  const ROWS_PER_PAGE = 10;
+  const detail_pages = Math.max(1, Math.ceil(liquidaciones.length / ROWS_PER_PAGE));
+  const TOTAL_PAGES = 1 + detail_pages + 1;
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 0, size: 'A4' });
@@ -123,136 +116,113 @@ async function generarPDFLiquidacion(data) {
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    let currentPage = 1;
+    let page = 1;
 
-    // ── PÁGINA 1: PORTADA + RESUMEN ─────────────────────────────────────
-    headerPage(doc,
-      'LIQUIDACIÓN DE INVERSIÓN',
-      `${usuario.nombre} ${usuario.apellido}`,
-      fmtDate(fecha)
-    );
+    // ── Pág 1: Portada + KPIs + inicio tabla ─────────────────────────────
+    drawHeader(doc, 'LIQUIDACIÓN DE INVERSIÓN', nombre_completo, fmtDate(fecha));
 
-    // Datos del inversor
-    let y = 130;
-    doc.fillColor(NEGRO).fontSize(11).font('Helvetica-Bold')
-       .text(`${usuario.nombre} ${usuario.apellido}`, MAR, y);
-    doc.fillColor('#666').fontSize(9).font('Helvetica')
+    let y = 118;
+
+    // Info inversor
+    doc.fillColor(NEGRO).font('Helvetica-Bold').fontSize(12)
+       .text(nombre_completo, MAR, y);
+    doc.fillColor('#666').font('Helvetica').fontSize(9)
        .text(usuario.email, MAR, y + 14);
+    y += 38;
 
-    y += 45;
+    // KPIs
+    const kw = (W - MAR*2 - 20) / 3;
+    drawKPI(doc, MAR,          y, kw, 60, 'Total aportado',   fmtEur(total_aporte),    NEGRO);
+    drawKPI(doc, MAR+kw+10,    y, kw, 60, 'Total retorno',    fmtEur(total_retorno),   VERDE,   '#EBF5EF');
+    drawKPI(doc, MAR+kw*2+20,  y, kw, 60, 'Utilidad neta',    fmtEur(total_utilidad),  NARANJA, '#FFF0EB');
+    y += 74;
 
-    // KPIs resumen
-    const kpiW = (W - MAR*2 - 20) / 3;
-    kpiBox(doc, MAR,          y, kpiW, 65, 'Total aportado',      fmt(total_aporte), NEGRO);
-    kpiBox(doc, MAR+kpiW+10,  y, kpiW, 65, 'Total retorno',       fmt(total_retorno), VERDE);
-    kpiBox(doc, MAR+kpiW*2+20,y, kpiW, 65, 'Utilidad neta total', fmt(total_utilidad), NARANJA);
-
-    y += 80;
-
-    // Tabla de liquidaciones (6 por página)
-    const COLS_LIQ = [
-      { x: MAR,       w: 150, label: 'Inmueble' },
-      { x: MAR+150,   w: 80,  label: 'Aporte', align: 'right' },
-      { x: MAR+230,   w: 80,  label: 'Util. bruta', align: 'right' },
-      { x: MAR+310,   w: 65,  label: 'Fee 15%', align: 'right' },
-      { x: MAR+375,   w: 65,  label: 'Imp. 25%', align: 'right' },
-      { x: MAR+440,   w: 65,  label: 'Util. neta', align: 'right' },
-      { x: MAR+505,   w: W-MAR-505, label: 'Liquidación', align: 'right' },
+    // Tabla
+    const COLS = [
+      { x: MAR,       w: 145, label: 'Inmueble' },
+      { x: MAR+145,   w: 72,  label: 'Aporte',       align: 'right' },
+      { x: MAR+217,   w: 68,  label: 'Util. bruta',  align: 'right' },
+      { x: MAR+285,   w: 60,  label: 'Fee 15%',      align: 'right', color: NARANJA },
+      { x: MAR+345,   w: 60,  label: 'Imp. 25%',     align: 'right' },
+      { x: MAR+405,   w: 65,  label: 'Util. neta',   align: 'right', color: VERDE },
+      { x: MAR+470,   w: W-MAR-474, label: 'Liquidación', align: 'right', bold: true },
     ];
 
-    y = sectionTitle(doc, y, `Detalle por inmueble — ${liquidaciones.length} operaciones`);
-    y = tableHeader(doc, y, COLS_LIQ);
+    y = drawSection(doc, y, `Detalle por inmueble — ${liquidaciones.length} operaciones`);
+    y = drawTableHeader(doc, y, COLS);
 
     for (let i = 0; i < liquidaciones.length; i++) {
-      // Nueva página si no entra
-      if (y > H - 120) {
-        footerPage(doc, currentPage, TOTAL_PAGES);
+      if (y > H - 80) {
+        drawFooter(doc, page, TOTAL_PAGES);
         doc.addPage();
-        currentPage++;
-        headerPage(doc, 'LIQUIDACIÓN DE INVERSIÓN', `${usuario.nombre} ${usuario.apellido}`, fmtDate(fecha));
-        y = 130;
-        y = sectionTitle(doc, y, `Detalle por inmueble (continuación)`);
-        y = tableHeader(doc, y, COLS_LIQ);
+        page++;
+        drawHeader(doc, 'LIQUIDACIÓN DE INVERSIÓN', nombre_completo, fmtDate(fecha));
+        y = 118;
+        y = drawSection(doc, y, 'Detalle (continuación)');
+        y = drawTableHeader(doc, y, COLS);
       }
-
       const l = liquidaciones[i];
       const bg = i % 2 === 0 ? GRIS : BLANCO;
-      y = tableRow(doc, y, COLS_LIQ, [
+      y = drawTableRow(doc, y, COLS, [
         l.piso,
-        fmt(l.aporte),
-        fmt(l.utilidad_bruta),
-        fmt(l.fee),
-        fmt(l.impuestos),
-        fmt(l.util_neta),
-        fmt(l.total),
+        fmtEur(l.aporte),
+        fmtEur(l.utilidad_bruta),
+        fmtEur(l.fee),
+        fmtEur(l.impuestos),
+        fmtEur(l.util_neta),
+        fmtEur(l.total),
       ], bg);
     }
 
     // Fila total
-    y = tableRow(doc, y, COLS_LIQ, [
-      'TOTAL',
-      fmt(total_aporte),
-      '',
-      '',
-      '',
-      fmt(total_utilidad),
-      fmt(total_retorno),
-    ], '#1A1A1A');
-    // Texto total en blanco
-    doc.fillColor(BLANCO).fontSize(8).font('Helvetica-Bold')
-       .text('TOTAL', MAR + 4, y - 13, { width: 140 })
-       .text(fmt(total_retorno), MAR + 505 + 4, y - 13, { width: W-MAR-509, align: 'right' });
+    doc.rect(MAR, y, W-MAR*2, 18).fill(NEGRO);
+    doc.fillColor(BLANCO).font('Helvetica-Bold').fontSize(8)
+       .text('TOTAL', MAR+3, y+5)
+       .text(fmtEur(total_aporte),   MAR+148, y+5, { width: 66, align: 'right' })
+       .text(fmtEur(total_utilidad), MAR+408, y+5, { width: 60, align: 'right' })
+       .text(fmtEur(total_retorno),  MAR+473, y+5, { width: W-MAR-477, align: 'right' });
+    y += 24;
 
-    y += 20;
+    // Nota
+    doc.rect(MAR, y, W-MAR*2, 28).fill(GRIS);
+    doc.rect(MAR, y, 3, 28).fill(NARANJA);
+    doc.fillColor('#777').font('Helvetica').fontSize(7.5)
+       .text('La rentabilidad es NETA: fee de éxito 15% sobre utilidad bruta + impuestos 25% sobre utilidad neta. Montos en euros (€).',
+              MAR+10, y+7, { width: W-MAR*2-20 });
 
-    // Nota legal
-    doc.rect(MAR, y, W-MAR*2, 35).fill(GRIS);
-    doc.fillColor('#888').fontSize(7.5).font('Helvetica')
-       .text('* La rentabilidad es NETA, calculada después de descontar el fee de éxito (15% sobre la utilidad bruta) e impuestos (25% sobre la utilidad neta). Los montos expresados en euros (€).', 
-              MAR+10, y+8, { width: W-MAR*2-20 });
+    drawFooter(doc, page, TOTAL_PAGES);
 
-    footerPage(doc, currentPage, TOTAL_PAGES);
-
-    // ── PÁGINA FINAL: GRACIAS ────────────────────────────────────────────
+    // ── Página final: Gracias ─────────────────────────────────────────────
     doc.addPage();
-    currentPage++;
-
+    page++;
     doc.rect(0, 0, W, H).fill(NEGRO);
-    doc.rect(0, H/2 - 2, W, 4).fill(NARANJA);
+    doc.rect(0, H*0.5 - 2, W, 4).fill(NARANJA);
+    doc.fillColor(BLANCO).font('Helvetica-Bold').fontSize(38)
+       .text('Muchas Gracias', 0, H*0.5 - 90, { align: 'center', width: W });
+    doc.fillColor('rgba(255,255,255,0.55)').font('Helvetica').fontSize(13)
+       .text(`${usuario.nombre}, gracias por confiar en DIGSA España.`, 0, H*0.5 - 35, { align: 'center', width: W });
+    doc.fillColor(NARANJA).fontSize(10)
+       .text('digsa.es', 0, H*0.5 + 30, { align: 'center', width: W });
+    doc.fillColor('rgba(255,255,255,0.3)').fontSize(9)
+       .text('Villanueva 27, Madrid  ·  La Pampa 1517 3°C, Buenos Aires', 0, H*0.5 + 48, { align: 'center', width: W });
+    drawFooter(doc, page, TOTAL_PAGES);
 
-    doc.fillColor(BLANCO).fontSize(36).font('Helvetica-Bold')
-       .text('Muchas Gracias', 0, H/2 - 80, { align: 'center', width: W });
-    doc.fillColor('rgba(255,255,255,0.5)').fontSize(13).font('Helvetica')
-       .text(`${usuario.nombre}, gracias por confiar en DIGSA.`, 0, H/2 - 30, { align: 'center', width: W });
-    doc.fillColor('rgba(255,255,255,0.3)').fontSize(10)
-       .text('digsa.es  ·  Villanueva 27, Madrid  ·  La Pampa 1517 3°C, Buenos Aires', 
-              0, H/2 + 40, { align: 'center', width: W });
-
-    footerPage(doc, currentPage, TOTAL_PAGES);
     doc.end();
   });
 }
 
-// ─── GENERADOR DE REPORTE ────────────────────────────────────────────────────
-
+// ════════════════════════════════════════════════════════════════════════════
+// PDF REPORTE
+// ════════════════════════════════════════════════════════════════════════════
 async function generarPDFReporte(data) {
   const {
-    usuario,          // { nombre, apellido, email }
-    fecha,            // fecha del reporte
-    inversion_inicial,
-    valor_actual,
-    rentabilidad_total,
-    tir,
-    pisos_activos,    // [{ nombre, costo, venta_est, aporte, neto_est, rent }]
-    inversiones_finalizadas, // [{ piso, inversion, venta, aporte, liquidacion, rent, destino }]
-    aportes,          // [{ fecha, usd, eur, descripcion }]
-    pendiente,
+    usuario, fecha, inversion_inicial, valor_actual, rentabilidad_total, tir,
+    pisos_activos, inversiones_finalizadas, aportes, pendiente
   } = data;
-
-  const FILAS_POR_PAG = 8;
-  const totalFinalizadas = inversiones_finalizadas.length;
-  const paginasHistorico = Math.ceil(totalFinalizadas / FILAS_POR_PAG);
-  const TOTAL_PAGES = 1 + Math.max(1, paginasHistorico) + 1; // portada + historico + gracias
+  const nombre_completo = `${usuario.nombre} ${usuario.apellido}`;
+  const ROWS_PER_PAGE = 9;
+  const pags_hist = Math.max(1, Math.ceil(inversiones_finalizadas.length / ROWS_PER_PAGE));
+  const TOTAL_PAGES = 1 + pags_hist + 1;
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ margin: 0, size: 'A4' });
@@ -261,37 +231,36 @@ async function generarPDFReporte(data) {
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    let currentPage = 1;
+    let page = 1;
 
-    // ── PÁGINA 1: RESUMEN EJECUTIVO ─────────────────────────────────────
-    headerPage(doc, 'REPORTE DE INVERSIÓN', `${usuario.nombre} ${usuario.apellido}`, fmtDate(fecha));
+    // ── Pág 1: Resumen ejecutivo ──────────────────────────────────────────
+    drawHeader(doc, 'REPORTE DE INVERSIÓN', nombre_completo, fmtDate(fecha));
+    let y = 118;
 
-    let y = 130;
-
-    // KPIs — 4 en fila
-    const kpiW4 = (W - MAR*2 - 30) / 4;
-    kpiBox(doc, MAR,              y, kpiW4, 65, 'Inversión inicial',   fmt(inversion_inicial), NEGRO);
-    kpiBox(doc, MAR+kpiW4+10,     y, kpiW4, 65, 'Valor actual',         fmt(valor_actual), VERDE);
-    kpiBox(doc, MAR+kpiW4*2+20,   y, kpiW4, 65, 'Rentabilidad total',   fmtPct(rentabilidad_total), NARANJA);
-    kpiBox(doc, MAR+kpiW4*3+30,   y, kpiW4, 65, 'TIR anualizada',       fmtPct(tir || 0), '#1A2B6B');
-    y += 80;
+    // 4 KPIs
+    const kw4 = (W - MAR*2 - 30) / 4;
+    drawKPI(doc, MAR,             y, kw4, 60, 'Inversión inicial',   fmtEur(inversion_inicial), NEGRO);
+    drawKPI(doc, MAR+kw4+10,      y, kw4, 60, 'Valor actual',        fmtEur(valor_actual),      VERDE,   '#EBF5EF');
+    drawKPI(doc, MAR+kw4*2+20,    y, kw4, 60, 'Rentabilidad total',  fmtPct(rentabilidad_total),NARANJA, '#FFF0EB');
+    drawKPI(doc, MAR+kw4*3+30,    y, kw4, 60, 'TIR anualizada',      fmtPct(tir || 0),          '#1A2B6B','#EBF0FA');
+    y += 74;
 
     // Pisos activos
     if (pisos_activos.length > 0) {
-      const COLS_ACT = [
-        { x: MAR,     w: 160, label: 'Inmueble' },
-        { x: MAR+160, w: 75,  label: 'Costo est.', align: 'right' },
-        { x: MAR+235, w: 75,  label: 'Venta est.', align: 'right' },
-        { x: MAR+310, w: 70,  label: 'Aporte', align: 'right' },
-        { x: MAR+380, w: 80,  label: 'Neto est.', align: 'right', color: VERDE },
-        { x: MAR+460, w: W-MAR-464, label: 'Rent.', align: 'right', color: NARANJA },
+      const CA = [
+        { x: MAR,      w: 155, label: 'Inmueble' },
+        { x: MAR+155,  w: 72,  label: 'Costo est.',  align: 'right' },
+        { x: MAR+227,  w: 72,  label: 'Venta est.',  align: 'right' },
+        { x: MAR+299,  w: 68,  label: 'Aporte',      align: 'right' },
+        { x: MAR+367,  w: 75,  label: 'Neto est.',   align: 'right', color: VERDE },
+        { x: MAR+442,  w: W-MAR-446, label: 'Rent.', align: 'right', color: NARANJA },
       ];
-      y = sectionTitle(doc, y, 'Estado de inversión — pisos activos');
-      y = tableHeader(doc, y, COLS_ACT);
+      y = drawSection(doc, y, 'Estado actual — Pisos en cartera');
+      y = drawTableHeader(doc, y, CA);
       pisos_activos.forEach((p, i) => {
-        y = tableRow(doc, y, COLS_ACT, [
-          p.nombre, fmt(p.costo), fmt(p.venta_est),
-          fmt(p.aporte), fmt(p.neto_est), fmtPct(p.rent),
+        y = drawTableRow(doc, y, CA, [
+          p.nombre, fmtEur(p.costo), fmtEur(p.venta_est),
+          fmtEur(p.aporte), fmtEur(p.neto_est), fmtPct(p.rent),
         ], i%2===0 ? GRIS : BLANCO);
       });
       y += 8;
@@ -299,104 +268,103 @@ async function generarPDFReporte(data) {
 
     // Pendiente
     if (pendiente > 0) {
-      doc.rect(MAR, y, W-MAR*2, 24).fill('#FFF0EB');
-      doc.rect(MAR, y, 4, 24).fill(NARANJA);
-      doc.fillColor(NARANJA).fontSize(9).font('Helvetica-Bold')
-         .text('PENDIENTE DE INVERSIÓN:', MAR+12, y+8, { continued: true });
-      doc.fillColor(NEGRO).font('Helvetica')
-         .text('  ' + fmt(pendiente));
-      y += 30;
+      doc.rect(MAR, y, W-MAR*2, 22).fill('#FFF5F0');
+      doc.rect(MAR, y, 3, 22).fill(NARANJA);
+      doc.fillColor(NARANJA).font('Helvetica-Bold').fontSize(8.5)
+         .text('PENDIENTE DE INVERSIÓN', MAR+10, y+7, { continued: true });
+      doc.fillColor(NEGRO).font('Helvetica').fontSize(8.5)
+         .text(`   ${fmtEur(pendiente)}`);
+      y += 28;
     }
 
-    footerPage(doc, currentPage, TOTAL_PAGES);
+    drawFooter(doc, page, TOTAL_PAGES);
 
-    // ── PÁGINAS DE HISTÓRICO ─────────────────────────────────────────────
+    // ── Pág 2+: Historial ─────────────────────────────────────────────────
     doc.addPage();
-    currentPage++;
-    headerPage(doc, 'REPORTE DE INVERSIÓN', `${usuario.nombre} ${usuario.apellido}`, fmtDate(fecha));
-    y = 130;
+    page++;
+    drawHeader(doc, 'REPORTE DE INVERSIÓN', nombre_completo, fmtDate(fecha));
+    y = 118;
 
-    // Aportes y retiros
-    const COLS_AP = [
-      { x: MAR,     w: 80,  label: 'Fecha' },
-      { x: MAR+80,  w: 75,  label: 'USD', align: 'right' },
-      { x: MAR+155, w: 75,  label: 'EUR', align: 'right' },
-      { x: MAR+230, w: W-MAR-234, label: 'Descripción' },
+    // Aportes
+    const CAP = [
+      { x: MAR,      w: 85,  label: 'Fecha' },
+      { x: MAR+85,   w: 72,  label: 'USD',  align: 'right' },
+      { x: MAR+157,  w: 72,  label: 'EUR',  align: 'right' },
+      { x: MAR+229,  w: W-MAR-233, label: 'Descripción' },
     ];
-    y = sectionTitle(doc, y, 'Aportes y retiros');
-    y = tableHeader(doc, y, COLS_AP);
+    y = drawSection(doc, y, 'Aportes y retiros');
+    y = drawTableHeader(doc, y, CAP);
     aportes.forEach((a, i) => {
-      const bg = i%2===0 ? GRIS : BLANCO;
-      const color = a.tipo === 'retiro' ? '#B52222' : NEGRO;
-      y = tableRow(doc, y, COLS_AP.map(c => ({...c, color})), [
+      const esRet = a.tipo === 'retiro';
+      const color = esRet ? '#B52222' : NEGRO;
+      y = drawTableRow(doc, y, CAP.map(c => ({...c, color})), [
         fmtDate(a.fecha),
-        a.usd ? fmt(a.usd) : '—',
-        fmt(a.eur),
+        a.usd ? fmtEur(a.usd) : '—',
+        fmtEur(a.eur),
         a.descripcion || '—',
-      ], bg);
+      ], i%2===0 ? GRIS : BLANCO);
     });
     y += 12;
 
-    // Inversiones finalizadas — con paginación
-    const COLS_FIN = [
-      { x: MAR,     w: 130, label: 'Inmueble' },
-      { x: MAR+130, w: 65,  label: 'Inversión', align: 'right' },
-      { x: MAR+195, w: 65,  label: 'Venta', align: 'right' },
-      { x: MAR+260, w: 60,  label: 'Aporte', align: 'right' },
-      { x: MAR+320, w: 65,  label: 'Liquidación', align: 'right', color: VERDE },
-      { x: MAR+385, w: 50,  label: 'Rent.', align: 'right', color: NARANJA },
-      { x: MAR+435, w: W-MAR-439, label: 'Destino' },
+    // Inversiones finalizadas con paginación
+    const CF = [
+      { x: MAR,      w: 128, label: 'Inmueble' },
+      { x: MAR+128,  w: 65,  label: 'Inversión',   align: 'right' },
+      { x: MAR+193,  w: 65,  label: 'Venta',       align: 'right' },
+      { x: MAR+258,  w: 62,  label: 'Aporte',      align: 'right' },
+      { x: MAR+320,  w: 68,  label: 'Liquidación', align: 'right', color: VERDE },
+      { x: MAR+388,  w: 50,  label: 'Rent.',       align: 'right', color: NARANJA },
+      { x: MAR+438,  w: W-MAR-442, label: 'Destino' },
     ];
 
-    y = sectionTitle(doc, y, `Inversiones finalizadas (${totalFinalizadas})`);
-    y = tableHeader(doc, y, COLS_FIN);
+    y = drawSection(doc, y, `Inversiones finalizadas — ${inversiones_finalizadas.length} operaciones`);
+    y = drawTableHeader(doc, y, CF);
 
-    let totalAporte = 0, totalLiq = 0;
+    let totAp = 0, totLiq = 0;
     for (let i = 0; i < inversiones_finalizadas.length; i++) {
-      // Nueva página si no entra
-      if (y > H - 120) {
-        footerPage(doc, currentPage, TOTAL_PAGES);
+      if (y > H - 80) {
+        drawFooter(doc, page, TOTAL_PAGES);
         doc.addPage();
-        currentPage++;
-        headerPage(doc, 'REPORTE DE INVERSIÓN', `${usuario.nombre} ${usuario.apellido}`, fmtDate(fecha));
-        y = 130;
-        y = sectionTitle(doc, y, 'Inversiones finalizadas (continuación)');
-        y = tableHeader(doc, y, COLS_FIN);
+        page++;
+        drawHeader(doc, 'REPORTE DE INVERSIÓN', nombre_completo, fmtDate(fecha));
+        y = 118;
+        y = drawSection(doc, y, 'Inversiones finalizadas (continuación)');
+        y = drawTableHeader(doc, y, CF);
       }
-
       const f = inversiones_finalizadas[i];
-      totalAporte += f.aporte || 0;
-      totalLiq    += f.liquidacion || 0;
-      y = tableRow(doc, y, COLS_FIN, [
-        f.piso, fmt(f.inversion), fmt(f.venta),
-        fmt(f.aporte), fmt(f.liquidacion), fmtPct(f.rent),
-        f.destino || '—',
+      totAp  += Number(f.aporte || 0);
+      totLiq += Number(f.liquidacion || 0);
+      y = drawTableRow(doc, y, CF, [
+        f.piso, fmtEur(f.inversion), fmtEur(f.venta),
+        fmtEur(f.aporte), fmtEur(f.liquidacion),
+        fmtPct(f.rent), f.destino || '—',
       ], i%2===0 ? GRIS : BLANCO);
     }
 
-    // Total row
-    doc.rect(MAR, y, W-MAR*2, 20).fill(NEGRO);
-    doc.fillColor(BLANCO).fontSize(8).font('Helvetica-Bold')
-       .text('TOTAL', MAR+4, y+6)
-       .text(fmt(totalAporte), MAR+264, y+6, { width: 56, align: 'right' })
-       .text(fmt(totalLiq),    MAR+324, y+6, { width: 61, align: 'right' });
-    y += 24;
+    // Total fila
+    doc.rect(MAR, y, W-MAR*2, 18).fill(NEGRO);
+    doc.fillColor(BLANCO).font('Helvetica-Bold').fontSize(8)
+       .text('TOTAL', MAR+3, y+5)
+       .text(fmtEur(totAp),  MAR+261, y+5, { width: 56, align: 'right' })
+       .text(fmtEur(totLiq), MAR+323, y+5, { width: 63, align: 'right' });
+    y += 22;
 
-    footerPage(doc, currentPage, TOTAL_PAGES);
+    drawFooter(doc, page, TOTAL_PAGES);
 
-    // ── PÁGINA FINAL: GRACIAS ────────────────────────────────────────────
+    // ── Página final: Gracias ─────────────────────────────────────────────
     doc.addPage();
-    currentPage++;
+    page++;
     doc.rect(0, 0, W, H).fill(NEGRO);
-    doc.rect(0, H/2 - 2, W, 4).fill(NARANJA);
-    doc.fillColor(BLANCO).fontSize(36).font('Helvetica-Bold')
-       .text('Muchas Gracias', 0, H/2 - 80, { align: 'center', width: W });
-    doc.fillColor('rgba(255,255,255,0.5)').fontSize(13).font('Helvetica')
-       .text(`${usuario.nombre}, gracias por confiar en DIGSA.`, 0, H/2 - 30, { align: 'center', width: W });
-    doc.fillColor('rgba(255,255,255,0.3)').fontSize(10)
-       .text('digsa.es  ·  Villanueva 27, Madrid  ·  La Pampa 1517 3°C, Buenos Aires',
-              0, H/2 + 40, { align: 'center', width: W });
-    footerPage(doc, currentPage, TOTAL_PAGES);
+    doc.rect(0, H*0.5 - 2, W, 4).fill(NARANJA);
+    doc.fillColor(BLANCO).font('Helvetica-Bold').fontSize(38)
+       .text('Muchas Gracias', 0, H*0.5 - 90, { align: 'center', width: W });
+    doc.fillColor('rgba(255,255,255,0.55)').font('Helvetica').fontSize(13)
+       .text(`${usuario.nombre}, gracias por confiar en DIGSA España.`, 0, H*0.5 - 35, { align: 'center', width: W });
+    doc.fillColor(NARANJA).fontSize(10)
+       .text('digsa.es', 0, H*0.5 + 30, { align: 'center', width: W });
+    doc.fillColor('rgba(255,255,255,0.3)').fontSize(9)
+       .text('Villanueva 27, Madrid  ·  La Pampa 1517 3°C, Buenos Aires', 0, H*0.5 + 48, { align: 'center', width: W });
+    drawFooter(doc, page, TOTAL_PAGES);
 
     doc.end();
   });
