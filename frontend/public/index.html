@@ -396,7 +396,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="card" style="padding:0">
     <div class="tbl-wrap">
      <table class="dtbl">
-      <thead><tr><th>Fecha</th><th>Propiedad</th><th>Tipo</th><th>Documento</th></tr></thead>
+      <thead><tr><th>Propiedad</th><th>Fecha</th><th>Tipo</th><th>Documento</th></tr></thead>
       <tbody id="docs-tbody"></tbody>
      </table>
     </div>
@@ -1647,7 +1647,19 @@ async function loadDocumentos() {
     docs.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
     const iconMap={reporte:'📊',liquidacion:'💰',contrato:'📝',otro:'📎'};
     tbody.innerHTML=docs.map(d=>`<tr>
-      <td><strong>${d.propiedades?.nombre||'—'}</strong></td>
+      <td style="font-size:12px;color:var(--negro3)">${
+  d.propiedades?.nombre || 
+  (d.nombre?.includes('JSF15')||d.nombre?.includes('San Federico') ? 'Jardín San Federico 15' :
+   d.nombre?.includes('DRC98')||d.nombre?.includes('Don Ramón') ? 'Don Ramón de la Cruz 98' :
+   d.nombre?.includes('AY154')||d.nombre?.includes('Ayala 154') ? 'Ayala 154' :
+   d.nombre?.includes('AY78')||d.nombre?.includes('Ayala 78') ? 'Ayala 78' :
+   d.nombre?.includes('Alcala')||d.nombre?.includes('A146') ? 'Alcalá 146' :
+   d.nombre?.includes('Villa 4') ? 'Villa 4' :
+   d.nombre?.includes('Hermosilla') ? 'Hermosilla 131' :
+   d.nombre?.includes('Lagasca 58') ? 'Lagasca 58' :
+   d.nombre?.includes('Lagasca 80') ? 'Lagasca 80' :
+   d.tipo === 'reporte' ? 'General' : '—')
+}</td>
       <td>${fmt_date(d.fecha)}</td>
       <td><span class="badge badge-orange">${iconMap[d.tipo]||'📄'} ${d.tipo}</span></td>
       <td><a href="${d.url}" target="_blank" class="dl-btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>${d.nombre||'Descargar'}</a></td>
