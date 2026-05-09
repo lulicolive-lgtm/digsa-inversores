@@ -678,7 +678,10 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
    </div>
    <div class="atab-panel" id="atab-docs">
-    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Documentos</h3><p style="font-size:12px;color:var(--negro3)">Subí reportes y liquidaciones para cada inversor</p></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px">
+     <div><h3 style="font-size:20px;margin-bottom:4px">Documentos</h3><p style="font-size:12px;color:var(--negro3)">Subí reportes y liquidaciones para cada inversor</p></div>
+     <button class="btn btn-outline btn-sm" onclick="regenerarReportes()">↻ Regenerar reportes</button>
+    </div>
     <div class="card" style="max-width:600px">
      <div class="card-hd"><h3>Subir nuevo documento</h3></div>
      <div class="form-grid">
@@ -3575,6 +3578,22 @@ function toggleTipoAporte() {
   // Cambiar label según tipo
   const montoLabel = document.querySelector('label[for="ap-monto"]');
   if (montoLabel) montoLabel.textContent = tipo === 'retiro' ? 'Monto a retirar (USD)' : 'Monto (USD)';
+}
+
+async function regenerarReportes() {
+  if (!confirm('¿Regenerar los reportes PDF de todos los inversores? Puede tardar unos segundos.')) return;
+  try {
+    showLoading('Generando reportes…');
+    const r = await api('POST', '/admin/regenerar-reportes');
+    hideLoading();
+    const ok = r.resultados.filter(x=>x.ok).length;
+    const err = r.resultados.filter(x=>!x.ok).length;
+    showToast(`✓ ${ok} reportes generados${err>0?' · '+err+' errores':''}`);
+    if (err > 0) console.error('Errores:', r.resultados.filter(x=>!x.ok));
+  } catch(e) {
+    hideLoading();
+    showToast('Error: ' + e.message, 'err');
+  }
 }
 
 function toggleDigsaMenu() {
