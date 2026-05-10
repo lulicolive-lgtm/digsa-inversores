@@ -116,6 +116,7 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
     resultados.push({ usuario_id: user.id, nombre: `${user.nombre} ${user.apellido}`, total_retorno, aporte, user });
   }
 
+  console.log("destino_ids:", JSON.stringify(destino_ids), "length:", destino_ids.length);
   // Crear aportes pendiente PRIMERO
   if (destino_ids.length === 0) {
     for (const res of resultados) {
