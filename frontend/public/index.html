@@ -3068,7 +3068,7 @@ async function loadAdminLiquidaciones() {
       }
     }
 
-    tbody.innerHTML = publicados.map(l => '<tr><td>' + fmt_date(l.fecha) + '</td><td><strong>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</strong></td><td>' + (l.propiedades ? l.propiedades.nombre : '?') + '</td><td class="num">EUR ' + Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</td><td class="num pos">EUR ' + Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</td><td class="num">EUR ' + Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</td><td><button class="btn btn-outline btn-sm" onclick="editLiquidacion('" + l.id + "')">Editar</button></td></tr>').join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones publicadas</td></tr>';
+    tbody.innerHTML = publicados.map(l => '<tr><td>' + fmt_date(l.fecha) + '</td><td><strong>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</strong></td><td>' + (l.propiedades ? l.propiedades.nombre : '?') + '</td><td class="num">EUR ' + Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</td><td class="num pos">EUR ' + Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</td><td class="num">EUR ' + Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</td><td><button class="btn btn-outline btn-sm" onclick=\"editLiquidacion(\'' + l.id + '\')\">Editar</button></td></tr>').join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones publicadas</td></tr>';
   } catch(e) { console.error(e); }
 }
 
