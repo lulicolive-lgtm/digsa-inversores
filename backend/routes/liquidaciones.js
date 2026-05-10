@@ -96,6 +96,7 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
   await supabase.from('propiedades').update({ estado: 'vendido', precio_venta: precio_v, fecha_venta: fecha }).eq('id', propiedad_id);
   await supabase.from('participaciones').update({ activo: false }).eq('propiedad_id', propiedad_id);
 
+  console.log('DIGSA DEBUG destino_ids:', JSON.stringify(destino_ids), 'tipo:', typeof destino_ids, 'len:', destino_ids ? destino_ids.length : 'null');
   const sinDestino = !destino_ids || destino_ids.length === 0;
 
   if (sinDestino) {
