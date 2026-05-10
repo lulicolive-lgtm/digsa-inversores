@@ -3057,7 +3057,7 @@ async function loadAdminLiquidaciones() {
           '<div><strong style="font-size:14px">' + data.nombre + '</strong>' +
           '<span style="font-size:11px;color:var(--negro3);margin-left:8px">' + data.liqs.length + ' inversores · Total: EUR ' + Math.round(data.total_retorno).toLocaleString('es-ES') + '</span></div>' +
           '<div style="display:flex;gap:8px">' +
-          '<button class="btn btn-dark btn-sm" onclick="publicarLiquidaciones('' + pid + '')">✓ Publicar a inversores</button>' +
+          '<button class="btn btn-dark btn-sm" onclick="publicarLiquidaciones('" + pid + "')">✓ Publicar a inversores</button>' +
           '</div></div>' +
           '<table style="width:100%;font-size:12px"><tr style="color:var(--negro3)"><th style="text-align:left">Inversor</th><th style="text-align:right">Aporte</th><th style="text-align:right">Retorno</th><th style="text-align:right">Utilidad</th></tr>' +
           data.liqs.map(l => '<tr><td>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</td><td style="text-align:right">EUR ' + Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</td><td style="text-align:right;color:var(--verde)">EUR ' + Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</td><td style="text-align:right">EUR ' + Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</td></tr>').join('') +
