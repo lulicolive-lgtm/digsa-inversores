@@ -118,7 +118,7 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
 
   console.log("destino_ids:", JSON.stringify(destino_ids), "length:", destino_ids.length);
   // Crear aportes pendiente PRIMERO
-  if (destino_ids.length === 0) {
+  if (!destino_ids || destino_ids.length === 0) {
     for (const res of resultados) {
       await supabase.from('aportes').insert([{ usuario_id: res.usuario_id, propiedad_id, monto_eur: res.total_retorno, monto_usd: res.total_retorno, fecha, tipo: 'pendiente', descripcion: `Liquidacion pendiente de reinversion` }]);
     }
