@@ -552,7 +552,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="aside-operacion" class="aside-link" onclick="adminTab('operacion')">📊 Nueva operación</div>
     <div id="aside-liquidaciones" class="aside-link" onclick="adminTab('liquidaciones');loadAdminLiquidaciones()">💰 Inv. finalizadas</div>
     <div id="aside-pendientes" class="aside-link" onclick="adminTab('pendientes');loadAsignarPendientes()">⏳ Asignar pendientes</div>
-    <div id="aside-kpis" class="aside-link" onclick="adminTab('kpis');loadKPIsAdmin()">📊 KPIs Dashboard</div>
    </div>
    <!-- Content -->
    <div style="flex:1;min-width:0">
@@ -891,14 +890,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="card" style="padding:0">
      <table class="dtbl">
       <thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Aporte</th><th>Retorno total</th><th>Utilidad neta</th><th>Acciones</th></tr></thead>
-      <!-- Banner borradores -->
-      <div id="borradores-wrap" style="display:none;background:#FFF3EC;border:1px solid var(--naranja);border-radius:8px;padding:16px;margin-bottom:20px">
-       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-size:18px">⏳</span>
-        <strong style="color:var(--naranja)">Liquidaciones pendientes de publicar</strong>
-       </div>
-       <div id="borradores-body"></div>
-      </div>
       <tbody id="admin-liq-body"></tbody>
      </table>
     </div>
@@ -1099,13 +1090,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    </div>
 
    </div><!-- /content -->
-   <div class="atab-panel" id="atab-kpis">
-    <div style="margin-bottom:20px">
-     <h3 style="font-size:20px;margin-bottom:4px">KPIs Dashboard</h3>
-     <p style="font-size:12px;color:var(--negro3)">Editá los KPIs del dashboard de cada inversor</p>
-    </div>
-    <div id="kpis-list"></div>
-   </div>
    </div><!-- /sidebar layout -->
 
   </div><!-- /panel-admin -->
@@ -3485,56 +3469,6 @@ function toggleTipoAporte() {
   // Cambiar label según tipo
   const montoLabel = document.querySelector('label[for="ap-monto"]');
   if (montoLabel) montoLabel.textContent = tipo === 'retiro' ? 'Monto a retirar (USD)' : 'Monto (USD)';
-}
-
-
-async function loadKPIsAdmin() {
-  const list = document.getElementById('kpis-list');
-  if (!list) return;
-  list.innerHTML = '<p style="color:var(--negro3)">Cargando...</p>';
-  try {
-    const [inversores, docs] = await Promise.all([api('GET','/inversores'), api('GET','/documentos/todos')]);
-    const reportes = docs.filter(d => d.tipo === 'reporte');
-    let h = '';
-    for (const inv of inversores) {
-      const rep = reportes.filter(d => d.usuario_id === inv.id).sort((a,b) => new Date(b.fecha)-new Date(a.fecha))[0];
-      const meta = rep && rep.metadata ? JSON.parse(rep.metadata) : null;
-      h += `<div class="card" style="margin-bottom:16px;padding:20px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div><strong>${inv.nombre} ${inv.apellido}</strong>
-          <span style="font-size:11px;color:var(--negro3);margin-left:8px">${rep ? rep.nombre : 'Sin reporte'}</span></div>
-          <button class="btn btn-sm btn-outline" onclick="saveKPIs('${inv.id}','${rep ? rep.id : ''}')">Guardar</button>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">
-          <div><label style="font-size:11px;color:var(--negro3)">Inv. inicial</label><input id="kpi-inv-${inv.id}" class="input" style="margin-top:4px" value="${meta ? meta.inversion_inicial : 0}"></div>
-          <div><label style="font-size:11px;color:var(--negro3)">Valor actual</label><input id="kpi-val-${inv.id}" class="input" style="margin-top:4px" value="${meta ? meta.valor_actual : 0}"></div>
-          <div><label style="font-size:11px;color:var(--negro3)">Rentabilidad %</label><input id="kpi-rent-${inv.id}" class="input" style="margin-top:4px" value="${meta ? (meta.rentabilidad_total*100).toFixed(2) : 0}"></div>
-          <div><label style="font-size:11px;color:var(--negro3)">TIR %</label><input id="kpi-tir-${inv.id}" class="input" style="margin-top:4px" value="${meta ? (meta.tir*100).toFixed(2) : 0}"></div>
-          <div><label style="font-size:11px;color:var(--negro3)">Pendiente</label><input id="kpi-pend-${inv.id}" class="input" style="margin-top:4px" value="${meta ? meta.pendiente : 0}"></div>
-        </div>
-        ${meta ? '<p style="font-size:11px;color:var(--verde);margin-top:8px">✓ ' + rep.nombre + '</p>' : '<p style="font-size:11px;color:var(--naranja);margin-top:8px">⚠ Sin KPIs</p>'}
-      </div>`;
-    }
-    list.innerHTML = h;
-  } catch(e) { list.innerHTML = '<p style="color:var(--naranja)">Error: ' + e.message + '</p>'; }
-}
-
-async function saveKPIs(userId, docId) {
-  const inv = parseFloat(document.getElementById('kpi-inv-'+userId).value) || 0;
-  const val = parseFloat(document.getElementById('kpi-val-'+userId).value) || 0;
-  const rent = (parseFloat(document.getElementById('kpi-rent-'+userId).value) || 0) / 100;
-  const tir = (parseFloat(document.getElementById('kpi-tir-'+userId).value) || 0) / 100;
-  const pend = parseFloat(document.getElementById('kpi-pend-'+userId).value) || 0;
-  const meta = JSON.stringify({inversion_inicial:inv, valor_actual:val, rentabilidad_total:rent, tir, pendiente:pend});
-  try {
-    if (docId) {
-      await api('PATCH', '/documentos/' + docId, {metadata: meta});
-    } else {
-      await api('POST', '/documentos', {usuario_id:userId, nombre:'Reporte KPIs', tipo:'reporte', url:'', fecha:new Date().toISOString().split('T')[0], publicado:true, metadata:meta});
-    }
-    showToast('KPIs guardados');
-    loadKPIsAdmin();
-  } catch(e) { showToast('Error: ' + e.message, 'err'); }
 }
 
 function toggleDigsaMenu() {
