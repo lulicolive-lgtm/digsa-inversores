@@ -311,6 +311,28 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="tn-link admin-only" onclick="nav('manual')" data-panel="manual" style="display:none">Manual</div>
   </div>
   <div class="tn-right">
+   <!-- INFO DIGSA dropdown -->
+   <div style="position:relative" id="digsa-menu-wrap">
+    <button onclick="toggleDigsaMenu()" style="font-size:11px;color:var(--negro3);padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:1px;border:1px solid var(--borde);background:var(--blanco);display:flex;align-items:center;gap:6px">
+     DIGSA <span style="font-size:9px;opacity:.6">▾</span>
+    </button>
+    <div id="digsa-dropdown" style="display:none;position:absolute;right:0;top:42px;background:var(--blanco);border:1px solid var(--borde);min-width:220px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.1)">
+     <a href="https://digsa.es" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">🌐</span> digsa.es
+     </a>
+     <a href="https://www.instagram.com/digsa.es?igsh=MWJwMzB1ejV0N3RscA%3D%3D&utm_source=qr" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">📷</span> Instagram
+     </a>
+     <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">🎵</span> TikTok
+     </a>
+
+    </div>
+   </div>
+   <div class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
+    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+    <div class="notif-badge" id="notif-badge"></div>
+   </div>
    <div class="user-chip"><div class="user-ava" id="user-ava">--</div><div class="user-info" id="user-info">Cargando…</div></div>
    <div class="logout-link" onclick="doLogout()">Salir</div>
   </div>
@@ -395,8 +417,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    </div>
    <div class="card" style="padding:0">
     <div class="tbl-wrap">
-     <table class="dtbl" style="width:100%;table-layout:fixed">
-      <thead><tr><th style="width:35%">Propiedad</th><th style="width:15%">Fecha</th><th style="width:12%">Tipo</th><th style="width:38%">Documento</th></tr></thead>
+     <table class="dtbl">
+      <thead><tr><th>Propiedad</th><th>Fecha</th><th>Tipo</th><th>Documento</th></tr></thead>
       <tbody id="docs-tbody"></tbody>
      </table>
     </div>
@@ -411,7 +433,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
    <!-- Banner próxima -->
    <div style="background:var(--negro);padding:28px 36px;margin-bottom:28px">
-    <span id="prox-titulo-banner" style="display:none"></span>
+    <div style="font-size:10px;letter-spacing:2.5px;color:var(--naranja);font-weight:700;margin-bottom:8px">NUEVA OPORTUNIDAD</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--blanco)" id="prox-titulo-banner">Lagasca 80</div>
     <span id="prox-countdown" style="display:none"></span>
     <span id="prox-fecha-banner" style="display:none"></span>
    </div>
@@ -678,10 +701,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
    </div>
    <div class="atab-panel" id="atab-docs">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px">
-     <div><h3 style="font-size:20px;margin-bottom:4px">Documentos</h3><p style="font-size:12px;color:var(--negro3)">Subí reportes y liquidaciones para cada inversor</p></div>
-     <button class="btn btn-outline btn-sm" onclick="regenerarReportes()">↻ Regenerar reportes</button>
-    </div>
+    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Documentos</h3><p style="font-size:12px;color:var(--negro3)">Subí reportes y liquidaciones para cada inversor</p></div>
     <div class="card" style="max-width:600px">
      <div class="card-hd"><h3>Subir nuevo documento</h3></div>
      <div class="form-grid">
@@ -864,24 +884,9 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
 
    <!-- TAB: liquidaciones históricas -->
    <div class="atab-panel" id="atab-liquidaciones">
-    <div style="margin-bottom:24px">
-     <h3 style="font-size:20px;margin-bottom:4px">Inversiones finalizadas</h3>
-     <p style="font-size:12px;color:var(--negro3)">Revisá los borradores antes de publicar. Los inversores solo ven las liquidaciones publicadas.</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+     <h3 style="font-size:18px">Inversiones finalizadas</h3>
     </div>
-
-    <!-- Borradores pendientes -->
-    <div id="borradores-wrap" style="display:none;margin-bottom:24px">
-     <div style="background:var(--naranja-light);border:2px solid var(--naranja);padding:0;margin-bottom:4px">
-      <div style="background:var(--naranja);padding:12px 20px;display:flex;align-items:center;justify-content:space-between">
-       <div style="color:var(--blanco);font-weight:700;font-size:13px">⏳ BORRADORES PENDIENTES DE PUBLICACIÓN</div>
-       <div style="font-size:11px;color:rgba(255,255,255,.8)">Los inversores NO ven esto todavía</div>
-      </div>
-      <div id="borradores-body" style="padding:16px 20px"></div>
-     </div>
-    </div>
-
-    <!-- Historial publicado -->
-    <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--negro3);margin-bottom:10px">HISTORIAL PUBLICADO</div>
     <div class="card" style="padding:0">
      <table class="dtbl">
       <thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Aporte</th><th>Retorno total</th><th>Utilidad neta</th><th>Acciones</th></tr></thead>
@@ -1281,14 +1286,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="fld"><label>Apellido</label><input id="inv-apellido" placeholder="García"></div>
     <div class="fld"><label>Email</label><input id="inv-email" type="email" placeholder="juan@email.com"></div>
     <div class="fld"><label>Teléfono</label><input id="inv-tel" placeholder="+34 600 000 000"></div>
-    <div class="fld fld-full" id="inv-pass-row">
-     <label id="inv-pass-label">Contraseña</label>
-     <div style="display:flex;gap:8px">
-      <input id="inv-pass" type="password" placeholder="Nueva contraseña" style="flex:1">
-      <button type="button" id="inv-pass-toggle" onclick="togglePassVisibility()" style="padding:0 12px;border:1px solid var(--borde);background:var(--gris);cursor:pointer;font-size:11px;white-space:nowrap">👁 Ver</button>
-     </div>
-     <div id="inv-pass-hint" style="font-size:11px;color:var(--negro3);margin-top:4px">Dejar vacío para no cambiar la contraseña actual</div>
-    </div>
+    <div class="fld"><label>Contraseña (sugerida: apellido en minúsculas)</label><input id="inv-pass" type="password" placeholder="Ej: garcia"></div>
     <div class="fld"><label>Estado</label><select id="inv-activo"><option value="true">Activo</option><option value="false">Inactivo</option></select></div>
    </div>
   </div>
@@ -1476,7 +1474,7 @@ async function loadDashboard() {
       if($('dash-pendiente')) if($('dash-pendiente')) $('dash-pendiente').textContent=eur(r.pendiente);
     }
     const notifs=d.notificaciones||[];
-    if (notifs.length && $('notif-badge')) { $('notif-badge').textContent=notifs.length; $('notif-badge').style.display='flex'; }
+    if (notifs.length) { if($('notif-badge')) $('notif-badge').textContent=notifs.length; $('notif-badge').style.display='flex'; }
     const activas=(d.participaciones||[]).filter(p=>p.propiedades?.estado!=='vendido');
     if (activas.length) {
       $('dash-props-list').innerHTML=activas.slice(0,5).map(p=>`
@@ -1497,19 +1495,9 @@ async function loadDashboard() {
     }
     const liqs=d.liquidaciones||[];
     if (liqs.length) {
-      // También cargar documentos para asociar a liquidaciones sin pdf_url
-      const docsLiq = await api('GET','/documentos').catch(()=>[]);
       $('dash-liq-body').innerHTML=liqs.map(l=>{
         const rent=l.aporte_usuario>0?((l.total_retorno-l.aporte_usuario)/l.aporte_usuario*100).toFixed(1):0;
-        // Buscar documento por propiedad_id o por nombre del piso
-        const propNombre = l.propiedades?.nombre || '';
-        const doc = !l.pdf_url ? docsLiq.find(d=>
-          (d.propiedad_id && d.propiedad_id===l.propiedad_id && d.tipo==='liquidacion') ||
-          (!d.propiedad_id && d.nombre && propNombre && d.nombre.toLowerCase().includes(propNombre.substring(0,6).toLowerCase()))
-        ) : null;
-        const pdfUrl = l.pdf_url || doc?.url;
-        const dlBtn = pdfUrl ? `<a href="${pdfUrl}" target="_blank" class="dl-btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>PDF</a>` : `<span style="color:var(--negro3);font-size:12px">—</span>`;
-        return `<tr><td>${l.propiedades?.nombre||'—'}</td><td>${fmt_date(l.fecha)}</td><td class="num">${eur(l.aporte_usuario)}</td><td class="num">${eur(l.total_retorno)}</td><td class="${rent>=0?'pos':'neg'}">${rent>=0?'+':''}${rent}%</td><td>${dlBtn}</td></tr>`;
+        return `<tr><td>${l.propiedades?.nombre||'—'}</td><td>${fmt_date(l.fecha)}</td><td class="num">${eur(l.aporte_usuario)}</td><td class="num">${eur(l.total_retorno)}</td><td class="${rent>=0?'pos':'neg'}">${rent>=0?'+':''}${rent}%</td><td>${l.pdf_url?`<a href="${l.pdf_url}" target="_blank" class="dl-btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>PDF</a>`:`<span style="color:var(--negro3);font-size:12px">—</span>`}</td></tr>`;
       }).join('');
     }
   } catch(e) { showToast('Error: '+e.message,'err'); }
@@ -1560,21 +1548,18 @@ async function loadPortfolio() {
       </tr>`;
     });
 
-    // Pisos finalizados — con retorno real si está publicado, o aporte si está en borrador
+    // Pisos finalizados con retorno real de liquidaciones
     finalizadas.forEach(p => {
       const liq = liqs.find(l => l.propiedad_id === p.id);
-      // Buscar participación (puede estar inactiva)
-      const part = parts.find(pt => pt.propiedad_id === p.id) || {};
-      const aporte  = liq ? Number(liq.aporte_usuario) : Number(part.monto_invertido || p.mi_inversion || 0);
-      const retorno = liq ? Number(liq.total_retorno) : aporte;
-      const pct     = liq ? liq.porcentaje : part.porcentaje || p.mi_porcentaje;
-      const rent    = liq && aporte > 0 ? '+' + (((retorno - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
-      const pendiente_tag = !liq ? '<span style="font-size:10px;color:var(--naranja);margin-left:6px">pendiente</span>' : '';
-      rows += `<tr style="opacity:.8">
-        <td><strong>${p.nombre}</strong>${pendiente_tag}</td>
+      if (!liq) return; // no tiene liquidación registrada
+      const aporte  = Number(liq.aporte_usuario);
+      const retorno = Number(liq.total_retorno);
+      const rent    = aporte > 0 ? '+' + (((retorno - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
+      rows += `<tr style="opacity:.75">
+        <td><strong>${p.nombre}</strong></td>
         <td>${statusBadge(p.estado)}</td>
         <td class="num">${eur(aporte)}</td>
-        <td>${pct ? (Number(pct)*100).toFixed(2)+'%' : '—'}</td>
+        <td>${liq.porcentaje ? (liq.porcentaje*100).toFixed(2)+'%' : '—'}</td>
         <td class="num pos">${eur(retorno)}</td>
         <td class="pos">${rent}</td>
       </tr>`;
@@ -1661,25 +1646,9 @@ async function loadDocumentos() {
     if (!docs.length) { tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:28px;color:var(--negro3)">No hay documentos disponibles aún.</td></tr>'; return; }
     // Ordenar por fecha descendente
     docs.sort((a,b) => new Date(b.fecha||0) - new Date(a.fecha||0));
-    const iconMap={reporte:'',liquidacion:'',contrato:'',otro:''};
+    const iconMap={reporte:'📊',liquidacion:'💰',contrato:'📝',otro:'📎'};
     tbody.innerHTML=docs.map(d=>`<tr>
-      <td style="color:var(--negro3);font-size:12px">${
-  (() => {
-    const p = d.propiedades?.nombre ||
-      (d.nombre?.includes('DRC98') && d.nombre?.includes('AY154') && d.nombre?.includes('AY78') ? 'Don Ramón de la Cruz 98, Ayala 154 y Ayala 78' :
-       d.nombre?.includes('JSF15')||d.nombre?.includes('San Federico') ? 'Jardín San Federico 15' :
-       d.nombre?.includes('DRC98')||d.nombre?.includes('Don Ramón') ? 'Don Ramón de la Cruz 98' :
-       d.nombre?.includes('AY154')||d.nombre?.includes('Ayala 154') ? 'Ayala 154' :
-       d.nombre?.includes('AY78')||d.nombre?.includes('Ayala 78') ? 'Ayala 78' :
-       d.nombre?.includes('Alcala')||d.nombre?.includes('A146') ? 'Alcalá 146' :
-       d.nombre?.includes('Villa 4') ? 'Villa 4' :
-       d.nombre?.includes('Hermosilla') ? 'Hermosilla 131' :
-       d.nombre?.includes('Lagasca 58') ? 'Lagasca 58' :
-       d.nombre?.includes('Lagasca 80') ? 'Lagasca 80' :
-       d.tipo === 'reporte' ? 'General' : '—');
-    return p;
-  })()
-}</td>
+      <td><strong>${d.propiedades?.nombre||'—'}</strong></td>
       <td>${fmt_date(d.fecha)}</td>
       <td><span class="badge badge-orange">${iconMap[d.tipo]||'📄'} ${d.tipo}</span></td>
       <td><a href="${d.url}" target="_blank" class="dl-btn"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>${d.nombre||'Descargar'}</a></td>
@@ -1908,27 +1877,11 @@ async function loadAnalisis() {
 async function editInversor(id) {
   const inv=INVERSORES_CACHE.find(i=>i.id===id); if(!inv) return;
   $('inv-modal-title').textContent='Editar inversor'; $('inv-edit-id').value=id;
-  if($('inv-pass')) $('inv-pass').value = '';
-  if($('inv-pass-hint')) $('inv-pass-hint').style.display = 'block';
-  if($('inv-pass-label')) $('inv-pass-label').textContent = 'Nueva contraseña (opcional)';
   $('inv-nombre').value=inv.nombre; $('inv-apellido').value=inv.apellido;
   $('inv-email').value=inv.email; $('inv-tel').value=inv.telefono||'';
   $('inv-pass').value=''; $('inv-activo').value=String(inv.activo);
   openModal('modal-inversor');
 }
-function togglePassVisibility() {
-  const inp = $('inv-pass');
-  const btn = $('inv-pass-toggle');
-  if (!inp) return;
-  if (inp.type === 'password') {
-    inp.type = 'text';
-    if (btn) btn.textContent = '🙈 Ocultar';
-  } else {
-    inp.type = 'password';
-    if (btn) btn.textContent = '👁 Ver';
-  }
-}
-
 async function saveInversor() {
   const id=$('inv-edit-id').value;
   const body={nombre:$('inv-nombre').value,apellido:$('inv-apellido').value,email:$('inv-email').value,telefono:$('inv-tel').value,activo:$('inv-activo').value==='true'};
@@ -3079,93 +3032,18 @@ async function loadAdminLiquidaciones() {
     LIQ_CACHE_ADMIN = liqs || [];
     const tbody = $('admin-liq-body');
     if (!tbody) return;
-
-    // Separar borradores de publicados
-    const borradores = LIQ_CACHE_ADMIN.filter(l => !l.publicado);
-    const publicados  = LIQ_CACHE_ADMIN.filter(l => l.publicado);
-
-    // Agrupar borradores por propiedad
-    const porPiso = {};
-    borradores.forEach(l => {
-      const pid = l.propiedad_id;
-      if (!porPiso[pid]) porPiso[pid] = { nombre: l.propiedades?.nombre, liqs: [], total_retorno: 0 };
-      porPiso[pid].liqs.push(l);
-      porPiso[pid].total_retorno += Number(l.total_retorno || 0);
-    });
-
-    const borradoresWrap = $('borradores-wrap');
-    const borradoresBody = $('borradores-body');
-    if (borradoresWrap && borradoresBody) {
-      if (Object.keys(porPiso).length > 0) {
-        borradoresWrap.style.display = 'block';
-        borradoresBody.innerHTML = Object.entries(porPiso).map(([pid, data]) => `
-          <div style="background:var(--blanco);padding:14px;margin-bottom:12px;border:1px solid rgba(255,77,15,.2)">
-           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-            <div>
-             <strong style="font-size:14px">${data.nombre}</strong>
-             <span style="font-size:11px;color:var(--negro3);margin-left:8px">${data.liqs.length} inversores · Total: €${Math.round(data.total_retorno).toLocaleString('es-ES')}</span>
-            </div>
-            <div style="display:flex;gap:8px">
-             <button class="btn btn-outline btn-sm" onclick="verBorrador('${pid}')">👁 Revisar</button>
-             <button class="btn btn-dark btn-sm" onclick="publicarLiquidaciones('${pid}', '${data.nombre}')">✓ Publicar a inversores</button>
-            </div>
-           </div>
-           <table style="width:100%;font-size:12px;border-collapse:collapse">
-            <tr style="background:var(--gris)">
-             <th style="padding:5px 8px;text-align:left;font-weight:600">Inversor</th>
-             <th style="padding:5px 8px;text-align:right;font-weight:600">Aporte</th>
-             <th style="padding:5px 8px;text-align:right;font-weight:600">Retorno</th>
-             <th style="padding:5px 8px;text-align:right;font-weight:600">Utilidad neta</th>
-             <th style="padding:5px 8px;text-align:right;font-weight:600">PDF</th>
-            </tr>
-            ${data.liqs.map(l => `<tr style="border-top:1px solid var(--gris2)">
-             <td style="padding:5px 8px">${l.usuarios?.nombre||''} ${l.usuarios?.apellido||''}</td>
-             <td style="padding:5px 8px;text-align:right">€${Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-             <td style="padding:5px 8px;text-align:right;color:var(--verde);font-weight:600">€${Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-             <td style="padding:5px 8px;text-align:right">€${Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-             <td style="padding:5px 8px;text-align:right">${l.pdf_url ? `<a href="${l.pdf_url}" target="_blank" style="color:var(--naranja);font-size:11px;font-weight:600">⬇ PDF</a>` : '<span style="color:var(--negro3)">—</span>'}</td>
-            </tr>`).join('')}
-           </table>
-          </div>`).join('');
-      } else {
-        borradoresWrap.style.display = 'none';
-      }
-    }
-
-    // Tabla publicados
-    tbody.innerHTML = publicados.map(l => `<tr>
+    tbody.innerHTML = LIQ_CACHE_ADMIN.map(l => `<tr>
       <td>${fmt_date(l.fecha)}</td>
       <td><strong>${l.usuarios?.nombre||''} ${l.usuarios?.apellido||''}</strong></td>
       <td>${l.propiedades?.nombre||'—'}</td>
       <td class="num">€${Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
       <td class="num pos">€${Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
       <td class="num">€${Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-      <td><button class="btn btn-outline btn-sm" onclick="editLiquidacion('${l.id}')">Editar</button></td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones publicadas</td></tr>';
-
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="editLiquidacion('${l.id}')">Editar</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones</td></tr>';
   } catch(e) { console.error(e); }
-}
-
-async function publicarLiquidaciones(propiedad_id, nombre_piso) {
-  if (!confirm(`¿Publicar las liquidaciones de "${nombre_piso}" a todos los inversores?
-
-Esto las hará visibles en sus portales y enviará notificaciones.`)) return;
-  try {
-    showLoading('Publicando…');
-    const r = await api('POST', `/liquidaciones/publicar/${propiedad_id}`);
-    hideLoading();
-    showToast(`✓ Liquidaciones publicadas — ${r.publicadas} inversores notificados`);
-    loadAdminLiquidaciones();
-  } catch(e) {
-    hideLoading();
-    showToast(e.message, 'err');
-  }
-}
-
-function verBorrador(propiedad_id) {
-  // Ir al tab de liquidaciones con filtro del piso
-  adminTab('liquidaciones');
-  showToast('Revisá la tabla de abajo para ver el historial publicado');
 }
 
 async function editLiquidacion(id) {
@@ -3593,22 +3471,6 @@ function toggleTipoAporte() {
   if (montoLabel) montoLabel.textContent = tipo === 'retiro' ? 'Monto a retirar (USD)' : 'Monto (USD)';
 }
 
-async function regenerarReportes() {
-  if (!confirm('¿Regenerar los reportes PDF de todos los inversores? Puede tardar unos segundos.')) return;
-  try {
-    showLoading('Generando reportes…');
-    const r = await api('POST', '/admin/regenerar-reportes');
-    hideLoading();
-    const ok = r.resultados.filter(x=>x.ok).length;
-    const err = r.resultados.filter(x=>!x.ok).length;
-    showToast(`✓ ${ok} reportes generados${err>0?' · '+err+' errores':''}`);
-    if (err > 0) console.error('Errores:', r.resultados.filter(x=>!x.ok));
-  } catch(e) {
-    hideLoading();
-    showToast('Error: ' + e.message, 'err');
-  }
-}
-
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
@@ -3625,27 +3487,6 @@ function toggleNotifs() { showToast('Próximamente: panel de notificaciones'); }
 
 if (TOKEN) startApp();
 </script>
-<!-- Footer -->
-<footer style="background:var(--negro);color:rgba(255,255,255,.5);padding:28px 40px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:300">
- <div>
-  <div>Villanueva 27, Madrid · La Pampa 1517 3°C, Buenos Aires</div>
- </div>
- <div style="display:flex;align-items:center;gap:24px">
-  <a href="https://digsa.es" target="_blank" style="color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:6px;font-size:13px" onmouseover="this.style.color='var(--blanco)'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
-   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
-   digsa.es
-  </a>
-  <a href="https://www.instagram.com/digsa.es?igsh=MWJwMzB1ejV0N3RscA%3D%3D&utm_source=qr" target="_blank" style="color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:6px;font-size:13px" onmouseover="this.style.color='var(--blanco)'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
-   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-   Instagram
-  </a>
-  <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" style="color:rgba(255,255,255,.6);text-decoration:none;display:flex;align-items:center;gap:6px;font-size:13px" onmouseover="this.style.color='var(--blanco)'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
-   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 12a4 4 0 104 4V4a5 5 0 005 5"/></svg>
-   TikTok
-  </a>
- </div>
-</footer>
-
 <!-- Modal editar liquidación -->
 <div id="modal-liq-edit" class="modal" style="display:none">
  <div class="modal-box" style="max-width:560px">
