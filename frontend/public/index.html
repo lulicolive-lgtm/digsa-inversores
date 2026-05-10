@@ -891,6 +891,14 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="card" style="padding:0">
      <table class="dtbl">
       <thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Aporte</th><th>Retorno total</th><th>Utilidad neta</th><th>Acciones</th></tr></thead>
+      <!-- Banner borradores -->
+      <div id="borradores-wrap" style="display:none;background:#FFF3EC;border:1px solid var(--naranja);border-radius:8px;padding:16px;margin-bottom:20px">
+       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:18px">⏳</span>
+        <strong style="color:var(--naranja)">Liquidaciones pendientes de publicar</strong>
+       </div>
+       <div id="borradores-body"></div>
+      </div>
       <tbody id="admin-liq-body"></tbody>
      </table>
     </div>
