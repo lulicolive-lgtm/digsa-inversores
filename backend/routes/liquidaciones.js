@@ -101,7 +101,8 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
 
   if (sinDestino) {
     for (const res of resultados) {
-      await supabase.from('aportes').insert([{ usuario_id: res.usuario_id, propiedad_id, monto_eur: res.total_retorno, monto_usd: res.total_retorno, fecha, tipo: 'pendiente', descripcion: 'Liquidacion ' + prop.nombre + ' -- pendiente de reinversion' }]);
+      const apRes = await supabase.from('aportes').insert([{ usuario_id: res.usuario_id, propiedad_id, monto_eur: res.total_retorno, monto_usd: res.total_retorno, fecha, tipo: 'pendiente', descripcion: 'Liquidacion ' + prop.nombre + ' -- pendiente de reinversion' }]);
+    console.log('APORTE PENDIENTE:', res.usuario_id, 'monto:', res.total_retorno, 'error:', apRes.error ? apRes.error.message : 'OK');
     }
   } else {
     try {
