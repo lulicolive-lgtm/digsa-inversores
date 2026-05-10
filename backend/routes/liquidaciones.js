@@ -126,7 +126,7 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
 
   // Generar reportes DESPUES de aportes pendiente
   for (const r of resultados) {
-    try { await generarYSubirReporte(r.usuario_id, r.user, supabase); } catch(e) { console.error('Error reporte:', e.message); }
+    try { const ep = (destino_ids && destino_ids.length > 0) ? 0 : (r.total_retorno||0); await generarYSubirReporte(r.usuario_id, r.user, supabase, ep); } catch(e) { console.error('Error reporte:', e.message); }
   }
 
   await supabase.from('propiedades').update({ estado: 'vendido', precio_venta: precio_v, fecha_venta: fecha }).eq('id', propiedad_id);
