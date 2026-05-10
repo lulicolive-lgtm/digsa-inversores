@@ -3543,6 +3543,21 @@ async function saveKPIs(userId, docId) {
   } catch(e) { showToast("Error: "+e.message,"err"); }
 }
 
+
+async function publicarLiquidaciones(propiedad_id) {
+  if (!confirm("Publicar liquidaciones a los inversores?")) return;
+  try {
+    showLoading("Publicando...");
+    const r = await api("POST", "/liquidaciones/publicar/" + propiedad_id);
+    hideLoading();
+    showToast("Liquidaciones publicadas a " + r.publicadas + " inversores");
+    loadAdminLiquidaciones();
+  } catch(e) {
+    hideLoading();
+    showToast("Error: " + e.message, "err");
+  }
+}
+
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
