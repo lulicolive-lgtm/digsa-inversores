@@ -116,16 +116,16 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
     resultados.push({ usuario_id: user.id, nombre: `${user.nombre} ${user.apellido}`, total_retorno, aporte, user });
   }
 
-  // Generar reportes DESPUES de crear aportes pendiente
-  for (const r of resultados) {
-    try { await generarYSubirReporte(r.usuario_id, r.user, supabase); } catch(e) { console.error('Error reporte:', e.message); }
-  }
-
-  // Si no hay destino, registrar retorno como pendiente
+  // Crear aportes pendiente PRIMERO
   if (destino_ids.length === 0) {
     for (const res of resultados) {
       await supabase.from('aportes').insert([{ usuario_id: res.usuario_id, propiedad_id, monto_eur: res.total_retorno, monto_usd: res.total_retorno, fecha, tipo: 'pendiente', descripcion: `Liquidacion pendiente de reinversion` }]);
     }
+  }
+
+  // Generar reportes DESPUES de aportes pendiente
+  for (const r of resultados) {
+    try { await generarYSubirReporte(r.usuario_id, r.user, supabase); } catch(e) { console.error('Error reporte:', e.message); }
   }
 
   await supabase.from('propiedades').update({ estado: 'vendido', precio_venta: precio_v, fecha_venta: fecha }).eq('id', propiedad_id);
