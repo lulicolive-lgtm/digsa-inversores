@@ -113,13 +113,12 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
       console.error('Error PDF liquidacion:', pdfErr.message);
     }
 
-    try {
-      await generarYSubirReporte(user.id, user, supabase);
-    } catch(repErr) {
-      console.error('Error reporte:', repErr.message);
-    }
+    resultados.push({ usuario_id: user.id, nombre: `${user.nombre} ${user.apellido}`, total_retorno, aporte, user });
+  }
 
-    resultados.push({ usuario_id: user.id, nombre: `${user.nombre} ${user.apellido}`, total_retorno, aporte });
+  // Generar reportes DESPUES de crear aportes pendiente
+  for (const r of resultados) {
+    try { await generarYSubirReporte(r.usuario_id, r.user, supabase); } catch(e) { console.error('Error reporte:', e.message); }
   }
 
   // Si no hay destino, registrar retorno como pendiente
