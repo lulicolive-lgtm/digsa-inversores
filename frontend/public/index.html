@@ -3484,23 +3484,26 @@ async function loadKPIsAdmin() {
     for (const inv of inversores) {
       const rep = reportes.filter(d => d.usuario_id === inv.id).sort((a,b) => new Date(b.fecha)-new Date(a.fecha))[0];
       const meta = rep && rep.metadata ? JSON.parse(rep.metadata) : null;
-      h += '<div class="card" style="margin-bottom:16px;padding:20px">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">' +
-        '<div><strong>' + inv.nombre + ' ' + inv.apellido + '</strong>' +
-        '<span style="font-size:11px;color:var(--negro3);margin-left:8px">' + (rep ? rep.nombre : 'Sin reporte') + '</span></div>' +
-        '<button class="btn btn-sm btn-outline" onclick="saveKPIs('' + inv.id + '','' + (rep ? rep.id : '') + '')">Guardar</button></div>' +
-        '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">' +
-        '<div><label style="font-size:11px;color:var(--negro3)">Inv. inicial (€)</label><input id="kpi-inv-' + inv.id + '" class="input" style="margin-top:4px" value="' + (meta ? meta.inversion_inicial : 0) + '"></div>' +
-        '<div><label style="font-size:11px;color:var(--negro3)">Valor actual (€)</label><input id="kpi-val-' + inv.id + '" class="input" style="margin-top:4px" value="' + (meta ? meta.valor_actual : 0) + '"></div>' +
-        '<div><label style="font-size:11px;color:var(--negro3)">Rentabilidad (%)</label><input id="kpi-rent-' + inv.id + '" class="input" style="margin-top:4px" value="' + (meta ? (meta.rentabilidad_total*100).toFixed(2) : 0) + '"></div>' +
-        '<div><label style="font-size:11px;color:var(--negro3)">TIR (%)</label><input id="kpi-tir-' + inv.id + '" class="input" style="margin-top:4px" value="' + (meta ? (meta.tir*100).toFixed(2) : 0) + '"></div>' +
-        '<div><label style="font-size:11px;color:var(--negro3)">Pendiente (€)</label><input id="kpi-pend-' + inv.id + '" class="input" style="margin-top:4px" value="' + (meta ? meta.pendiente : 0) + '"></div>' +
-        '</div>' + (meta ? '<p style="font-size:11px;color:var(--verde);margin-top:8px">✓ KPIs en ' + rep.nombre + '</p>' : '<p style="font-size:11px;color:var(--naranja);margin-top:8px">⚠ Sin KPIs guardados</p>') +
-        '</div>';
+      h += `<div class="card" style="margin-bottom:16px;padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div><strong>${inv.nombre} ${inv.apellido}</strong>
+          <span style="font-size:11px;color:var(--negro3);margin-left:8px">${rep ? rep.nombre : 'Sin reporte'}</span></div>
+          <button class="btn btn-sm btn-outline" onclick="saveKPIs('${inv.id}','${rep ? rep.id : ''}')">Guardar</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">
+          <div><label style="font-size:11px;color:var(--negro3)">Inv. inicial</label><input id="kpi-inv-${inv.id}" class="input" style="margin-top:4px" value="${meta ? meta.inversion_inicial : 0}"></div>
+          <div><label style="font-size:11px;color:var(--negro3)">Valor actual</label><input id="kpi-val-${inv.id}" class="input" style="margin-top:4px" value="${meta ? meta.valor_actual : 0}"></div>
+          <div><label style="font-size:11px;color:var(--negro3)">Rentabilidad %</label><input id="kpi-rent-${inv.id}" class="input" style="margin-top:4px" value="${meta ? (meta.rentabilidad_total*100).toFixed(2) : 0}"></div>
+          <div><label style="font-size:11px;color:var(--negro3)">TIR %</label><input id="kpi-tir-${inv.id}" class="input" style="margin-top:4px" value="${meta ? (meta.tir*100).toFixed(2) : 0}"></div>
+          <div><label style="font-size:11px;color:var(--negro3)">Pendiente</label><input id="kpi-pend-${inv.id}" class="input" style="margin-top:4px" value="${meta ? meta.pendiente : 0}"></div>
+        </div>
+        ${meta ? '<p style="font-size:11px;color:var(--verde);margin-top:8px">✓ ' + rep.nombre + '</p>' : '<p style="font-size:11px;color:var(--naranja);margin-top:8px">⚠ Sin KPIs</p>'}
+      </div>`;
     }
     list.innerHTML = h;
   } catch(e) { list.innerHTML = '<p style="color:var(--naranja)">Error: ' + e.message + '</p>'; }
 }
+
 
 async function saveKPIs(userId, docId) {
   const inv = parseFloat(document.getElementById('kpi-inv-'+userId).value) || 0;
