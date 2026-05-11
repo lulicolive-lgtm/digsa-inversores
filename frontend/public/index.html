@@ -625,6 +625,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
         <div class="fld fld-full"><label>Propiedad vendida</label><select id="liq-prop-sel"></select></div>
         <div class="fld"><label>Precio de venta real (€)</label><input type="number" id="liq-precio" placeholder="280000" oninput="previsualizarLiq()"></div>
         <div class="fld"><label>Fecha de liquidación</label><input type="date" id="liq-fecha"></div>
+        <div class="fld"><label>Fee de éxito (%)</label><input type="number" id="liq-fee-pct" value="15" min="0" max="100" step="0.5" oninput="previsualizarLiq()"></div>
+        <div class="fld"><label>Impuestos (%)</label><input type="number" id="liq-imp-pct" value="25" min="0" max="100" step="0.5" oninput="previsualizarLiq()"></div>
        </div>
        <div id="liq-preview" style="display:none;background:var(--gris);padding:14px;margin-bottom:16px;border-left:3px solid var(--naranja)">
         <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:10px;font-weight:600">PREVIEW AUTOMÁTICO</div>
@@ -635,6 +637,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
         </div>
        </div>
        <button class="btn btn-dark" style="width:100%" onclick="generarLiquidaciones()">⚡ Generar liquidaciones</button>
+       <div id="prev-sugerencia" style="display:none;margin-top:8px;padding:8px;background:#FFF0EB;border-left:3px solid var(--naranja);font-size:11px;color:var(--naranja)"></div>
        <div id="liq-result" style="margin-top:16px;display:none"></div>
       </div>
       <!-- Destino -->
@@ -2204,8 +2207,10 @@ function previsualizarLiq() {
   if (!prop || !prop.precio_compra) return;
   const inv = Number(prop.precio_compra);
   const util = precio - inv;
-  const fee  = Math.max(0, util) * 0.15;
-  const imp  = Math.max(0, util - fee) * 0.25;
+  const fee_pct = (parseFloat($('liq-fee-pct')?.value) || 15) / 100;
+  const imp_pct = (parseFloat($('liq-imp-pct')?.value) || 25) / 100;
+  const fee  = Math.max(0, util) * fee_pct;
+  const imp  = Math.max(0, util - fee) * imp_pct;
   const unet = util - fee - imp;
   const rent = inv > 0 ? unet / inv : 0;
   const eur = n => '€' + Math.round(n).toLocaleString('es-ES');
@@ -2213,6 +2218,21 @@ function previsualizarLiq() {
   if ($('prev-fee'))  $('prev-fee').textContent  = eur(fee) + ' fee + ' + eur(imp) + ' imp.';
   if ($('prev-rent')) $('prev-rent').textContent = (rent >= 0 ? '+' : '') + (rent*100).toFixed(1) + '%';
   if ($('liq-preview')) $('liq-preview').style.display = 'block';
+
+  const precio_est = Number((PROPIEDADES_CACHE.find(p => p.id === propId) || {}).precio_venta || 0);
+  const sug = $('prev-sugerencia');
+  if (sug && precio_est > 0 && precio < precio_est) {
+    const util_est = precio_est - inv;
+    const fee_est = Math.max(0, util_est) * 0.15;
+    const neto_est = inv + util_est - fee_est - Math.max(0, util_est - fee_est) * 0.25;
+    const neto_real = inv + unet;
+    const diff = neto_est - neto_real;
+    if (diff > 0) {
+      const fee_ceder_pct = util > 0 ? (diff / util * 100).toFixed(1) : '?';
+      sug.style.display = 'block';
+      sug.innerHTML = '⚠ Precio real menor al estimado (€' + Math.round(precio_est).toLocaleString('es-ES') + '). Para compensar, ceder <strong>' + fee_ceder_pct + '% de fee</strong> (≈ €' + Math.round(diff).toLocaleString('es-ES') + ' por el piso total).';
+    } else { sug.style.display = 'none'; }
+  } else if (sug) { sug.style.display = 'none'; }
 }
 
 async function generarLiquidaciones() {
@@ -2228,7 +2248,7 @@ async function generarLiquidaciones() {
   } else {
     destino_ids = Array.from(document.querySelectorAll('#liq-destino-checks input:checked')).map(cb => cb.value);
   }
-  const body={propiedad_id:$('liq-prop-sel').value, precio_venta:parseFloat($('liq-precio').value), fecha:$('liq-fecha').value, fee_exito_pct:0.15, alquileres:0, destino_ids, destino_pcts};
+  const body={propiedad_id:$('liq-prop-sel').value, precio_venta:parseFloat($('liq-precio').value), fecha:$('liq-fecha').value, fee_exito_pct:(parseFloat($('liq-fee-pct')?.value)||15)/100, imp_pct:(parseFloat($('liq-imp-pct')?.value)||25)/100, alquileres:0, destino_ids, destino_pcts};
   if (!body.propiedad_id||!body.precio_venta||!body.fecha) return showToast('Completá todos los campos','err');
   try{
     showLoading('Generando liquidaciones y PDFs…');
