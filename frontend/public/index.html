@@ -3471,6 +3471,26 @@ function toggleTipoAporte() {
   if (montoLabel) montoLabel.textContent = tipo === 'retiro' ? 'Monto a retirar (USD)' : 'Monto (USD)';
 }
 
+
+function calcPendienteMonto(pid, totalMonto) {
+  const pct = parseFloat(document.getElementById('pend-pct-' + pid)?.value) || 100;
+  const input = document.getElementById('pend-monto-' + pid);
+  if (input) input.value = (totalMonto * pct / 100).toFixed(2);
+}
+
+async function asignarPendiente(pendiente_id, usuario_id) {
+  const pisoId = document.getElementById('pend-piso-' + pendiente_id)?.value;
+  const monto = parseFloat(document.getElementById('pend-monto-' + pendiente_id)?.value) || 0;
+  if (!pisoId) { showToast('Selecciona un piso', 'err'); return; }
+  if (monto <= 0) { showToast('Monto invalido', 'err'); return; }
+  const fecha = new Date().toISOString().split('T')[0];
+  try {
+    await api('POST', '/liquidaciones/pendientes/asignar', { pendiente_id, usuario_id, propiedad_id: pisoId, monto, fecha });
+    showToast('Asignacion realizada');
+    loadAdminAportes();
+  } catch(e) { showToast('Error: ' + e.message, 'err'); }
+}
+
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
