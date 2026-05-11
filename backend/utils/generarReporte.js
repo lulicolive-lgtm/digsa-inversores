@@ -129,7 +129,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraP
           tipo: 'reporte',
           url: urlData.publicUrl,
           fecha,
-          publicado: false,
+          publicado: true,
         }]);
       }
     }
