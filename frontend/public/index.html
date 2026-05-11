@@ -891,6 +891,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="card" style="padding:0">
      <table class="dtbl">
       <thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Aporte</th><th>Retorno total</th><th>Utilidad neta</th><th>Acciones</th></tr></thead>
+      <div id="borradores-wrap" style="display:none;margin-bottom:20px;background:#FFF3EC;border:2px solid var(--naranja);border-radius:6px;padding:16px"><strong style="color:var(--naranja)">⏳ Liquidaciones pendientes de publicar</strong><div id="borradores-body" style="margin-top:12px"></div></div>
       <tbody id="admin-liq-body"></tbody>
      </table>
     </div>
@@ -3521,6 +3522,16 @@ async function enviarNotifAdmin() {
     document.getElementById('notif-mensaje').value='';
     loadNotifAdmin();
   } catch(e) { showToast('Error: '+e.message,'err'); }
+}
+
+
+async function publicarLiquidaciones(propiedad_id) {
+  if (!confirm("Publicar liquidaciones a los inversores?")) return;
+  try {
+    const r = await api('POST', '/liquidaciones/publicar/' + propiedad_id);
+    showToast('Publicado a ' + r.publicadas + ' inversores');
+    loadAdminLiquidaciones();
+  } catch(e) { showToast('Error: ' + e.message, 'err'); }
 }
 
 function toggleDigsaMenu() {
