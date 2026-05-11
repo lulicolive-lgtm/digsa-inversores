@@ -121,7 +121,9 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraP
       const { data: docExist } = await sb.from('documentos')
         .select('id').eq('usuario_id', userId).eq('nombre', `Reporte de Inversión ${mes_año}`).single();
       if (docExist) {
-        await sb.from('documentos').update({ url: urlData.publicUrl, fecha, publicado: true }).eq('id', docExist.id);
+        const meta = JSON.stringify({ inversion_inicial, valor_actual, rentabilidad_total, tir, pendiente });
+        await sb.from('documentos').update({ url: urlData.publicUrl, fecha, publicado: true,
+          metadata: JSON.stringify({ inversion_inicial, valor_actual, rentabilidad_total, tir, pendiente }), metadata: meta }).eq('id', docExist.id);
       } else {
         await sb.from('documentos').insert([{
           usuario_id: userId,
