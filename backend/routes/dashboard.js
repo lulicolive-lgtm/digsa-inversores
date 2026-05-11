@@ -76,7 +76,6 @@ router.get('/', authMiddleware, async (req, res) => {
   }
   res.json({ resumen: resumenFinal, participaciones, aportes, liquidaciones, notificaciones: notifRes.data || [] });
 });
-});
 
 router.put('/notificaciones/:id/leida', authMiddleware, async (req, res) => {
   await supabase.from('notificaciones').update({ leida: true }).eq('id', req.params.id).eq('usuario_id', req.user.id);
