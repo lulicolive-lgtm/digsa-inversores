@@ -3071,7 +3071,7 @@ async function loadAdminLiquidaciones() {
           '<div style="background:#fff;padding:12px;margin-bottom:10px;border:1px solid rgba(255,77,15,.2);border-radius:4px">' +
           '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
           '<div><strong>' + data.nombre + '</strong> <span style="font-size:11px;color:var(--negro3)">' + data.liqs.length + ' inversores &middot; EUR ' + Math.round(data.total_retorno).toLocaleString("es-ES") + '</span></div>' +
-          '<button class="btn btn-dark btn-sm" onclick="publicarLiquidaciones('' + pid + '')">✓ Publicar</button></div>' +
+          '<button class="btn btn-dark btn-sm" onclick="publicarLiquidaciones('" + pid + "')">✓ Publicar</button></div>' +
           '<table style="width:100%;font-size:12px"><tr style="color:var(--negro3)"><th style="text-align:left">Inversor</th><th style="text-align:right">Aporte</th><th style="text-align:right;color:var(--verde)">Retorno</th><th style="text-align:right">PDF</th></tr>' +
           data.liqs.map(l => '<tr><td>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</td><td style="text-align:right">EUR ' + Number(l.aporte_usuario||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td style="text-align:right;color:var(--verde)">EUR ' + Number(l.total_retorno||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td style="text-align:right">' + (l.pdf_url ? '<a href="' + l.pdf_url + '" target="_blank" style="color:var(--naranja)">PDF</a>' : '-') + '</td></tr>').join('') +
           '</table></div>'
@@ -3080,7 +3080,7 @@ async function loadAdminLiquidaciones() {
         borradoresWrap.style.display = 'none';
       }
     }
-    tbody.innerHTML = publicados.map(l => '<tr><td>' + fmt_date(l.fecha) + '</td><td><strong>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</strong></td><td>' + (l.propiedades ? l.propiedades.nombre : '?') + '</td><td class="num">EUR ' + Number(l.aporte_usuario||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td class="num pos">EUR ' + Number(l.total_retorno||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td class="num">EUR ' + Number(l.utilidad_neta||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td><button class="btn btn-outline btn-sm" onclick="editLiquidacion('' + l.id + '')">Editar</button></td></tr>').join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones publicadas</td></tr>';
+    tbody.innerHTML = publicados.map(l => '<tr><td>' + fmt_date(l.fecha) + '</td><td><strong>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</strong></td><td>' + (l.propiedades ? l.propiedades.nombre : '?') + '</td><td class="num">EUR ' + Number(l.aporte_usuario||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td class="num pos">EUR ' + Number(l.total_retorno||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td class="num">EUR ' + Number(l.utilidad_neta||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td><button class="btn btn-outline btn-sm" onclick="editLiquidacion('" + l.id + "')">Editar</button></td></tr>').join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones publicadas</td></tr>';
   } catch(e) { console.error(e); }
 }
 
