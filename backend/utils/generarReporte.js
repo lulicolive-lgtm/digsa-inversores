@@ -4,7 +4,7 @@
 const { generarPDFReporte } = require('./generarPDF');
 const supabaseClient = require('./supabase');
 
-async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraPendiente = 0) {
+async function generarYSubirReporte(userId, usuario, sb = supabaseClient) {
   try {
     // Cargar todos los datos del inversor
     const [partRes, aportesRes, liqRes] = await Promise.all([
@@ -41,8 +41,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraP
 
     const en_pisos = pisos_activos_raw.reduce((s,p) => s + Number(p.monto_invertido||0), 0);
     const total_retornado = liquidaciones.reduce((s,l) => s + Number(l.total_retorno||0), 0);
-    const aportes_pend = aportes.filter(a => a.tipo === 'pendiente').reduce((s,a) => s + Number(a.monto_eur||0), 0);
-    const pendiente = aportes_pend > 0 ? aportes_pend : (extraPendiente || 0) > 0 ? (extraPendiente || 0) : pisos_activos_raw.length === 0 ? Math.max(0, inversion_inicial + total_retornado - retiros - en_pisos) : 0;
+    const pendiente = pisos_activos_raw.length > 0 ? 0 : Math.max(0, inversion_inicial + total_retornado - retiros - en_pisos);
     const valor_actual = valor_en_cartera + pendiente;
     const rentabilidad_total = inversion_inicial > 0 ? (valor_actual - inversion_inicial) / inversion_inicial : 0;
 
@@ -121,9 +120,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraP
       const { data: docExist } = await sb.from('documentos')
         .select('id').eq('usuario_id', userId).eq('nombre', `Reporte de Inversión ${mes_año}`).single();
       if (docExist) {
-        const meta = JSON.stringify({ inversion_inicial, valor_actual, rentabilidad_total, tir, pendiente });
-        await sb.from('documentos').update({ url: urlData.publicUrl, fecha, publicado: true,
-          metadata: JSON.stringify({ inversion_inicial, valor_actual, rentabilidad_total, tir, pendiente }), metadata: meta }).eq('id', docExist.id);
+        await sb.from('documentos').update({ url: urlData.publicUrl, fecha, publicado: false }).eq('id', docExist.id);
       } else {
         await sb.from('documentos').insert([{
           usuario_id: userId,
@@ -131,7 +128,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraP
           tipo: 'reporte',
           url: urlData.publicUrl,
           fecha,
-          publicado: true,
+          publicado: false,
         }]);
       }
     }
