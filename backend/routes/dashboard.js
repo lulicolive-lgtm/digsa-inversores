@@ -44,7 +44,15 @@ router.get('/', authMiddleware, async (req, res) => {
     const anos = dias / 365;
     if (anos > 0) tir = Math.pow(1 + rentabilidad_total, 1 / anos) - 1;
   }
-  res.json({ resumen: { inversion_inicial, valor_actual, rentabilidad_total, tir, retiros, pendiente, propiedades_activas: pisos_activos.length, total_retornado }, participaciones, aportes, liquidaciones, notificaciones: notifRes.data || [] });
+  let resumenFinal = { inversion_inicial, valor_actual, rentabilidad_total, tir, retiros, pendiente, propiedades_activas: pisos_activos.length, total_retornado };
+  const ultimoReporte = reporteRes && reporteRes.data && reporteRes.data[0];
+  if (ultimoReporte && ultimoReporte.metadata) {
+    try {
+      const meta = JSON.parse(ultimoReporte.metadata);
+      resumenFinal = Object.assign({}, resumenFinal, meta, { retiros, propiedades_activas: pisos_activos.length });
+    } catch(e) {}
+  }
+  res.json({ resumen: resumenFinal, participaciones, aportes, liquidaciones, notificaciones: notifRes.data || [] });
 });
 
 router.put('/notificaciones/:id/leida', authMiddleware, async (req, res) => {
