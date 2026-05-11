@@ -279,3 +279,33 @@ function generarPDFDIGSA(p) {
 }
 
 module.exports = router;
+
+router.get('/pendientes', authMiddleware, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('pendientes_inversion')
+    .select('*, usuarios(nombre,apellido,email), propiedades_origen:propiedad_origen_id(nombre)')
+    .eq('asignado', false).order('fecha', { ascending: false });
+  res.json(data || []);
+});
+
+router.post('/pendientes/asignar', authMiddleware, adminOnly, async (req, res) => {
+  const { pendiente_id, usuario_id, propiedad_id, monto, fecha } = req.body;
+  try {
+    const { data: prop } = await supabase.from('propiedades').select('precio_compra').eq('id', propiedad_id).single();
+    const pct = prop && prop.precio_compra > 0 ? monto / Number(prop.precio_compra) : 0;
+    const { data: partExist } = await supabase.from('participaciones').select('id,monto_invertido,porcentaje').eq('usuario_id', usuario_id).eq('propiedad_id', propiedad_id).eq('activo', true).single();
+    if (partExist) {
+      await supabase.from('participaciones').update({ monto_invertido: Number(partExist.monto_invertido) + monto, porcentaje: Number(partExist.porcentaje) + pct }).eq('id', partExist.id);
+    } else {
+      await supabase.from('participaciones').insert([{ usuario_id, propiedad_id, monto_invertido: monto, porcentaje: pct, fecha_entrada: fecha, activo: true }]);
+    }
+    await supabase.from('aportes').insert([{ usuario_id, propiedad_id, monto_eur: monto, monto_usd: monto, fecha, tipo: 'aporte', descripcion: 'Reinversion desde pendiente' }]);
+    const { data: pend } = await supabase.from('pendientes_inversion').select('monto_eur').eq('id', pendiente_id).single();
+    const resto = Number(pend?.monto_eur || 0) - monto;
+    if (resto < 0.01) {
+      await supabase.from('pendientes_inversion').update({ asignado: true }).eq('id', pendiente_id);
+    } else {
+      await supabase.from('pendientes_inversion').update({ monto_eur: resto }).eq('id', pendiente_id);
+    }
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
