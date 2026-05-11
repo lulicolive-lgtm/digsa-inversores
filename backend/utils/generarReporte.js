@@ -4,7 +4,7 @@
 const { generarPDFReporte } = require('./generarPDF');
 const supabaseClient = require('./supabase');
 
-async function generarYSubirReporte(userId, usuario, sb = supabaseClient) {
+async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraPendiente = 0) {
   try {
     // Cargar todos los datos del inversor
     const [partRes, aportesRes, liqRes] = await Promise.all([
@@ -121,7 +121,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient) {
       const { data: docExist } = await sb.from('documentos')
         .select('id').eq('usuario_id', userId).eq('nombre', `Reporte de Inversión ${mes_año}`).single();
       if (docExist) {
-        await sb.from('documentos').update({ url: urlData.publicUrl, fecha, publicado: false }).eq('id', docExist.id);
+        await sb.from('documentos').update({ url: urlData.publicUrl, fecha, publicado: true }).eq('id', docExist.id);
       } else {
         await sb.from('documentos').insert([{
           usuario_id: userId,
