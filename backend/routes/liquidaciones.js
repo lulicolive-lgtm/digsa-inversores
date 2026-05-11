@@ -73,7 +73,7 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
     }]).select().single();
 
     try {
-      const { data: todasLiqs } = await supabase.from('liquidaciones').select('*, propiedades(nombre)').eq('usuario_id', user.id).order('fecha', { ascending: false });
+      const { data: todasLiqs } = await supabase.from('liquidaciones').select('*, propiedades(nombre)').eq('usuario_id', user.id).eq('propiedad_id', propiedad_id).order('fecha', { ascending: false });
       const liquidacionesParaPDF = (todasLiqs || []).map(l => ({ piso: l.propiedades ? l.propiedades.nombre : '?', aporte: Number(l.aporte_usuario), utilidad_bruta: Number(l.utilidad_bruta), fee: Number(l.fee_exito_monto), impuestos: Math.max(0, Number(l.utilidad_bruta) - Number(l.fee_exito_monto)) * 0.25, util_neta: Number(l.utilidad_neta), total: Number(l.total_retorno) }));
       const total_aporte = liquidacionesParaPDF.reduce((s,l) => s+l.aporte, 0);
       const total_retorno2 = liquidacionesParaPDF.reduce((s,l) => s+l.total, 0);
