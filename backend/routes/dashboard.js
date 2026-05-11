@@ -52,10 +52,9 @@ router.get('/', authMiddleware, async (req, res) => {
 
   const valor_actual = valor_en_cartera;
   
-  // Pendiente de inversión
-  const pendiente = aportes
-    .filter(a => a.tipo === 'aporte' && !a.propiedad_id)
-    .reduce((s, a) => s + Number(a.monto_eur || a.monto_usd || 0), 0);
+  // Pendiente de inversión desde tabla pendientes_inversion
+  const { data: pendRows } = await supabase.from('pendientes_inversion').select('monto_eur').eq('usuario_id', uid).eq('asignado', false);
+  const pendiente = (pendRows||[]).reduce((s,p) => s + Number(p.monto_eur||0), 0);
 
   const rentabilidad_total = inversion_inicial > 0
     ? (valor_actual - inversion_inicial) / inversion_inicial
