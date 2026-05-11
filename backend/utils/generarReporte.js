@@ -4,7 +4,7 @@
 const { generarPDFReporte } = require('./generarPDF');
 const supabaseClient = require('./supabase');
 
-async function generarYSubirReporte(userId, usuario, sb = supabaseClient) {
+async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraPendiente = 0) {
   try {
     // Cargar todos los datos del inversor
     const [partRes, aportesRes, liqRes] = await Promise.all([
