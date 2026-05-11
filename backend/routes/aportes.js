@@ -43,6 +43,26 @@ router.post('/', authMiddleware, adminOnly, async (req, res) => {
 
   if (error) return res.status(400).json({ error: error.message });
 
+  if (propiedad_id && tipo === 'aporte' && eur_final > 0) {
+    try {
+      const { data: pendientes } = await supabase.from('pendientes_inversion')
+        .select('id,monto_eur').eq('usuario_id', usuario_id).eq('asignado', false)
+        .order('fecha', { ascending: true });
+      let restante = Number(eur_final);
+      for (const pend of (pendientes || [])) {
+        if (restante <= 0) break;
+        const mp = Number(pend.monto_eur);
+        if (mp <= restante) {
+          await supabase.from('pendientes_inversion').update({ asignado: true }).eq('id', pend.id);
+          restante -= mp;
+        } else {
+          await supabase.from('pendientes_inversion').update({ monto_eur: mp - restante }).eq('id', pend.id);
+          restante = 0;
+        }
+      }
+    } catch(e) { console.error('Error pendiente:', e.message); }
+  }
+
   // Notificar al inversor
   await supabase.from('notificaciones').insert([{
     usuario_id,
