@@ -324,7 +324,7 @@ router.post('/pendientes/asignar', authMiddleware, adminOnly, async (req, res) =
     } else {
       await supabase.from('participaciones').insert([{ usuario_id, propiedad_id, monto_invertido: monto, porcentaje: pct, fecha_entrada: fecha, activo: true }]);
     }
-    await supabase.from('aportes').insert([{ usuario_id, propiedad_id, monto_eur: monto, monto_usd: monto, fecha, tipo: 'aporte', descripcion: 'Reinversion desde pendiente' }]);
+    await supabase.from('aportes').insert([{ usuario_id, propiedad_id, monto_eur: monto, monto_usd: monto, fecha, tipo: 'reinversion', descripcion: 'Reinversion desde pendiente' }]);
     const { data: pend } = await supabase.from('pendientes_inversion').select('monto_eur').eq('id', pendiente_id).single();
     const resto = Number(pend?.monto_eur || 0) - monto;
     if (resto < 0.01) {
