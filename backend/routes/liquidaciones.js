@@ -97,6 +97,32 @@ router.post('/generar', authMiddleware, adminOnly, async (req, res) => {
 });
 
 // ── GET /api/liquidaciones/:id/pdf ──────────────────────────────────────────
+
+router.get('/todas', authMiddleware, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('liquidaciones').select('*, propiedades(nombre), usuarios(nombre,apellido)').order('fecha', { ascending: false });
+  res.json(data || []);
+});
+
+router.post('/publicar/:propiedad_id', authMiddleware, adminOnly, async (req, res) => {
+  const { propiedad_id } = req.params;
+  try {
+    await supabase.from('liquidaciones').update({ publicado: true }).eq('propiedad_id', propiedad_id).eq('publicado', false);
+    await supabase.from('documentos').update({ publicado: true }).eq('propiedad_id', propiedad_id).eq('publicado', false);
+    const { data: liqs } = await supabase.from('liquidaciones').select('usuario_id,total_retorno').eq('propiedad_id', propiedad_id);
+    const { data: prop } = await supabase.from('propiedades').select('nombre').eq('id', propiedad_id).single();
+    for (const l of (liqs || [])) {
+      await supabase.from('notificaciones').insert([{ usuario_id: l.usuario_id, titulo: 'Liquidacion disponible: ' + (prop ? prop.nombre : ''), mensaje: 'Tu liquidacion esta lista. Retorno: EUR ' + Math.round(l.total_retorno).toLocaleString('es-ES'), tipo: 'liquidacion' }]);
+    }
+    res.json({ ok: true, publicadas: liqs ? liqs.length : 0 });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+router.put('/:id', authMiddleware, adminOnly, async (req, res) => {
+  const { data, error } = await supabase.from('liquidaciones').update(req.body).eq('id', req.params.id).select().single();
+  if (error) return res.status(400).json({ error: error.message });
+  res.json(data);
+});
+
 router.get('/:id/pdf', authMiddleware, async (req, res) => {
   const { data: liq } = await supabase
     .from('liquidaciones')
