@@ -2916,11 +2916,37 @@ async function verOperacion(propId) {
 async function loadAdminAportes() {
   try {
     // Cargar aportes, propiedades e inversores en paralelo para tener todas las opciones
-    const [aportes, props, inversores] = await Promise.all([
+    const [aportes, props, inversores, pendientes] = await Promise.all([
       api('GET', '/aportes'),
       api('GET', '/propiedades'),
-      api('GET', '/inversores')
+      api('GET', '/inversores'),
+      api('GET', '/liquidaciones/pendientes').catch(() => [])
     ]);
+    const pendSec = document.getElementById('pendientes-section');
+    const pendLista = document.getElementById('pendientes-lista');
+    if (pendSec && pendLista && pendientes && pendientes.length > 0) {
+      pendSec.style.display = 'block';
+      const pisosActivos = (props||[]).filter(p => p.estado !== 'vendido');
+      const pisosOpts = pisosActivos.map(p => '<option value="' + p.id + '">' + p.nombre + '</option>').join('');
+      const porInv = {};
+      pendientes.forEach(p => { const uid = p.usuario_id; if (!porInv[uid]) porInv[uid] = { nombre: p.usuarios ? p.usuarios.nombre + ' ' + p.usuarios.apellido : '?', items: [], total: 0 }; porInv[uid].items.push(p); porInv[uid].total += Number(p.monto_eur||0); });
+      const totalPend = pendientes.reduce((s,p) => s + Number(p.monto_eur||0), 0);
+      pendLista.innerHTML = '<div style="background:var(--naranja);color:#fff;padding:10px 14px;border-radius:6px;margin-bottom:16px"><strong>Total pendiente: \u20ac' + totalPend.toLocaleString('es-ES',{minimumFractionDigits:2}) + '</strong></div>' +
+        Object.entries(porInv).map(([uid, data]) =>
+          '<div class="card" style="margin-bottom:12px;padding:16px">' +
+          '<div style="display:flex;justify-content:space-between;margin-bottom:12px"><strong>' + data.nombre + '</strong><span style="color:var(--naranja);font-weight:700">\u20ac' + data.total.toLocaleString('es-ES',{minimumFractionDigits:2}) + '</span></div>' +
+          data.items.map(p =>
+            '<div style="border:1px solid var(--gris2);border-radius:6px;padding:12px;margin-bottom:8px">' +
+            '<div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:var(--negro3)">' + (p.descripcion||'Pendiente') + '</span><strong>\u20ac' + Number(p.monto_eur).toLocaleString('es-ES',{minimumFractionDigits:2}) + '</strong></div>' +
+            '<div style="display:grid;grid-template-columns:2fr 70px 100px auto;gap:8px;align-items:end">' +
+            '<div><label style="font-size:11px;color:var(--negro3)">Piso destino</label><select style="width:100%;padding:5px;font-size:12px;margin-top:3px" id="pend-piso-' + p.id + '" onchange="calcPendienteMonto(\'' + p.id + '\',' + p.monto_eur + ')"><option value="">Seleccionar</option>' + pisosOpts + '</select></div>' +
+            '<div><label style="font-size:11px;color:var(--negro3)">%</label><input type="number" id="pend-pct-' + p.id + '" value="100" min="1" max="100" style="width:100%;padding:5px;font-size:12px;margin-top:3px" oninput="calcPendienteMonto(\'' + p.id + '\',' + p.monto_eur + ')"></div>' +
+            '<div><label style="font-size:11px;color:var(--negro3)">Monto</label><input type="number" id="pend-monto-' + p.id + '" value="' + Number(p.monto_eur).toFixed(2) + '" style="width:100%;padding:5px;font-size:12px;margin-top:3px"></div>' +
+            '<div style="padding-top:18px"><button class="btn" style="background:var(--naranja);color:#fff" data-pid="' + p.id + '" data-uid="' + p.usuario_id + '" onclick="asignarPendiente(this.dataset.pid,this.dataset.uid)">\u2713 Asignar</button></div>' +
+            '</div></div>'
+          ).join('') + '</div>'
+        ).join('');
+    } else if (pendSec) { pendSec.style.display = 'none'; }
     APORTES_CACHE_ADMIN = aportes || [];
 
     // Poblar filtro de pisos desde todas las propiedades
