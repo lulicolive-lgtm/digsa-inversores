@@ -551,6 +551,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="aside-proxima" class="aside-link" onclick="adminTab('proxima')">📋 Próxima propiedad</div>
     <div id="aside-operacion" class="aside-link" onclick="adminTab('operacion')">📊 Nueva operación</div>
     <div id="aside-liquidaciones" class="aside-link" onclick="adminTab('liquidaciones');loadAdminLiquidaciones()">💰 Inv. finalizadas</div>
+    <div id="aside-pendientes" class="aside-link" onclick="adminTab('pendientes');loadAsignarPendientes()">⏳ Asignar pendientes</div>
    </div>
    <!-- Content -->
    <div style="flex:1;min-width:0">
@@ -586,7 +587,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
    <div class="atab-panel" id="atab-aportes">
-    <div id="pendientes-section" style="margin-bottom:24px;display:none"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span>⏳</span><h3 style="font-size:18px">Pendientes de inversión</h3></div><div id="pendientes-lista"></div></div>
     <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Movimientos de capital</h3><p style="font-size:12px;color:var(--negro3)">Aportes y retiros de todos los inversores · Filtrá por fecha, piso o inversor</p></div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -2915,43 +2915,12 @@ async function verOperacion(propId) {
 
 async function loadAdminAportes() {
   try {
-    const [aportes, props, inversores, pendientes] = await Promise.all([
+    // Cargar aportes, propiedades e inversores en paralelo para tener todas las opciones
+    const [aportes, props, inversores] = await Promise.all([
       api('GET', '/aportes'),
       api('GET', '/propiedades'),
-      api('GET', '/inversores'),
-      api('GET', '/liquidaciones/pendientes').catch(() => [])
+      api('GET', '/inversores')
     ]);
-    const pendSec = document.getElementById('pendientes-section');
-    const pendLista = document.getElementById('pendientes-lista');
-    if (pendSec && pendLista) {
-      if (pendientes && pendientes.length > 0) {
-        pendSec.style.display = 'block';
-        const pisosActivos = (props||[]).filter(p => p.estado !== 'vendido');
-        const pisosOpts = pisosActivos.map(p => '<option value="' + p.id + '">' + p.nombre + '</option>').join('');
-        const porInversor = {};
-        pendientes.forEach(p => {
-          const uid = p.usuario_id;
-          if (!porInversor[uid]) porInversor[uid] = { nombre: p.usuarios ? p.usuarios.nombre + ' ' + p.usuarios.apellido : '?', items: [], total: 0 };
-          porInversor[uid].items.push(p);
-          porInversor[uid].total += Number(p.monto_eur || 0);
-        });
-        pendLista.innerHTML = Object.entries(porInversor).map(([uid, data]) =>
-          '<div class="card" style="margin-bottom:12px;padding:16px">' +
-          '<div style="display:flex;justify-content:space-between;margin-bottom:10px"><strong>' + data.nombre + '</strong>' +
-          '<span style="color:var(--naranja);font-weight:700">€' + data.total.toLocaleString("es-ES",{minimumFractionDigits:2}) + ' pendiente</span></div>' +
-          data.items.map(p =>
-            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px;background:var(--gris1);border-radius:4px;flex-wrap:wrap">' +
-            '<span style="font-size:12px;flex:1">' + (p.descripcion||'Pendiente') + ' · €' + Number(p.monto_eur).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</span>' +
-            '<select style="font-size:11px;padding:4px" id="pend-piso-' + p.id + '"><option value="">— Piso destino —</option>' + pisosOpts + '</select>' +
-            '<input type="number" id="pend-monto-' + p.id + '" value="' + Number(p.monto_eur).toFixed(2) + '" style="width:90px;font-size:11px;padding:4px">' +
-            '<button class="btn btn-sm" style="background:var(--naranja);color:#fff" data-pid="' + p.id + '" data-uid="' + p.usuario_id + '" onclick="asignarPendiente(this.dataset.pid,this.dataset.uid)">Asignar</button>' +
-            '</div>'
-          ).join('') + '</div>'
-        ).join('');
-      } else {
-        pendSec.style.display = 'none';
-      }
-    }
     APORTES_CACHE_ADMIN = aportes || [];
 
     // Poblar filtro de pisos desde todas las propiedades
