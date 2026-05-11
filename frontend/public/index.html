@@ -1090,6 +1090,22 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    </div>
 
    </div><!-- /content -->
+   <div class="atab-panel" id="atab-notificaciones">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+     <div><h3 style="font-size:20px;margin-bottom:4px">Notificaciones</h3>
+     <p style="font-size:12px;color:var(--negro3)">Enviá mensajes a inversores y revisá el historial</p></div>
+    </div>
+    <div class="card" style="margin-bottom:24px;padding:20px">
+     <h4 style="margin-bottom:16px">Nueva notificación</h4>
+     <div class="form-grid">
+      <div class="fld fld-full"><label>Destinatario</label><select id="notif-dest"><option value="todos">📢 Todos los inversores</option></select></div>
+      <div class="fld fld-full"><label>Título</label><input id="notif-titulo" class="input" placeholder="Ej: Actualización de inversión"></div>
+      <div class="fld fld-full"><label>Mensaje</label><textarea id="notif-mensaje" class="input" rows="3" placeholder="Escribí el mensaje..."></textarea></div>
+     </div>
+     <button class="btn btn-dark" style="margin-top:12px" onclick="enviarNotifAdmin()">✉ Enviar</button>
+    </div>
+    <div><h4 style="margin-bottom:12px">Historial</h4><div id="notif-historial"><p style="color:var(--negro3)">Cargando...</p></div></div>
+   </div>
    </div><!-- /sidebar layout -->
 
   </div><!-- /panel-admin -->
@@ -3469,6 +3485,41 @@ function toggleTipoAporte() {
   // Cambiar label según tipo
   const montoLabel = document.querySelector('label[for="ap-monto"]');
   if (montoLabel) montoLabel.textContent = tipo === 'retiro' ? 'Monto a retirar (USD)' : 'Monto (USD)';
+}
+
+
+async function loadNotifAdmin() {
+  const hist = document.getElementById('notif-historial');
+  if (!hist) return;
+  try {
+    const [notifs, inversores] = await Promise.all([api('GET','/admin/notificaciones'), api('GET','/inversores')]);
+    const sel = document.getElementById('notif-dest');
+    if (sel && inversores) sel.innerHTML = '<option value="todos">Todos los inversores</option>' + inversores.map(i => '<option value="'+i.id+'">'+i.nombre+' '+i.apellido+'</option>').join('');
+    if (!notifs || !notifs.length) { hist.innerHTML = '<p style="color:var(--negro3)">Sin notificaciones.</p>'; return; }
+    hist.innerHTML = notifs.map(n =>
+      '<div style="padding:12px;border-bottom:1px solid var(--gris2)">' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">' +
+      '<strong style="font-size:13px">' + (n.usuarios ? n.usuarios.nombre+' '+n.usuarios.apellido : '?') + '</strong>' +
+      '<span style="font-size:11px;color:var(--negro3)">' + new Date(n.created_at).toLocaleDateString('es-ES') + '</span>' +
+      (n.leida ? '<span style="font-size:10px;color:var(--verde)">leida</span>' : '<span style="font-size:10px;color:var(--naranja)">no leida</span>') + '</div>' +
+      '<div style="font-size:13px;font-weight:600">' + n.titulo + '</div>' +
+      '<div style="font-size:12px;color:var(--negro3)">' + n.mensaje + '</div></div>'
+    ).join('');
+  } catch(e) { if (hist) hist.innerHTML = '<p style="color:var(--naranja)">Error: '+e.message+'</p>'; }
+}
+
+async function enviarNotifAdmin() {
+  const dest = document.getElementById('notif-dest')?.value;
+  const titulo = document.getElementById('notif-titulo')?.value?.trim();
+  const mensaje = document.getElementById('notif-mensaje')?.value?.trim();
+  if (!titulo || !mensaje) { showToast('Completa titulo y mensaje','err'); return; }
+  try {
+    const r = await api('POST','/admin/notificaciones',{usuario_id:dest,titulo,mensaje});
+    showToast('Enviado a '+r.enviadas+' inversor(es)');
+    document.getElementById('notif-titulo').value='';
+    document.getElementById('notif-mensaje').value='';
+    loadNotifAdmin();
+  } catch(e) { showToast('Error: '+e.message,'err'); }
 }
 
 function toggleDigsaMenu() {
