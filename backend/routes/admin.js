@@ -92,3 +92,26 @@ router.post('/proxima', authMiddleware, adminOnly, async (req, res) => {
   }
   res.json({ ok: true });
 });
+
+router.get('/notificaciones', authMiddleware, adminOnly, async (req, res) => {
+  const { data } = await supabase.from('notificaciones')
+    .select('*, usuarios(nombre,apellido,email)')
+    .order('created_at', { ascending: false }).limit(100);
+  res.json(data || []);
+});
+
+router.post('/notificaciones', authMiddleware, adminOnly, async (req, res) => {
+  const { usuario_id, titulo, mensaje, tipo = 'info' } = req.body;
+  try {
+    if (usuario_id === 'todos') {
+      const { data: invs } = await supabase.from('usuarios').select('id').neq('rol','admin');
+      for (const inv of (invs||[])) {
+        await supabase.from('notificaciones').insert([{ usuario_id: inv.id, titulo, mensaje, tipo }]);
+      }
+      res.json({ ok: true, enviadas: invs?.length || 0 });
+    } else {
+      await supabase.from('notificaciones').insert([{ usuario_id, titulo, mensaje, tipo }]);
+      res.json({ ok: true, enviadas: 1 });
+    }
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
