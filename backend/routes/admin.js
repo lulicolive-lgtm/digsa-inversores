@@ -80,6 +80,12 @@ router.patch('/notificaciones/:id', authMiddleware, async (req, res) => {
   res.json(data);
 });
 
+
+router.get('/notificaciones/mias', authMiddleware, async (req, res) => {
+  const { data } = await supabase.from('notificaciones').select('*').eq('usuario_id', req.user.id).order('created_at', { ascending: false }).limit(20);
+  res.json(data || []);
+});
+
 module.exports = router;
 
 // GET /api/admin/proxima
