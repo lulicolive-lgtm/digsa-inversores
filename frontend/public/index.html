@@ -1425,6 +1425,7 @@ function nav(panel) {
   if (panel==='documentos') loadDocumentos();
   if (panel==='admin' && ME?.rol==='admin') { loadAdmin(); adminTab('inversores'); }
   if (panel==='analisis' && ME?.rol==='admin') loadAnalisis();
+  if (tab==='analisis') setTimeout(loadAnalisis, 100);
   if (panel==='proxima') cargarDatosProxima();
 }
 
@@ -1930,6 +1931,18 @@ async function savePropiedad() {
       if(uid&&monto&&p&&fecha) await api('POST','/participaciones',{usuario_id:uid,propiedad_id:propId,monto_invertido:parseFloat(monto),porcentaje:parseFloat(p),fecha_entrada:fecha}).catch(e=>showToast('Participación: '+e.message,'err'));
     }
     closeModal('modal-propiedad'); showToast('Propiedad guardada'); loadAdmin();
+    if (body.estado === 'en_obra' && !PROP_EDIT_ID) {
+      if (confirm('¿Cargar esta propiedad como Próxima Inversión para los inversores?')) {
+        adminTab('proxima');
+        setTimeout(() => {
+          if ($('prox-nombre')) $('prox-nombre').value = body.nombre || '';
+          if ($('prox-ubic')) $('prox-ubic').value = body.direccion || '';
+          if ($('prox-compra-val')) $('prox-compra-val').value = body.precio_compra || '';
+          if ($('prox-venta-est')) $('prox-venta-est').value = body.precio_venta || '';
+          showToast('Datos pre-cargados — completá el resto y guardá');
+        }, 300);
+      }
+    }
   } catch(e){showToast(e.message,'err');}finally{hideLoading();}
 }
 
