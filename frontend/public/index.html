@@ -3063,17 +3063,34 @@ async function loadAdminLiquidaciones() {
     LIQ_CACHE_ADMIN = liqs || [];
     const tbody = $('admin-liq-body');
     if (!tbody) return;
-    tbody.innerHTML = LIQ_CACHE_ADMIN.map(l => `<tr>
-      <td>${fmt_date(l.fecha)}</td>
-      <td><strong>${l.usuarios?.nombre||''} ${l.usuarios?.apellido||''}</strong></td>
-      <td>${l.propiedades?.nombre||'—'}</td>
-      <td class="num">€${Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-      <td class="num pos">€${Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-      <td class="num">€${Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
-      <td>
-        <button class="btn btn-outline btn-sm" onclick="editLiquidacion('${l.id}')">Editar</button>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones</td></tr>';
+    const borradores = LIQ_CACHE_ADMIN.filter(l => !l.publicado);
+    const publicados = LIQ_CACHE_ADMIN.filter(l => l.publicado);
+    const porPiso = {};
+    borradores.forEach(l => {
+      const pid = l.propiedad_id;
+      if (!porPiso[pid]) porPiso[pid] = { nombre: l.propiedades ? l.propiedades.nombre : '?', liqs: [], total: 0 };
+      porPiso[pid].liqs.push(l);
+      porPiso[pid].total += Number(l.total_retorno||0);
+    });
+    const wrap = $('borradores-wrap');
+    const body = $('borradores-body');
+    if (wrap && body) {
+      if (Object.keys(porPiso).length > 0) {
+        wrap.style.display = 'block';
+        body.innerHTML = Object.entries(porPiso).map(([pid, data]) =>
+          '<div style="background:#fff;padding:12px;margin-bottom:10px;border:1px solid rgba(255,77,15,.2);border-radius:4px">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
+          '<div><strong>' + data.nombre + '</strong> <span style="font-size:11px;color:var(--negro3)">' + data.liqs.length + ' inversores · €' + Math.round(data.total).toLocaleString("es-ES") + '</span></div>' +
+          '<button class="btn btn-dark btn-sm" data-pid="' + pid + '" onclick="publicarLiquidaciones(this.dataset.pid)">✓ Publicar</button></div>' +
+          '<table style="width:100%;font-size:12px"><tr style="color:var(--negro3)"><th style="text-align:left">Inversor</th><th style="text-align:right">Retorno</th></tr>' +
+          data.liqs.map(l => '<tr><td>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</td><td style="text-align:right;color:var(--verde)">€' + Number(l.total_retorno||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td></tr>').join('') +
+          '</table></div>'
+        ).join('');
+      } else {
+        wrap.style.display = 'none';
+      }
+    }
+    tbody.innerHTML = publicados.map(l => '<tr><td>' + fmt_date(l.fecha) + '</td><td><strong>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</strong></td><td>' + (l.propiedades ? l.propiedades.nombre : '?') + '</td><td class="num">€' + Number(l.aporte_usuario||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td class="num pos">€' + Number(l.total_retorno||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td class="num">€' + Number(l.utilidad_neta||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td><button class="btn btn-outline btn-sm" data-id="' + l.id + '" onclick="editLiquidacion(this.dataset.id)">Editar</button></td></tr>').join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones publicadas</td></tr>';
   } catch(e) { console.error(e); }
 }
 
