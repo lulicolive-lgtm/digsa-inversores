@@ -3761,7 +3761,7 @@ async function cargarNotificacionesUsuario() {
   if (!lista) return;
   lista.innerHTML = '<p style="color:var(--negro3);font-size:12px">Cargando...</p>';
   try {
-    const notifs = await api('GET', '/notificaciones');
+    const notifs = await api('GET', '/admin/notificaciones/mias');
     if (!notifs || !notifs.length) {
       lista.innerHTML = '<p style="color:var(--negro3);font-size:12px;padding:12px">Sin notificaciones</p>';
       return;
