@@ -97,6 +97,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraP
     const fecha = new Date().toISOString().split('T')[0];
     const mes_año = new Date().toLocaleDateString('es-ES', { month: 'numeric', year: 'numeric' }).replace('/', '.');
 
+    console.log('REPORTE: generando PDF para', usuario.email, 'val=', valor_actual, 'pend=', pendiente);
     const pdfBuffer = await generarPDFReporte({
       usuario: { nombre: usuario.nombre, apellido: usuario.apellido, email: usuario.email },
       fecha,
