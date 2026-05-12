@@ -551,6 +551,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="aside-proxima" class="aside-link" onclick="adminTab('proxima')">📋 Próxima propiedad</div>
     <div id="aside-operacion" class="aside-link" onclick="adminTab('operacion')">📊 Nueva operación</div>
     <div id="aside-liquidaciones" class="aside-link" onclick="adminTab('liquidaciones');loadAdminLiquidaciones()">💰 Inv. finalizadas</div>
+    <div id="aside-pendientes-inv" class="aside-link" onclick="adminTab('pendientes-inv');loadPendientesAdmin()">⏳ Pendientes</div>
     <div id="aside-kpis" class="aside-link" onclick="adminTab('kpis');loadKPIsAdmin()">📊 KPIs Dashboard</div>
     <div id="aside-notificaciones" class="aside-link" onclick="adminTab('notificaciones');loadNotifAdmin()">🔔 Notificaciones</div>
    </div>
@@ -1092,6 +1093,11 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    </div>
 
    </div><!-- /content -->
+   <div class="atab-panel" id="atab-pendientes-inv">
+    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Pendientes de inversión</h3>
+    <p style="font-size:12px;color:var(--negro3)">Capital pendiente de asignación a un piso</p></div>
+    <div id="pendientes-inv-lista"><p style="color:var(--negro3)">Cargando...</p></div>
+   </div>
    <div class="atab-panel" id="atab-kpis"><div style="margin-bottom:20px"><h3 style="font-size:20px">KPIs Dashboard</h3><p style="font-size:12px;color:var(--negro3)">Editá los KPIs del dashboard de cada inversor</p></div><div id="kpis-list"></div></div>
    <div class="atab-panel" id="atab-notificaciones">
     <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Notificaciones</h3><p style="font-size:12px;color:var(--negro3)">Enviá mensajes a inversores y revisá el historial</p></div>
@@ -3665,7 +3671,53 @@ async function asignarPendiente(pendiente_id, usuario_id) {
     await api('POST', '/liquidaciones/pendientes/asignar', { pendiente_id, usuario_id, propiedad_id: pisoId, monto, fecha });
     showToast('Asignacion realizada');
     loadAdminAportes();
+    if (document.getElementById('atab-pendientes-inv')?.classList.contains('show')) loadPendientesAdmin();
   } catch(e) { showToast('Error: ' + e.message, 'err'); }
+}
+
+
+async function loadPendientesAdmin() {
+  const lista = document.getElementById('pendientes-inv-lista');
+  if (!lista) return;
+  lista.innerHTML = '<p style="color:var(--negro3)">Cargando...</p>';
+  try {
+    const [pendientes, inversores, props] = await Promise.all([
+      api('GET', '/liquidaciones/pendientes').catch(() => []),
+      api('GET', '/inversores'),
+      api('GET', '/propiedades')
+    ]);
+    const pisosActivos = (props||[]).filter(p => p.estado !== 'vendido');
+    const pisosOpts = pisosActivos.map(p => '<option value="' + p.id + '">' + p.nombre + '</option>').join('');
+    const invMap = {};
+    (inversores||[]).forEach(i => { invMap[i.id] = i.nombre + ' ' + i.apellido; });
+    const porInversor = {};
+    (pendientes||[]).forEach(p => {
+      if (!porInversor[p.usuario_id]) porInversor[p.usuario_id] = { nombre: invMap[p.usuario_id]||'?', items:[], total:0 };
+      porInversor[p.usuario_id].items.push(p);
+      porInversor[p.usuario_id].total += Number(p.monto_eur||0);
+    });
+    (inversores||[]).filter(i=>i.rol!=='admin').forEach(i => {
+      if (!porInversor[i.id]) porInversor[i.id] = { nombre: i.nombre+' '+i.apellido, items:[], total:0 };
+    });
+    const totalPend = (pendientes||[]).reduce((s,p) => s+Number(p.monto_eur||0), 0);
+    let h = '<div style="background:var(--naranja);color:#fff;padding:10px 14px;border-radius:6px;margin-bottom:20px"><strong>Total pendiente: €' + totalPend.toLocaleString("es-ES",{minimumFractionDigits:2}) + '</strong></div>';
+    Object.entries(porInversor).sort((a,b) => b[1].total - a[1].total).forEach(([uid, data]) => {
+      h += '<div class="card" style="margin-bottom:12px;padding:16px">';
+      h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:' + (data.items.length?'12px':'0') + '">';
+      h += '<strong>' + data.nombre + '</strong>';
+      h += '<span style="color:' + (data.total>0?'var(--naranja)':'var(--negro3)') + ';font-weight:700">€' + data.total.toLocaleString("es-ES",{minimumFractionDigits:2}) + '</span></div>';
+      data.items.forEach(p => {
+        h += '<div style="display:grid;grid-template-columns:2fr 70px 100px auto;gap:8px;align-items:end;margin-bottom:8px;padding:8px;background:var(--gris1);border-radius:4px">';
+        h += '<div><label style="font-size:11px;color:var(--negro3)">Piso destino</label><select style="width:100%;padding:5px;font-size:12px;margin-top:3px" id="pend-piso-' + p.id + '" onchange="calcPendienteMonto('' + p.id + '',' + p.monto_eur + ')"><option value="">Seleccionar</option>' + pisosOpts + '</select></div>';
+        h += '<div><label style="font-size:11px;color:var(--negro3)">%</label><input type="number" id="pend-pct-' + p.id + '" value="100" min="1" max="100" style="width:100%;padding:5px;font-size:12px;margin-top:3px" oninput="calcPendienteMonto('' + p.id + '',' + p.monto_eur + ')"></div>';
+        h += '<div><label style="font-size:11px;color:var(--negro3)">Monto €</label><input type="number" id="pend-monto-' + p.id + '" value="' + Number(p.monto_eur).toFixed(2) + '" style="width:100%;padding:5px;font-size:12px;margin-top:3px"></div>';
+        h += '<div style="padding-top:18px"><button class="btn" style="background:var(--naranja);color:#fff" data-pid="' + p.id + '" data-uid="' + p.usuario_id + '" onclick="asignarPendiente(this.dataset.pid,this.dataset.uid)">✓</button></div>';
+        h += '</div>';
+      });
+      h += '</div>';
+    });
+    lista.innerHTML = h;
+  } catch(e) { lista.innerHTML = '<p style="color:var(--naranja)">Error: ' + e.message + '</p>'; }
 }
 
 function toggleDigsaMenu() {
