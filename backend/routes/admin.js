@@ -73,6 +73,13 @@ router.get('/resumen-inversores', authMiddleware, adminOnly, async (req, res) =>
   });
 });
 
+
+router.patch('/notificaciones/:id', authMiddleware, async (req, res) => {
+  const { data, error } = await supabase.from('notificaciones').update({ leida: true }).eq('id', req.params.id).eq('usuario_id', req.user.id).select().single();
+  if (error) return res.status(400).json({ error: error.message });
+  res.json(data);
+});
+
 module.exports = router;
 
 // GET /api/admin/proxima
