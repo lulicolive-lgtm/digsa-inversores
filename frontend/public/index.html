@@ -3748,7 +3748,44 @@ function toggleDigsaMenu() {
     });
   }, 100);
 }
-function toggleNotifs() { showToast('Próximamente: panel de notificaciones'); }
+function toggleNotifs() {
+  const panel = document.getElementById('notif-panel');
+  if (panel) {
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    if (panel.style.display === 'block') cargarNotificacionesUsuario();
+  }
+}
+
+async function cargarNotificacionesUsuario() {
+  const lista = document.getElementById('notif-panel-lista');
+  if (!lista) return;
+  lista.innerHTML = '<p style="color:var(--negro3);font-size:12px">Cargando...</p>';
+  try {
+    const notifs = await api('GET', '/notificaciones');
+    if (!notifs || !notifs.length) {
+      lista.innerHTML = '<p style="color:var(--negro3);font-size:12px;padding:12px">Sin notificaciones</p>';
+      return;
+    }
+    lista.innerHTML = notifs.map(n =>
+      '<div style="padding:12px;border-bottom:1px solid var(--gris2);cursor:pointer" onclick="marcarLeida('' + n.id + '',this)">' +
+      '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
+      '<strong style="font-size:12px' + (n.leida ? '' : ';color:var(--naranja)') + '">' + n.titulo + '</strong>' +
+      '<span style="font-size:10px;color:var(--negro3)">' + new Date(n.created_at).toLocaleDateString('es-ES') + '</span></div>' +
+      '<p style="font-size:12px;color:var(--negro3);margin:0">' + n.mensaje + '</p></div>'
+    ).join('');
+    // Marcar badge
+    const noLeidas = notifs.filter(n => !n.leida).length;
+    const badge = document.getElementById('notif-badge');
+    if (badge) { badge.textContent = noLeidas; badge.style.display = noLeidas ? 'flex' : 'none'; }
+  } catch(e) { lista.innerHTML = '<p style="color:var(--naranja);font-size:12px;padding:12px">Error: ' + e.message + '</p>'; }
+}
+
+async function marcarLeida(id, el) {
+  try {
+    await api('PATCH', '/notificaciones/' + id, { leida: true });
+    el.style.opacity = '0.6';
+  } catch(e) {}
+}
 
 if (TOKEN) startApp();
 </script>
@@ -3821,5 +3858,13 @@ if (TOKEN) startApp();
    </div>
   </div>
  </div>
+
+<div id="notif-panel" style="display:none;position:fixed;top:64px;right:16px;width:320px;max-height:400px;overflow-y:auto;background:#fff;border:1px solid var(--borde);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:500">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--borde);display:flex;justify-content:space-between;align-items:center">
+    <strong style="font-size:13px">Notificaciones</strong>
+    <button onclick="toggleNotifs()" style="border:none;background:none;cursor:pointer;font-size:16px;color:var(--negro3)">✕</button>
+  </div>
+  <div id="notif-panel-lista"></div>
+</div>
 </body>
 </html>
