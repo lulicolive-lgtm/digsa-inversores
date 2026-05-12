@@ -3710,7 +3710,7 @@ async function loadPendientesAdmin() {
       data.items.forEach(p => {
         h += '<div style="display:grid;grid-template-columns:2fr 70px 100px auto;gap:8px;align-items:end;margin-bottom:8px;padding:8px;background:var(--gris1);border-radius:4px">';
         h += '<div><label style="font-size:11px;color:var(--negro3)">Piso destino</label><select style="width:100%;padding:5px;font-size:12px;margin-top:3px" id="pend-piso-' + p.id + '" onchange="calcPendienteMonto(\'' + p.id + '\',' + p.monto_eur + ')"><option value="">Seleccionar</option>' + pisosOpts + '</select></div>';
-        h += '<div><label style="font-size:11px;color:var(--negro3)">%</label><input type="number" id="pend-pct-' + p.id + '" value="100" min="1" max="100" style="width:100%;padding:5px;font-size:12px;margin-top:3px" oninput="calcPendienteMonto('' + p.id + '',' + p.monto_eur + ')"></div>';
+        h += '<div><label style="font-size:11px;color:var(--negro3)">%</label><input type="number" id="pend-pct-' + p.id + '" value="100" min="1" max="100" style="width:100%;padding:5px;font-size:12px;margin-top:3px" oninput="calcPendienteMonto(\' + p.id + \',' + p.monto_eur + ')"></div>';
         h += '<div><label style="font-size:11px;color:var(--negro3)">Monto €</label><input type="number" id="pend-monto-' + p.id + '" value="' + Number(p.monto_eur).toFixed(2) + '" style="width:100%;padding:5px;font-size:12px;margin-top:3px"></div>';
         h += '<div style="padding-top:18px"><button class="btn" style="background:var(--naranja);color:#fff" data-pid="' + p.id + '" data-uid="' + p.usuario_id + '" onclick="asignarPendiente(this.dataset.pid,this.dataset.uid)">✓</button></div>';
         h += '</div>';
