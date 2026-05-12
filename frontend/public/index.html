@@ -2727,7 +2727,7 @@ async function cargarDesdeUltimasLiquidaciones() {
       }
     });
     showToast('Pendientes cargados');
-    recalcOperacion();
+    calcularOperacion();
   } catch(e) { hideLoading(); showToast('Error: ' + e.message, 'err'); }
 }
 
