@@ -289,7 +289,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="field"><label>Contraseña</label><input type="password" id="li-pass" placeholder="••••••••" autocomplete="current-password"></div>
    <button class="login-btn" id="li-btn" onclick="doLogin()">Ingresar</button>
    <div class="login-err" id="li-err"></div>
-   <p class="login-footer-link">¿Problemas? <a href="mailto:admin@digsa.es">Contactá al administrador</a></p>
+   <p class="login-footer-link">¿Olvidaste tu contraseña? <a href="#" onclick="abrirRecuperarPassword()">Recuperar acceso</a></p>
   </div>
  </div>
 </div>
@@ -334,8 +334,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="notif-badge" id="notif-badge"></div>
    </div>
    <div class="user-chip"><div class="user-ava" id="user-ava">--</div><div class="user-info" id="user-info">Cargando…</div></div>
-   <div class="logout-link" onclick="abrirCambioPassword()" style="margin-right:8px">🔑 Contraseña</div>
-  <div class="logout-link" onclick="doLogout()">Salir</div>
+   <div class="logout-link" onclick="doLogout()">Salir</div>
   </div>
  </nav>
 
@@ -3611,6 +3610,45 @@ async function enviarNotifAdmin() {
   } catch(e) { showToast('Error: '+e.message,'err'); }
 }
 
+
+function abrirRecuperarPassword() {
+  document.getElementById('recuperar-paso1').style.display='block';
+  document.getElementById('recuperar-paso2').style.display='none';
+  document.getElementById('recuperar-title').textContent='Recuperar contraseña';
+  document.getElementById('recuperar-email').value='';
+  document.getElementById('modal-recuperar').style.display='flex';
+}
+async function solicitarReset() {
+  const email=document.getElementById('recuperar-email').value.trim();
+  if(!email){showToast('Ingresá tu email','err');return;}
+  try{await api('POST','/auth/solicitar-reset',{email});showToast('Si el email existe recibirás el link en minutos');closeModal('modal-recuperar');}
+  catch(e){showToast('Error: '+e.message,'err');}
+}
+async function confirmarReset() {
+  const token=window._resetToken;
+  const nueva=document.getElementById('reset-pwd-nueva').value;
+  const confirmar=document.getElementById('reset-pwd-confirmar').value;
+  if(!nueva||!confirmar){showToast('Completá todos los campos','err');return;}
+  if(nueva!==confirmar){showToast('Las contraseñas no coinciden','err');return;}
+  if(nueva.length<6){showToast('Mínimo 6 caracteres','err');return;}
+  try{await api('POST','/auth/confirmar-reset',{token,password_nueva:nueva});showToast('Contraseña actualizada. Ya podés ingresar.');closeModal('modal-recuperar');window._resetToken=null;}
+  catch(e){showToast(e.message||'Error','err');}
+}
+(function checkResetToken(){
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('reset');
+  if(token){
+    window._resetToken=token;
+    window.history.replaceState({},'','/');
+    setTimeout(()=>{
+      document.getElementById('recuperar-paso1').style.display='none';
+      document.getElementById('recuperar-paso2').style.display='block';
+      document.getElementById('recuperar-title').textContent='Nueva contraseña';
+      document.getElementById('modal-recuperar').style.display='flex';
+    },500);
+  }
+})();
+
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
@@ -3662,24 +3700,22 @@ if (TOKEN) startApp();
  </div>
 </div>
 
-<!-- Modal cambio contraseña -->
-<div id="modal-password" class="modal" style="display:none">
+
+<div id="modal-recuperar" class="modal" style="display:none">
   <div class="modal-box" style="max-width:400px">
-    <div class="modal-hd"><h3>Cambiar contraseña</h3><button onclick="closeModal('modal-password')" class="modal-close">✕</button></div>
+    <div class="modal-hd"><h3 id="recuperar-title">Recuperar contraseña</h3><button onclick="closeModal('modal-recuperar')" class="modal-close">✕</button></div>
     <div style="padding:24px">
-      <div class="fld fld-full" style="margin-bottom:16px">
-        <label>Contraseña actual</label>
-        <input type="password" id="pwd-actual" class="input" placeholder="••••••••">
+      <div id="recuperar-paso1">
+        <p style="font-size:13px;color:var(--negro3);margin-bottom:20px">Ingresá tu email y te enviaremos un link para restablecer tu contraseña.</p>
+        <div class="fld fld-full" style="margin-bottom:20px"><label>Email</label><input type="email" id="recuperar-email" class="input" placeholder="tu@email.com"></div>
+        <button class="btn btn-dark" style="width:100%" onclick="solicitarReset()">Enviar link</button>
       </div>
-      <div class="fld fld-full" style="margin-bottom:16px">
-        <label>Nueva contraseña</label>
-        <input type="password" id="pwd-nueva" class="input" placeholder="••••••••">
+      <div id="recuperar-paso2" style="display:none">
+        <p style="font-size:13px;color:var(--negro3);margin-bottom:20px">Ingresá tu nueva contraseña.</p>
+        <div class="fld fld-full" style="margin-bottom:16px"><label>Nueva contraseña</label><input type="password" id="reset-pwd-nueva" class="input" placeholder="••••••••"></div>
+        <div class="fld fld-full" style="margin-bottom:20px"><label>Confirmar</label><input type="password" id="reset-pwd-confirmar" class="input" placeholder="••••••••"></div>
+        <button class="btn btn-dark" style="width:100%" onclick="confirmarReset()">Cambiar contraseña</button>
       </div>
-      <div class="fld fld-full" style="margin-bottom:24px">
-        <label>Confirmar nueva contraseña</label>
-        <input type="password" id="pwd-confirmar" class="input" placeholder="••••••••">
-      </div>
-      <button class="btn btn-dark" style="width:100%" onclick="cambiarPassword()">Cambiar contraseña</button>
     </div>
   </div>
 </div>
