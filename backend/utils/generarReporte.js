@@ -139,7 +139,7 @@ async function generarYSubirReporte(userId, usuario, sb = supabaseClient, extraP
 
     return { ok: true };
   } catch(e) {
-    console.error('generarYSubirReporte error:', e.message);
+    console.error('generarYSubirReporte ERROR COMPLETO:', e.message, e.stack);
     return { ok: false, error: e.message };
   }
 }
