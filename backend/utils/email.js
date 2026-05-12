@@ -8,8 +8,14 @@ async function enviarEmail({ to, subject, html }) {
     process.env.GMAIL_CLIENT_SECRET,
     'https://developers.google.com/oauthplayground'
   );
-  oauth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
-  const accessToken = await oauth2Client.getAccessToken();
+  const refreshToken = process.env.GMAIL_REFRESH_TOKEN;
+  console.log('GMAIL_REFRESH_TOKEN presente:', !!refreshToken, 'length:', refreshToken ? refreshToken.length : 0);
+  oauth2Client.setCredentials({ 
+    refresh_token: refreshToken,
+    token_type: 'Bearer'
+  });
+  const { token: accessToken } = await oauth2Client.getAccessToken();
+  console.log('Access token obtenido:', !!accessToken);
   const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
   const from = process.env.EMAIL_USER;
   const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
