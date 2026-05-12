@@ -311,6 +311,24 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="tn-link admin-only" onclick="nav('manual')" data-panel="manual" style="display:none">Manual</div>
   </div>
   <div class="tn-right">
+   <!-- INFO DIGSA dropdown -->
+   <div style="position:relative" id="digsa-menu-wrap">
+    <button onclick="toggleDigsaMenu()" style="font-size:11px;color:var(--negro3);padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:1px;border:1px solid var(--borde);background:var(--blanco);display:flex;align-items:center;gap:6px">
+     DIGSA <span style="font-size:9px;opacity:.6">▾</span>
+    </button>
+    <div id="digsa-dropdown" style="display:none;position:absolute;right:0;top:42px;background:var(--blanco);border:1px solid var(--borde);min-width:220px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.1)">
+     <a href="https://digsa.es" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">🌐</span> digsa.es
+     </a>
+     <a href="https://www.instagram.com/digsa.es?igsh=MWJwMzB1ejV0N3RscA%3D%3D&utm_source=qr" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">📷</span> Instagram
+     </a>
+     <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
+      <span style="font-size:17px">🎵</span> TikTok
+     </a>
+
+    </div>
+   </div>
    <div class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
     <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
     <div class="notif-badge" id="notif-badge"></div>
@@ -533,8 +551,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="aside-proxima" class="aside-link" onclick="adminTab('proxima')">📋 Próxima propiedad</div>
     <div id="aside-operacion" class="aside-link" onclick="adminTab('operacion')">📊 Nueva operación</div>
     <div id="aside-liquidaciones" class="aside-link" onclick="adminTab('liquidaciones');loadAdminLiquidaciones()">💰 Inv. finalizadas</div>
-    <div id="aside-kpis" class="aside-link" onclick="adminTab('kpis');loadKPIsAdmin()">📊 KPIs Dashboard</div>
-    <div id="aside-notificaciones" class="aside-link" onclick="adminTab('notificaciones');loadNotifAdmin()">🔔 Notificaciones</div>
+    <div id="aside-pendientes" class="aside-link" onclick="adminTab('pendientes');loadAsignarPendientes()">⏳ Asignar pendientes</div>
    </div>
    <!-- Content -->
    <div style="flex:1;min-width:0">
@@ -873,7 +890,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="card" style="padding:0">
      <table class="dtbl">
       <thead><tr><th>Fecha</th><th>Inversor</th><th>Propiedad</th><th>Aporte</th><th>Retorno total</th><th>Utilidad neta</th><th>Acciones</th></tr></thead>
-      <div id="borradores-wrap" style="display:none;margin-bottom:20px;background:#FFF3EC;border:2px solid var(--naranja);border-radius:6px;padding:16px"><strong style="color:var(--naranja)">⏳ Liquidaciones pendientes de publicar</strong><div id="borradores-body" style="margin-top:12px"></div></div>
       <tbody id="admin-liq-body"></tbody>
      </table>
     </div>
@@ -1073,25 +1089,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
 
-
-   <div class="atab-panel" id="atab-notificaciones">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-     <div><h3 style="font-size:20px;margin-bottom:4px">Notificaciones</h3>
-     <p style="font-size:12px;color:var(--negro3)">Enviá mensajes a inversores y revisá el historial</p></div>
-    </div>
-    <div class="card" style="margin-bottom:24px;padding:20px">
-     <h4 style="margin-bottom:16px">Nueva notificación</h4>
-     <div class="form-grid">
-      <div class="fld fld-full"><label>Destinatario</label><select id="notif-dest"><option value="todos">📢 Todos los inversores</option></select></div>
-      <div class="fld fld-full"><label>Título</label><input id="notif-titulo" class="input" placeholder="Ej: Actualización de inversión"></div>
-      <div class="fld fld-full"><label>Mensaje</label><textarea id="notif-mensaje" class="input" rows="3" placeholder="Escribí el mensaje..."></textarea></div>
-     </div>
-     <button class="btn btn-dark" style="margin-top:12px" onclick="enviarNotifAdmin()">✉ Enviar</button>
-    </div>
-    <div><h4 style="margin-bottom:12px">Historial</h4><div id="notif-historial"><p style="color:var(--negro3)">Cargando...</p></div></div>
-   </div>
-
-   <div class="atab-panel" id="atab-kpis"><div style="margin-bottom:20px"><h3 style="font-size:20px">KPIs Dashboard</h3><p style="font-size:12px;color:var(--negro3)">Edita los KPIs del dashboard de cada inversor</p></div><div id="kpis-list"></div></div>
    </div><!-- /content -->
    </div><!-- /sidebar layout -->
 
@@ -1437,7 +1434,7 @@ function adminTab(tab) {
   $('aside-'+tab)?.classList.add('active');
   if (tab==='docs') loadDocsAdmin();
   if (tab==='aportes') loadAdminAportes();
-  if (tab==='liquidaciones') setTimeout(loadAdminLiquidaciones, 100);
+  if (tab==='liquidaciones') loadAdminLiquidaciones();
   if (tab==='liquidar') loadLiquidarTab();
   if (tab==='operacion') initOperacion();
 }
@@ -1452,7 +1449,6 @@ async function startApp() {
   $('dash-date').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   if (ME.rol==='admin') {
     document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
-    const appFooter = document.getElementById('app-footer'); if (appFooter) appFooter.style.display = 'block';
     document.querySelectorAll('.inversor-only').forEach(e=>e.style.display='none');
     nav('dashboard');
     loadAdminDashboard();
@@ -2702,36 +2698,52 @@ document.addEventListener('click', e => {
 
 async function cargarDesdeUltimasLiquidaciones() {
   try {
-    showLoading('Cargando pendientes...');
-    const [pendientes, inversores] = await Promise.all([
-      api('GET', '/liquidaciones/pendientes'),
-      api('GET', '/inversores')
-    ]);
+    showLoading('Cargando liquidaciones…');
+    const liqs = await api('GET', '/liquidaciones');
     hideLoading();
-    if (!pendientes || !pendientes.length) { showToast('No hay fondos pendientes', 'err'); return; }
+
+    if (!liqs || !liqs.length) { showToast('No hay liquidaciones registradas', 'err'); return; }
+
+    // Para cada inversor: sumar todos sus total_retorno (reinversión total)
     const porInversor = {};
-    pendientes.forEach(p => {
-      const inv = inversores.find(i => i.id === p.usuario_id);
-      if (!inv) return;
-      const nombre = (inv.nombre + ' ' + inv.apellido).toUpperCase().trim();
+    liqs.forEach(l => {
+      if (!l.usuario_id || !l.usuarios) return;
+      const nombre = (l.usuarios.nombre + ' ' + l.usuarios.apellido).toUpperCase().trim();
       if (!porInversor[nombre]) porInversor[nombre] = { total: 0 };
-      porInversor[nombre].total += Number(p.monto_eur || 0);
+      porInversor[nombre].total += Number(l.total_retorno || 0);
     });
-    document.querySelectorAll('.op-inv-row').forEach(row => {
-      const nombreRow = (row.dataset.nombre||'').toUpperCase().trim();
-      const match = Object.keys(porInversor).find(k => k.includes(nombreRow) || nombreRow.includes(k));
-      if (match) {
-        const montoInput = row.querySelector('.op-monto');
-        if (montoInput) montoInput.value = porInversor[match].total.toFixed(2);
-        row.style.background = 'var(--naranja-light)';
+
+    // Calcular total general para obtener % proporcional de cada uno
+    const totalGeneral = Object.values(porInversor).reduce((s,v) => s + v.total, 0);
+
+    const inputs_pct = document.querySelectorAll('.op-pct');
+    const inputs_inv = document.querySelectorAll('.op-inv');
+    let cargados = 0;
+
+    inputs_pct.forEach((inp, i) => {
+      const inv_nombre = OP_INVERSORES[i].toUpperCase().trim();
+      const primerNombre = inv_nombre.split(' ')[0];
+      // Buscar coincidencia flexible
+      const match = Object.keys(porInversor).find(k =>
+        k.startsWith(primerNombre) || primerNombre.includes(k.split(' ')[0])
+      );
+      if (match && porInversor[match].total > 0) {
+        const pct = totalGeneral > 0 ? (porInversor[match].total / totalGeneral * 100) : 0;
+        inp.value = pct.toFixed(4);
+        if (inputs_inv[i]) inputs_inv[i].value = Math.round(porInversor[match].total);
+        cargados++;
       }
     });
-    showToast('Pendientes cargados');
+
     calcularOperacion();
-  } catch(e) { hideLoading(); showToast('Error: ' + e.message, 'err'); }
+    showToast(`✓ ${cargados} inversores cargados. % proporcional al retorno de cada uno.`);
+  } catch(e) {
+    hideLoading();
+    showToast('Error: ' + e.message, 'err');
+  }
 }
 
-
+// Ver operación de una propiedad
 async function verOperacion(propId) {
   const prop = PROPS_CACHE_ADMIN.find(p => p.id === propId);
   if (!prop) return;
@@ -3018,39 +3030,21 @@ async function loadAdminLiquidaciones() {
   try {
     const liqs = await api('GET', '/liquidaciones/todas').catch(() => api('GET', '/liquidaciones'));
     LIQ_CACHE_ADMIN = liqs || [];
-    const tbody = document.getElementById('admin-liq-body');
+    const tbody = $('admin-liq-body');
     if (!tbody) return;
-    const borradores = LIQ_CACHE_ADMIN.filter(l => !l.publicado);
-    const publicados = LIQ_CACHE_ADMIN.filter(l => l.publicado);
-    const porPiso = {};
-    borradores.forEach(l => {
-      const pid = l.propiedad_id;
-      if (!porPiso[pid]) porPiso[pid] = { nombre: l.propiedades ? l.propiedades.nombre : '?', liqs: [], total: 0 };
-      porPiso[pid].liqs.push(l);
-      porPiso[pid].total += Number(l.total_retorno||0);
-    });
-    const wrap = document.getElementById('borradores-wrap');
-    const body = document.getElementById('borradores-body');
-    if (wrap && body) {
-      if (Object.keys(porPiso).length > 0) {
-        wrap.style.display = 'block';
-        body.innerHTML = Object.entries(porPiso).map(([pid, data]) =>
-          '<div style="background:#fff;padding:12px;margin-bottom:10px;border:1px solid rgba(255,77,15,.2);border-radius:4px">' +
-          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">' +
-          '<div><strong>' + data.nombre + '</strong> <span style="font-size:11px;color:var(--negro3)">' + data.liqs.length + ' inversores · EUR ' + Math.round(data.total).toLocaleString("es-ES") + '</span></div>' +
-          '<button class="btn btn-dark btn-sm" data-pid="' + pid + '" onclick="publicarLiquidaciones(this.dataset.pid)">✓ Publicar</button></div>' +
-          '<table style="width:100%;font-size:12px"><tr style="color:var(--negro3)"><th style="text-align:left">Inversor</th><th style="text-align:right">Retorno</th><th style="text-align:right">PDF</th></tr>' +
-          data.liqs.map(l => '<tr><td>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</td><td style="text-align:right;color:var(--verde)">EUR ' + Number(l.total_retorno||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td style="text-align:right">' + (l.pdf_url ? '<a href="' + l.pdf_url + '" target="_blank" style="color:var(--naranja)">PDF</a>' : '—') + '</td></tr>').join('') +
-          '</table></div>'
-        ).join('');
-      } else {
-        wrap.style.display = 'none';
-      }
-    }
-    tbody.innerHTML = publicados.map(l => '<tr><td>' + fmt_date(l.fecha) + '</td><td><strong>' + (l.usuarios ? l.usuarios.nombre + ' ' + l.usuarios.apellido : '?') + '</strong></td><td>' + (l.propiedades ? l.propiedades.nombre : '?') + '</td><td class="num">EUR ' + Number(l.aporte_usuario||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td class="num pos">EUR ' + Number(l.total_retorno||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td class="num">EUR ' + Number(l.utilidad_neta||0).toLocaleString("es-ES",{minimumFractionDigits:2}) + '</td><td><button class="btn btn-outline btn-sm" data-id="' + l.id + '" onclick="editLiquidacion(this.dataset.id)">Editar</button></td></tr>').join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones publicadas</td></tr>';
+    tbody.innerHTML = LIQ_CACHE_ADMIN.map(l => `<tr>
+      <td>${fmt_date(l.fecha)}</td>
+      <td><strong>${l.usuarios?.nombre||''} ${l.usuarios?.apellido||''}</strong></td>
+      <td>${l.propiedades?.nombre||'—'}</td>
+      <td class="num">€${Number(l.aporte_usuario||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+      <td class="num pos">€${Number(l.total_retorno||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+      <td class="num">€${Number(l.utilidad_neta||0).toLocaleString('es-ES',{minimumFractionDigits:2})}</td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="editLiquidacion('${l.id}')">Editar</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--negro3)">Sin liquidaciones</td></tr>';
   } catch(e) { console.error(e); }
 }
-
 
 async function editLiquidacion(id) {
   const l = LIQ_CACHE_ADMIN.find(x => x.id === id);
@@ -3477,98 +3471,6 @@ function toggleTipoAporte() {
   if (montoLabel) montoLabel.textContent = tipo === 'retiro' ? 'Monto a retirar (USD)' : 'Monto (USD)';
 }
 
-
-async function loadNotifAdmin() {
-  const hist = document.getElementById('notif-historial');
-  if (!hist) return;
-  try {
-    const [notifs, inversores] = await Promise.all([api('GET','/admin/notificaciones'), api('GET','/inversores')]);
-    const sel = document.getElementById('notif-dest');
-    if (sel && inversores) sel.innerHTML = '<option value="todos">Todos los inversores</option>' + inversores.map(i => '<option value="'+i.id+'">'+i.nombre+' '+i.apellido+'</option>').join('');
-    if (!notifs || !notifs.length) { hist.innerHTML = '<p style="color:var(--negro3)">Sin notificaciones.</p>'; return; }
-    hist.innerHTML = notifs.map(n =>
-      '<div style="padding:12px;border-bottom:1px solid var(--gris2)">' +
-      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">' +
-      '<strong style="font-size:13px">' + (n.usuarios ? n.usuarios.nombre+' '+n.usuarios.apellido : '?') + '</strong>' +
-      '<span style="font-size:11px;color:var(--negro3)">' + new Date(n.created_at).toLocaleDateString('es-ES') + '</span>' +
-      (n.leida ? '<span style="font-size:10px;color:var(--verde)">leida</span>' : '<span style="font-size:10px;color:var(--naranja)">no leida</span>') + '</div>' +
-      '<div style="font-size:13px;font-weight:600">' + n.titulo + '</div>' +
-      '<div style="font-size:12px;color:var(--negro3)">' + n.mensaje + '</div></div>'
-    ).join('');
-  } catch(e) { if (hist) hist.innerHTML = '<p style="color:var(--naranja)">Error: '+e.message+'</p>'; }
-}
-
-async function enviarNotifAdmin() {
-  const dest = document.getElementById('notif-dest')?.value;
-  const titulo = document.getElementById('notif-titulo')?.value?.trim();
-  const mensaje = document.getElementById('notif-mensaje')?.value?.trim();
-  if (!titulo || !mensaje) { showToast('Completa titulo y mensaje','err'); return; }
-  try {
-    const r = await api('POST','/admin/notificaciones',{usuario_id:dest,titulo,mensaje});
-    showToast('Enviado a '+r.enviadas+' inversor(es)');
-    document.getElementById('notif-titulo').value='';
-    document.getElementById('notif-mensaje').value='';
-    loadNotifAdmin();
-  } catch(e) { showToast('Error: '+e.message,'err'); }
-}
-
-
-async function publicarLiquidaciones(propiedad_id) {
-  if (!confirm("Publicar liquidaciones a los inversores?")) return;
-  try {
-    const r = await api('POST', '/liquidaciones/publicar/' + propiedad_id);
-    showToast('Publicado a ' + r.publicadas + ' inversores');
-    loadAdminLiquidaciones();
-  } catch(e) { showToast('Error: ' + e.message, 'err'); }
-}
-
-
-async function loadKPIsAdmin() {
-  const list = document.getElementById('kpis-list');
-  if (!list) return;
-  list.innerHTML = '<p style="color:var(--negro3)">Cargando...</p>';
-  try {
-    const [inversores, docs] = await Promise.all([api('GET','/inversores'), api('GET','/documentos/todos')]);
-    const reportes = docs.filter(d => d.tipo === 'reporte');
-    let h = '';
-    for (const inv of inversores) {
-      const rep = reportes.filter(d => d.usuario_id === inv.id).sort((a,b) => new Date(b.fecha)-new Date(a.fecha))[0];
-      const meta = rep && rep.metadata ? JSON.parse(rep.metadata) : null;
-      const iv = meta ? meta.inversion_inicial : 0;
-      const va = meta ? meta.valor_actual : 0;
-      const re = meta ? (meta.rentabilidad_total*100).toFixed(2) : 0;
-      const ti = meta ? (meta.tir*100).toFixed(2) : 0;
-      const pe = meta ? meta.pendiente : 0;
-      h += '<div class="card" style="margin-bottom:16px;padding:20px">';
-      h += '<div style="display:flex;justify-content:space-between;margin-bottom:12px"><strong>' + inv.nombre + ' ' + inv.apellido + '</strong>';
-      h += '<button class="btn btn-sm btn-outline" data-uid="' + inv.id + '" data-did="' + (rep?rep.id:'') + '" onclick="saveKPIs(this.dataset.uid,this.dataset.did)">Guardar</button></div>';
-      h += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">';
-      h += '<div><label style="font-size:11px">Inv.inicial</label><input id="kpi-inv-' + inv.id + '" class="input" value="' + iv + '"></div>';
-      h += '<div><label style="font-size:11px">Valor actual</label><input id="kpi-val-' + inv.id + '" class="input" value="' + va + '"></div>';
-      h += '<div><label style="font-size:11px">Rentab%</label><input id="kpi-rent-' + inv.id + '" class="input" value="' + re + '"></div>';
-      h += '<div><label style="font-size:11px">TIR%</label><input id="kpi-tir-' + inv.id + '" class="input" value="' + ti + '"></div>';
-      h += '<div><label style="font-size:11px">Pendiente</label><input id="kpi-pend-' + inv.id + '" class="input" value="' + pe + '"></div>';
-      h += '</div></div>';
-    }
-    list.innerHTML = h;
-  } catch(e) { list.innerHTML = '<p style="color:var(--naranja)">Error: ' + e.message + '</p>'; }
-}
-
-async function saveKPIs(userId, docId) {
-  const inv = parseFloat(document.getElementById('kpi-inv-'+userId).value)||0;
-  const val = parseFloat(document.getElementById('kpi-val-'+userId).value)||0;
-  const rent = (parseFloat(document.getElementById('kpi-rent-'+userId).value)||0)/100;
-  const tir = (parseFloat(document.getElementById('kpi-tir-'+userId).value)||0)/100;
-  const pend = parseFloat(document.getElementById('kpi-pend-'+userId).value)||0;
-  const meta = JSON.stringify({inversion_inicial:inv,valor_actual:val,rentabilidad_total:rent,tir,pendiente:pend});
-  try {
-    if (docId) { await api('PATCH','/documentos/'+docId,{metadata:meta}); }
-    else { await api('POST','/documentos',{usuario_id:userId,nombre:'Reporte KPIs',tipo:'reporte',url:'',fecha:new Date().toISOString().split('T')[0],publicado:true,metadata:meta}); }
-    showToast('KPIs guardados');
-    loadKPIsAdmin();
-  } catch(e) { showToast('Error: '+e.message,'err'); }
-}
-
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
@@ -3619,21 +3521,5 @@ if (TOKEN) startApp();
   </div>
  </div>
 </div>
-
- <!-- Footer DIGSA -->
- <div id="app-footer" style="background:var(--negro);color:rgba(255,255,255,0.5);padding:24px 40px;font-size:12px;margin-top:40px">
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
-   <div>
-    <div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:8px">DIGSA España</div>
-    <div>Villanueva 27, Madrid</div>
-    <div style="margin-top:4px">La Pampa 1517 3C, Buenos Aires</div>
-   </div>
-   <div style="display:flex;gap:24px">
-    <a href="https://digsa.es" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none">🌐 digsa.es</a>
-    <a href="https://www.instagram.com/digsa.es" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none">📷 Instagram</a>
-    <a href="https://www.tiktok.com/@digsa.spain" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none">🎵 TikTok</a>
-   </div>
-  </div>
- </div>
 </body>
 </html>
