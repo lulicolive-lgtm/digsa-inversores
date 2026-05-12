@@ -552,6 +552,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div id="aside-proxima" class="aside-link" onclick="adminTab('proxima')">📋 Próxima propiedad</div>
     <div id="aside-operacion" class="aside-link" onclick="adminTab('operacion')">📊 Nueva operación</div>
     <div id="aside-liquidaciones" class="aside-link" onclick="adminTab('liquidaciones');loadAdminLiquidaciones()">💰 Inv. finalizadas</div>
+    <div id="aside-kpis" class="aside-link" onclick="adminTab('kpis');loadKPIsAdmin()">📊 KPIs Dashboard</div>
+    <div id="aside-notificaciones" class="aside-link" onclick="adminTab('notificaciones');loadNotifAdmin()">🔔 Notificaciones</div>
     <div id="aside-pendientes" class="aside-link" onclick="adminTab('pendientes');loadAsignarPendientes()">⏳ Asignar pendientes</div>
    </div>
    <!-- Content -->
@@ -588,6 +590,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     </div>
    </div>
    <div class="atab-panel" id="atab-aportes">
+    <div id="pendientes-section" style="display:none;margin-bottom:24px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><span>⏳</span><h3 style="font-size:18px">Pendientes de inversión</h3></div><div id="pendientes-lista"></div></div>
     <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Movimientos de capital</h3><p style="font-size:12px;color:var(--negro3)">Aportes y retiros de todos los inversores · Filtrá por fecha, piso o inversor</p></div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:18px">
      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -1091,6 +1094,18 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    </div>
 
    </div><!-- /content -->
+   <div class="atab-panel" id="atab-kpis"><div style="margin-bottom:20px"><h3 style="font-size:20px">KPIs Dashboard</h3><p style="font-size:12px;color:var(--negro3)">Editá los KPIs del dashboard de cada inversor</p></div><div id="kpis-list"></div></div>
+   <div class="atab-panel" id="atab-notificaciones">
+    <div style="margin-bottom:20px"><h3 style="font-size:20px;margin-bottom:4px">Notificaciones</h3><p style="font-size:12px;color:var(--negro3)">Enviá mensajes a inversores y revisá el historial</p></div>
+    <div class="card" style="margin-bottom:24px;padding:20px"><h4 style="margin-bottom:16px">Nueva notificación</h4>
+    <div class="form-grid">
+      <div class="fld fld-full"><label>Destinatario</label><select id="notif-dest"><option value="todos">Todos los inversores</option></select></div>
+      <div class="fld fld-full"><label>Título</label><input id="notif-titulo" class="input" placeholder="Ej: Actualización de inversión"></div>
+      <div class="fld fld-full"><label>Mensaje</label><textarea id="notif-mensaje" class="input" rows="3" placeholder="Escribí el mensaje..."></textarea></div>
+    </div>
+    <button class="btn btn-dark" style="margin-top:12px" onclick="enviarNotifAdmin()">✉ Enviar</button></div>
+    <div><h4 style="margin-bottom:12px">Historial</h4><div id="notif-historial"><p style="color:var(--negro3)">Cargando...</p></div></div>
+   </div>
    </div><!-- /sidebar layout -->
 
   </div><!-- /panel-admin -->
@@ -3513,6 +3528,87 @@ async function resetPasswordAdmin(uid, nombre) {
     await api('POST', '/auth/admin/reset-password', { usuario_id: uid, password_nueva: nueva });
     showToast('Contraseña de ' + nombre + ' actualizada. Se envió email de confirmación.');
   } catch(e) { showToast(e.message || 'Error', 'err'); }
+}
+
+
+async function loadKPIsAdmin() {
+  const list = document.getElementById('kpis-list');
+  if (!list) return;
+  list.innerHTML = '<p style="color:var(--negro3)">Cargando...</p>';
+  try {
+    const [inversores, docs] = await Promise.all([api('GET','/inversores'), api('GET','/documentos/todos')]);
+    const reportes = docs.filter(d => d.tipo === 'reporte');
+    let h = '';
+    for (const inv of inversores) {
+      const rep = reportes.filter(d => d.usuario_id === inv.id).sort((a,b) => new Date(b.fecha)-new Date(a.fecha))[0];
+      const meta = rep && rep.metadata ? JSON.parse(rep.metadata) : null;
+      const iv = meta ? meta.inversion_inicial : 0;
+      const va = meta ? meta.valor_actual : 0;
+      const re = meta ? (meta.rentabilidad_total*100).toFixed(2) : 0;
+      const ti = meta ? (meta.tir*100).toFixed(2) : 0;
+      const pe = meta ? meta.pendiente : 0;
+      h += '<div class="card" style="margin-bottom:16px;padding:20px">';
+      h += '<div style="display:flex;justify-content:space-between;margin-bottom:12px"><strong>' + inv.nombre + ' ' + inv.apellido + '</strong>';
+      h += '<button class="btn btn-sm btn-outline" data-uid="' + inv.id + '" data-did="' + (rep?rep.id:'') + '" onclick="saveKPIs(this.dataset.uid,this.dataset.did)">Guardar</button></div>';
+      h += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">';
+      h += '<div><label style="font-size:11px">Inv.inicial</label><input id="kpi-inv-' + inv.id + '" class="input" value="' + iv + '"></div>';
+      h += '<div><label style="font-size:11px">Valor actual</label><input id="kpi-val-' + inv.id + '" class="input" value="' + va + '"></div>';
+      h += '<div><label style="font-size:11px">Rentab%</label><input id="kpi-rent-' + inv.id + '" class="input" value="' + re + '"></div>';
+      h += '<div><label style="font-size:11px">TIR%</label><input id="kpi-tir-' + inv.id + '" class="input" value="' + ti + '"></div>';
+      h += '<div><label style="font-size:11px">Pendiente</label><input id="kpi-pend-' + inv.id + '" class="input" value="' + pe + '"></div>';
+      h += '</div></div>';
+    }
+    list.innerHTML = h;
+  } catch(e) { list.innerHTML = '<p style="color:var(--naranja)">Error: ' + e.message + '</p>'; }
+}
+
+async function saveKPIs(userId, docId) {
+  const inv = parseFloat(document.getElementById('kpi-inv-'+userId).value)||0;
+  const val = parseFloat(document.getElementById('kpi-val-'+userId).value)||0;
+  const rent = (parseFloat(document.getElementById('kpi-rent-'+userId).value)||0)/100;
+  const tir = (parseFloat(document.getElementById('kpi-tir-'+userId).value)||0)/100;
+  const pend = parseFloat(document.getElementById('kpi-pend-'+userId).value)||0;
+  const meta = JSON.stringify({inversion_inicial:inv,valor_actual:val,rentabilidad_total:rent,tir,pendiente:pend});
+  try {
+    if (docId) { await api('PATCH','/documentos/'+docId,{metadata:meta}); }
+    else { await api('POST','/documentos',{usuario_id:userId,nombre:'Reporte KPIs',tipo:'reporte',url:'',fecha:new Date().toISOString().split('T')[0],publicado:true,metadata:meta}); }
+    showToast('KPIs guardados');
+    loadKPIsAdmin();
+  } catch(e) { showToast('Error: '+e.message,'err'); }
+}
+
+async function loadNotifAdmin() {
+  const hist = document.getElementById('notif-historial');
+  if (!hist) return;
+  try {
+    const [notifs, inversores] = await Promise.all([api('GET','/admin/notificaciones'), api('GET','/inversores')]);
+    const sel = document.getElementById('notif-dest');
+    if (sel && inversores) sel.innerHTML = '<option value="todos">Todos los inversores</option>' + inversores.map(i => '<option value="'+i.id+'">'+i.nombre+' '+i.apellido+'</option>').join('');
+    if (!notifs || !notifs.length) { hist.innerHTML = '<p style="color:var(--negro3)">Sin notificaciones.</p>'; return; }
+    hist.innerHTML = notifs.map(n =>
+      '<div style="padding:12px;border-bottom:1px solid var(--gris2)">' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">' +
+      '<strong style="font-size:13px">' + (n.usuarios ? n.usuarios.nombre+' '+n.usuarios.apellido : '?') + '</strong>' +
+      '<span style="font-size:11px;color:var(--negro3)">' + new Date(n.created_at).toLocaleDateString('es-ES') + '</span>' +
+      (n.leida ? '<span style="font-size:10px;color:var(--verde)">leída</span>' : '<span style="font-size:10px;color:var(--naranja)">no leída</span>') + '</div>' +
+      '<div style="font-size:13px;font-weight:600">' + n.titulo + '</div>' +
+      '<div style="font-size:12px;color:var(--negro3)">' + n.mensaje + '</div></div>'
+    ).join('');
+  } catch(e) { if (hist) hist.innerHTML = '<p style="color:var(--naranja)">Error: '+e.message+'</p>'; }
+}
+
+async function enviarNotifAdmin() {
+  const dest = document.getElementById('notif-dest')?.value;
+  const titulo = document.getElementById('notif-titulo')?.value?.trim();
+  const mensaje = document.getElementById('notif-mensaje')?.value?.trim();
+  if (!titulo || !mensaje) { showToast('Completá título y mensaje','err'); return; }
+  try {
+    const r = await api('POST','/admin/notificaciones',{usuario_id:dest,titulo,mensaje});
+    showToast('Enviado a '+r.enviadas+' inversor(es)');
+    document.getElementById('notif-titulo').value='';
+    document.getElementById('notif-mensaje').value='';
+    loadNotifAdmin();
+  } catch(e) { showToast('Error: '+e.message,'err'); }
 }
 
 function toggleDigsaMenu() {
