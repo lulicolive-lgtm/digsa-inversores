@@ -3627,7 +3627,13 @@ function abrirRecuperarPassword() {
 async function solicitarReset() {
   const email=document.getElementById('recuperar-email').value.trim();
   if(!email){showToast('Ingresá tu email','err');return;}
-  try{await api('POST','/auth/solicitar-reset',{email});showToast('Si el email existe recibirás el link en minutos');document.getElementById('modal-recuperar').style.display='none';}
+  try{
+    const r = await fetch('/api/auth/solicitar-reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    const d = await r.json();
+    if(d.error) throw new Error(d.error);
+    showToast('Si el email existe recibirás el link en minutos');
+    document.getElementById('modal-recuperar').style.display='none';
+  }
   catch(e){showToast('Error: '+e.message,'err');}
 }
 async function confirmarReset() {
