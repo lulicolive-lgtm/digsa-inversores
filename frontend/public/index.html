@@ -1704,7 +1704,7 @@ async function renderInversoresConPendiente(inversores) {
       <td style="color:var(--negro3)">${inv.email}</td>
       <td colspan="3" style="color:var(--negro3)">—</td>
       <td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td>
-      <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
+      <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button> <button class="btn btn-outline btn-sm" data-uid="${inv.id}" data-nombre="${inv.nombre} ${inv.apellido}" onclick="resetPasswordAdmin(this.dataset.uid, this.dataset.nombre)">🔑</button></td>
     </tr>`).join('');
   }
 }
@@ -3489,6 +3489,17 @@ async function cambiarPassword() {
     showToast('Contraseña actualizada. Te enviamos un email de confirmación.');
     closeModal('modal-password');
   } catch(e) { showToast(e.message || 'Error al cambiar contraseña', 'err'); }
+}
+
+
+async function resetPasswordAdmin(uid, nombre) {
+  const nueva = prompt('Nueva contraseña para ' + nombre + ' (mínimo 6 caracteres):');
+  if (!nueva) return;
+  if (nueva.length < 6) { showToast('Mínimo 6 caracteres', 'err'); return; }
+  try {
+    await api('POST', '/auth/admin/reset-password', { usuario_id: uid, password_nueva: nueva });
+    showToast('Contraseña de ' + nombre + ' actualizada. Se envió email de confirmación.');
+  } catch(e) { showToast(e.message || 'Error', 'err'); }
 }
 
 function toggleDigsaMenu() {
