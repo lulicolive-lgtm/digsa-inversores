@@ -1,14 +1,23 @@
-const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    type: 'OAuth2',
+    user: process.env.EMAIL_USER,
+    clientId: process.env.GMAIL_CLIENT_ID,
+    clientSecret: process.env.GMAIL_CLIENT_SECRET,
+    refreshToken: process.env.GMAIL_REFRESH_TOKEN
+  }
+});
 
 async function enviarEmail({ to, subject, html }) {
-  const { error } = await resend.emails.send({
-    from: 'DIGSA España <onboarding@resend.dev>',
+  await transporter.sendMail({
+    from: '"DIGSA España" <' + process.env.EMAIL_USER + '>',
     to,
     subject,
     html
   });
-  if (error) throw new Error(error.message);
 }
 
 async function enviarCambioPassword(email, nombre, nuevaPassword) {
