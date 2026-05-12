@@ -3535,6 +3535,53 @@ async function publicarLiquidaciones(propiedad_id) {
   } catch(e) { showToast('Error: ' + e.message, 'err'); }
 }
 
+
+async function loadKPIsAdmin() {
+  const list = document.getElementById('kpis-list');
+  if (!list) return;
+  list.innerHTML = '<p style="color:var(--negro3)">Cargando...</p>';
+  try {
+    const [inversores, docs] = await Promise.all([api('GET','/inversores'), api('GET','/documentos/todos')]);
+    const reportes = docs.filter(d => d.tipo === 'reporte');
+    let h = '';
+    for (const inv of inversores) {
+      const rep = reportes.filter(d => d.usuario_id === inv.id).sort((a,b) => new Date(b.fecha)-new Date(a.fecha))[0];
+      const meta = rep && rep.metadata ? JSON.parse(rep.metadata) : null;
+      const iv = meta ? meta.inversion_inicial : 0;
+      const va = meta ? meta.valor_actual : 0;
+      const re = meta ? (meta.rentabilidad_total*100).toFixed(2) : 0;
+      const ti = meta ? (meta.tir*100).toFixed(2) : 0;
+      const pe = meta ? meta.pendiente : 0;
+      h += '<div class="card" style="margin-bottom:16px;padding:20px">';
+      h += '<div style="display:flex;justify-content:space-between;margin-bottom:12px"><strong>' + inv.nombre + ' ' + inv.apellido + '</strong>';
+      h += '<button class="btn btn-sm btn-outline" data-uid="' + inv.id + '" data-did="' + (rep?rep.id:'') + '" onclick="saveKPIs(this.dataset.uid,this.dataset.did)">Guardar</button></div>';
+      h += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">';
+      h += '<div><label style="font-size:11px">Inv.inicial</label><input id="kpi-inv-' + inv.id + '" class="input" value="' + iv + '"></div>';
+      h += '<div><label style="font-size:11px">Valor actual</label><input id="kpi-val-' + inv.id + '" class="input" value="' + va + '"></div>';
+      h += '<div><label style="font-size:11px">Rentab%</label><input id="kpi-rent-' + inv.id + '" class="input" value="' + re + '"></div>';
+      h += '<div><label style="font-size:11px">TIR%</label><input id="kpi-tir-' + inv.id + '" class="input" value="' + ti + '"></div>';
+      h += '<div><label style="font-size:11px">Pendiente</label><input id="kpi-pend-' + inv.id + '" class="input" value="' + pe + '"></div>';
+      h += '</div></div>';
+    }
+    list.innerHTML = h;
+  } catch(e) { list.innerHTML = '<p style="color:var(--naranja)">Error: ' + e.message + '</p>'; }
+}
+
+async function saveKPIs(userId, docId) {
+  const inv = parseFloat(document.getElementById('kpi-inv-'+userId).value)||0;
+  const val = parseFloat(document.getElementById('kpi-val-'+userId).value)||0;
+  const rent = (parseFloat(document.getElementById('kpi-rent-'+userId).value)||0)/100;
+  const tir = (parseFloat(document.getElementById('kpi-tir-'+userId).value)||0)/100;
+  const pend = parseFloat(document.getElementById('kpi-pend-'+userId).value)||0;
+  const meta = JSON.stringify({inversion_inicial:inv,valor_actual:val,rentabilidad_total:rent,tir,pendiente:pend});
+  try {
+    if (docId) { await api('PATCH','/documentos/'+docId,{metadata:meta}); }
+    else { await api('POST','/documentos',{usuario_id:userId,nombre:'Reporte KPIs',tipo:'reporte',url:'',fecha:new Date().toISOString().split('T')[0],publicado:true,metadata:meta}); }
+    showToast('KPIs guardados');
+    loadKPIsAdmin();
+  } catch(e) { showToast('Error: '+e.message,'err'); }
+}
+
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
