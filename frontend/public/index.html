@@ -3627,7 +3627,7 @@ function abrirRecuperarPassword() {
 async function solicitarReset() {
   const email=document.getElementById('recuperar-email').value.trim();
   if(!email){showToast('Ingresá tu email','err');return;}
-  try{await api('POST','/auth/solicitar-reset',{email});showToast('Si el email existe recibirás el link en minutos');closeModal('modal-recuperar');}
+  try{await api('POST','/auth/solicitar-reset',{email});showToast('Si el email existe recibirás el link en minutos');document.getElementById('modal-recuperar').style.display='none';}
   catch(e){showToast('Error: '+e.message,'err');}
 }
 async function confirmarReset() {
@@ -3637,7 +3637,7 @@ async function confirmarReset() {
   if(!nueva||!confirmar){showToast('Completá todos los campos','err');return;}
   if(nueva!==confirmar){showToast('Las contraseñas no coinciden','err');return;}
   if(nueva.length<6){showToast('Mínimo 6 caracteres','err');return;}
-  try{await api('POST','/auth/confirmar-reset',{token,password_nueva:nueva});showToast('Contraseña actualizada. Ya podés ingresar.');closeModal('modal-recuperar');window._resetToken=null;}
+  try{await api('POST','/auth/confirmar-reset',{token,password_nueva:nueva});showToast('Contraseña actualizada. Ya podés ingresar.');document.getElementById('modal-recuperar').style.display='none';window._resetToken=null;}
   catch(e){showToast(e.message||'Error','err');}
 }
 (function checkResetToken(){
@@ -3783,9 +3783,9 @@ if (TOKEN) startApp();
 </div>
 
 
-<div id="modal-recuperar" class="modal" style="display:none">
+<div id="modal-recuperar" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
   <div class="modal-box" style="max-width:400px">
-    <div class="modal-hd"><h3 id="recuperar-title">Recuperar contraseña</h3><button onclick="closeModal('modal-recuperar')" class="modal-close">✕</button></div>
+    <div class="modal-hd"><h3 id="recuperar-title">Recuperar contraseña</h3><button onclick="document.getElementById('modal-recuperar').style.display='none'" class="modal-close">✕</button></div>
     <div style="padding:24px">
       <div id="recuperar-paso1">
         <p style="font-size:13px;color:var(--negro3);margin-bottom:20px">Ingresá tu email y te enviaremos un link para restablecer tu contraseña.</p>
