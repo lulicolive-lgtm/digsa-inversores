@@ -1,22 +1,14 @@
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function enviarEmail({ to, subject, html }) {
-  await transporter.sendMail({
-    from: '"DIGSA España" <' + process.env.EMAIL_USER + '>',
+  const { error } = await resend.emails.send({
+    from: 'DIGSA España <onboarding@resend.dev>',
     to,
     subject,
     html
   });
+  if (error) throw new Error(error.message);
 }
 
 async function enviarCambioPassword(email, nombre, nuevaPassword) {
@@ -39,7 +31,7 @@ async function enviarResetPassword(email, nombre, link) {
   await enviarEmail({
     to: email,
     subject: 'Recuperar contraseña — DIGSA España',
-    html: '<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto"><div style="background:#1a1a1a;padding:24px;text-align:center"><h2 style="color:#fff;margin:0">DIGSA España</h2></div><div style="padding:32px;background:#f9f9f9"><p>Hola <strong>' + nombre + '</strong>,</p><p>Para restablecer tu contraseña hacé click en el siguiente link:</p><p style="text-align:center;margin:32px 0"><a href="' + link + '" style="background:#FF4D0F;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:700">Restablecer contraseña</a></p><p style="color:#888;font-size:13px">Expira en 1 hora. Si no lo solicitaste, ignorá este email.</p></div><div style="padding:16px;text-align:center;color:#aaa;font-size:12px">Villanueva 27, Madrid · La Pampa 1517 3C, Buenos Aires</div></div>'
+    html: '<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto"><div style="background:#1a1a1a;padding:24px;text-align:center"><h2 style="color:#fff;margin:0">DIGSA España</h2></div><div style="padding:32px;background:#f9f9f9"><p>Hola <strong>' + nombre + '</strong>,</p><p>Para restablecer tu contraseña hacé click aquí:</p><p style="text-align:center;margin:32px 0"><a href="' + link + '" style="background:#FF4D0F;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:700">Restablecer contraseña</a></p><p style="color:#888;font-size:13px">Expira en 1 hora.</p></div><div style="padding:16px;text-align:center;color:#aaa;font-size:12px">Villanueva 27, Madrid · La Pampa 1517 3C, Buenos Aires</div></div>'
   });
 }
 
