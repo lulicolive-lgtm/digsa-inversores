@@ -72,7 +72,7 @@ router.get('/', authMiddleware, async (req, res) => {
   const { data: repData } = await supabase.from('documentos').select('metadata').eq('usuario_id', uid).eq('tipo', 'reporte').eq('publicado', true).order('fecha', { ascending: false }).limit(1);
   let resumenFinal = { inversion_inicial, valor_actual, rentabilidad_total, tir, retiros, pendiente, propiedades_activas: pisos_activos.length, total_retornado };
   if (repData && repData[0] && repData[0].metadata) {
-    try { const meta = JSON.parse(repData[0].metadata); resumenFinal = Object.assign({}, resumenFinal, meta, { retiros, propiedades_activas: pisos_activos.length }); } catch(e) {}
+    try { const meta = JSON.parse(repData[0].metadata); resumenFinal = Object.assign({}, resumenFinal, meta, { retiros, propiedades_activas: pisos_activos.length, pendiente }); } catch(e) {}
   }
   res.json({ resumen: resumenFinal, participaciones, aportes, liquidaciones, notificaciones: notifRes.data || [] });
 });
