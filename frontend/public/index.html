@@ -1452,6 +1452,7 @@ async function startApp() {
   $('dash-date').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   if (ME.rol==='admin') {
     document.querySelectorAll('.admin-only').forEach(e=>e.style.display='');
+    const appFooter = document.getElementById('app-footer'); if (appFooter) appFooter.style.display = 'block';
     document.querySelectorAll('.inversor-only').forEach(e=>e.style.display='none');
     nav('dashboard');
     loadAdminDashboard();
