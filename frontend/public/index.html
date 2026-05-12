@@ -2024,8 +2024,11 @@ async function cargarAsignacion() {
       RESUMEN_INV_CACHE = await api('GET', '/admin/resumen-inversores');
     }
     const { aportes: todosAportes, liquidaciones: todasLiqs, participaciones: todasParts } = RESUMEN_INV_CACHE;
-    const inversores = await api('GET', '/inversores');
-    const props = await api('GET', '/propiedades');
+    const [inversores, props, pendientesInv] = await Promise.all([
+      api('GET', '/inversores'),
+      api('GET', '/propiedades'),
+      api('GET', '/liquidaciones/pendientes').catch(() => [])
+    ]);
 
     function netoEstimado(aporte, compra, venta) {
       if (!compra || !venta) return aporte;
@@ -2052,9 +2055,8 @@ async function cargarAsignacion() {
       const total_liq = liq_inv.reduce((s,l)=>s+Number(l.total_retorno||0),0);
       const retiros   = ap_inv.filter(a=>a.tipo==='retiro').reduce((s,a)=>s+Number(a.monto_normalizado||a.monto_eur||0),0);
 
-      // Capital total = neto en cartera + pendiente
-      const capital_total = en_cartera_neto + Math.max(0, total_liq + total_aportado - retiros - en_cartera_aporte);
-      const pendiente     = Math.max(0, total_liq + total_aportado - retiros - en_cartera_aporte);
+      const pendiente = (pendientesInv||[]).filter(p => p.usuario_id === inv.id).reduce((s,p) => s + Number(p.monto_eur||0), 0);
+      const capital_total = en_cartera_neto + pendiente;
 
       if (capital_total > 0) {
         totalDisponible += capital_total;
