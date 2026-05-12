@@ -3767,7 +3767,7 @@ async function cargarNotificacionesUsuario() {
       return;
     }
     lista.innerHTML = notifs.map(n =>
-      '<div style="padding:12px;border-bottom:1px solid var(--gris2);cursor:pointer" onclick="marcarLeida('' + n.id + '',this)">' +
+      '<div style="padding:12px;border-bottom:1px solid var(--gris2);cursor:pointer" onclick="marcarLeida(\' + n.id + \',this)">' +
       '<div style="display:flex;justify-content:space-between;margin-bottom:4px">' +
       '<strong style="font-size:12px' + (n.leida ? '' : ';color:var(--naranja)') + '">' + n.titulo + '</strong>' +
       '<span style="font-size:10px;color:var(--negro3)">' + new Date(n.created_at).toLocaleDateString('es-ES') + '</span></div>' +
