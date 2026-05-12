@@ -311,24 +311,6 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <div class="tn-link admin-only" onclick="nav('manual')" data-panel="manual" style="display:none">Manual</div>
   </div>
   <div class="tn-right">
-   <!-- INFO DIGSA dropdown -->
-   <div style="position:relative" id="digsa-menu-wrap">
-    <button onclick="toggleDigsaMenu()" style="font-size:11px;color:var(--negro3);padding:7px 14px;cursor:pointer;font-weight:600;letter-spacing:1px;border:1px solid var(--borde);background:var(--blanco);display:flex;align-items:center;gap:6px">
-     DIGSA <span style="font-size:9px;opacity:.6">▾</span>
-    </button>
-    <div id="digsa-dropdown" style="display:none;position:absolute;right:0;top:42px;background:var(--blanco);border:1px solid var(--borde);min-width:220px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.1)">
-     <a href="https://digsa.es" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
-      <span style="font-size:17px">🌐</span> digsa.es
-     </a>
-     <a href="https://www.instagram.com/digsa.es?igsh=MWJwMzB1ejV0N3RscA%3D%3D&utm_source=qr" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
-      <span style="font-size:17px">📷</span> Instagram
-     </a>
-     <a href="https://www.tiktok.com/@digsa.spain?_r=1&_t=ZS-95buLm1Njuh" target="_blank" style="display:flex;align-items:center;gap:12px;padding:13px 18px;font-size:13px;color:var(--negro2);font-weight:500;border-bottom:1px solid var(--gris2);text-decoration:none" onmouseover="this.style.background='var(--gris)'" onmouseout="this.style.background=''">
-      <span style="font-size:17px">🎵</span> TikTok
-     </a>
-
-    </div>
-   </div>
    <div class="notif-btn" onclick="toggleNotifs()" id="notif-btn">
     <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
     <div class="notif-badge" id="notif-badge"></div>
@@ -3652,5 +3634,21 @@ if (TOKEN) startApp();
   </div>
  </div>
 </div>
+
+ <!-- Footer DIGSA -->
+ <div id="app-footer" style="display:none;background:var(--negro);color:rgba(255,255,255,0.5);padding:24px 40px;font-size:12px;margin-top:40px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+   <div>
+    <div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:8px">DIGSA España</div>
+    <div>Calle Alcalá 146, 28028 Madrid</div>
+    <div style="margin-top:4px"><a href="mailto:info@digsa.es" style="color:rgba(255,255,255,0.6);text-decoration:none">info@digsa.es</a></div>
+   </div>
+   <div style="display:flex;gap:24px">
+    <a href="https://digsa.es" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none">🌐 digsa.es</a>
+    <a href="https://www.instagram.com/digsa.es" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none">📷 Instagram</a>
+    <a href="https://www.tiktok.com/@digsa.spain" target="_blank" style="color:rgba(255,255,255,0.6);text-decoration:none">🎵 TikTok</a>
+   </div>
+  </div>
+ </div>
 </body>
 </html>
