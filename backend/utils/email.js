@@ -1,23 +1,30 @@
-const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    type: 'OAuth2',
-    user: process.env.EMAIL_USER,
-    clientId: process.env.GMAIL_CLIENT_ID,
-    clientSecret: process.env.GMAIL_CLIENT_SECRET,
-    refreshToken: process.env.GMAIL_REFRESH_TOKEN
-  }
-});
+const OAuth2 = google.auth.OAuth2;
 
 async function enviarEmail({ to, subject, html }) {
-  await transporter.sendMail({
-    from: '"DIGSA España" <' + process.env.EMAIL_USER + '>',
-    to,
-    subject,
+  const oauth2Client = new OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    'https://developers.google.com/oauthplayground'
+  );
+  oauth2Client.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+  const accessToken = await oauth2Client.getAccessToken();
+  const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+  const from = process.env.EMAIL_USER;
+  const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+  const messageParts = [
+    `From: "DIGSA España" <${from}>`,
+    `To: ${to}`,
+    `Content-Type: text/html; charset=utf-8`,
+    `MIME-Version: 1.0`,
+    `Subject: ${utf8Subject}`,
+    '',
     html
-  });
+  ];
+  const message = messageParts.join('\n');
+  const encodedMessage = Buffer.from(message).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  await gmail.users.messages.send({ userId: 'me', requestBody: { raw: encodedMessage } });
 }
 
 async function enviarCambioPassword(email, nombre, nuevaPassword) {
