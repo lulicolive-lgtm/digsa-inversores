@@ -3782,8 +3782,17 @@ async function cargarNotificacionesUsuario() {
 
 async function marcarLeida(id, el) {
   try {
-    await api('PATCH', '/notificaciones/' + id, { leida: true });
+    await api('PATCH', '/admin/notificaciones/' + id, { leida: true });
     el.style.opacity = '0.6';
+    el.style.borderLeft = '3px solid var(--gris2)';
+    // Actualizar badge
+    const badge = document.getElementById('notif-badge');
+    if (badge) {
+      const actual = parseInt(badge.textContent) || 0;
+      const nuevo = Math.max(0, actual - 1);
+      badge.textContent = nuevo;
+      badge.style.display = nuevo > 0 ? 'flex' : 'none';
+    }
   } catch(e) {}
 }
 
