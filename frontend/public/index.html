@@ -1453,7 +1453,7 @@ function adminTab(tab) {
   $('aside-'+tab)?.classList.add('active');
   if (tab==='docs') loadDocsAdmin();
   if (tab==='aportes') loadAdminAportes();
-  if (tab==='liquidaciones') loadAdminLiquidaciones();
+  if (tab==='liquidaciones') setTimeout(loadAdminLiquidaciones, 100);
   if (tab==='liquidar') loadLiquidarTab();
   if (tab==='operacion') initOperacion();
 }
