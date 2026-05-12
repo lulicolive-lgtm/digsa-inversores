@@ -107,10 +107,20 @@ router.post('/notificaciones', authMiddleware, adminOnly, async (req, res) => {
       const { data: invs } = await supabase.from('usuarios').select('id').neq('rol','admin');
       for (const inv of (invs||[])) {
         await supabase.from('notificaciones').insert([{ usuario_id: inv.id, titulo, mensaje, tipo }]);
+      try {
+        const { enviarNotificacionEmail } = require('../utils/email');
+        const { data: u } = await supabase.from('usuarios').select('email,nombre,apellido').eq('id', inv.id).single();
+        if (u) await enviarNotificacionEmail(u.email, u.nombre + ' ' + u.apellido, titulo, mensaje);
+      } catch(e) { console.error('Error email notif:', e.message); }
       }
       res.json({ ok: true, enviadas: invs?.length || 0 });
     } else {
       await supabase.from('notificaciones').insert([{ usuario_id, titulo, mensaje, tipo }]);
+      try {
+        const { enviarNotificacionEmail } = require('../utils/email');
+        const { data: u } = await supabase.from('usuarios').select('email,nombre,apellido').eq('id', usuario_id).single();
+        if (u) await enviarNotificacionEmail(u.email, u.nombre + ' ' + u.apellido, titulo, mensaje);
+      } catch(e) { console.error('Error email notif:', e.message); }
       res.json({ ok: true, enviadas: 1 });
     }
   } catch(e) { res.status(500).json({ error: e.message }); }

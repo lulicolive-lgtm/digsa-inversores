@@ -334,7 +334,8 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
     <div class="notif-badge" id="notif-badge"></div>
    </div>
    <div class="user-chip"><div class="user-ava" id="user-ava">--</div><div class="user-info" id="user-info">Cargando…</div></div>
-   <div class="logout-link" onclick="doLogout()">Salir</div>
+   <div class="logout-link" onclick="abrirCambioPassword()" style="margin-right:8px">🔑 Contraseña</div>
+  <div class="logout-link" onclick="doLogout()">Salir</div>
   </div>
  </nav>
 
@@ -1693,7 +1694,7 @@ async function renderInversoresConPendiente(inversores) {
         <td class="num" style="color:${pendiente>0?'var(--naranja)':'var(--negro3)'}">${pendiente>0?e(pendiente):'—'}</td>
         <td class="num">${e(total_liq)}</td>
         <td>${inv.activo?'<span class="badge badge-green">Activo</span>':'<span class="badge badge-red">Inactivo</span>'}</td>
-        <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')">Editar</button></td>
+        <td><button class="btn btn-outline btn-sm" onclick="editInversor('${inv.id}')" style="margin-right:4px">Editar</button></td>
       </tr>`;
     }).join('');
     if($('ast-pendiente')) $('ast-pendiente').textContent = pendiente_total>0 ? '€'+Math.round(pendiente_total).toLocaleString('es-ES') : '€0';
@@ -3468,6 +3469,28 @@ function toggleTipoAporte() {
   if (montoLabel) montoLabel.textContent = tipo === 'retiro' ? 'Monto a retirar (USD)' : 'Monto (USD)';
 }
 
+
+function abrirCambioPassword() {
+  document.getElementById('pwd-actual').value = '';
+  document.getElementById('pwd-nueva').value = '';
+  document.getElementById('pwd-confirmar').value = '';
+  document.getElementById('modal-password').style.display = 'flex';
+}
+
+async function cambiarPassword() {
+  const actual = document.getElementById('pwd-actual').value;
+  const nueva = document.getElementById('pwd-nueva').value;
+  const confirmar = document.getElementById('pwd-confirmar').value;
+  if (!actual || !nueva || !confirmar) { showToast('Completá todos los campos', 'err'); return; }
+  if (nueva !== confirmar) { showToast('Las contraseñas no coinciden', 'err'); return; }
+  if (nueva.length < 6) { showToast('Mínimo 6 caracteres', 'err'); return; }
+  try {
+    await api('POST', '/auth/cambiar-password', { password_actual: actual, password_nueva: nueva });
+    showToast('Contraseña actualizada. Te enviamos un email de confirmación.');
+    closeModal('modal-password');
+  } catch(e) { showToast(e.message || 'Error al cambiar contraseña', 'err'); }
+}
+
 function toggleDigsaMenu() {
   const dd = $('digsa-dropdown');
   dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
@@ -3517,6 +3540,28 @@ if (TOKEN) startApp();
    </div>
   </div>
  </div>
+</div>
+
+<!-- Modal cambio contraseña -->
+<div id="modal-password" class="modal" style="display:none">
+  <div class="modal-box" style="max-width:400px">
+    <div class="modal-hd"><h3>Cambiar contraseña</h3><button onclick="closeModal('modal-password')" class="modal-close">✕</button></div>
+    <div style="padding:24px">
+      <div class="fld fld-full" style="margin-bottom:16px">
+        <label>Contraseña actual</label>
+        <input type="password" id="pwd-actual" class="input" placeholder="••••••••">
+      </div>
+      <div class="fld fld-full" style="margin-bottom:16px">
+        <label>Nueva contraseña</label>
+        <input type="password" id="pwd-nueva" class="input" placeholder="••••••••">
+      </div>
+      <div class="fld fld-full" style="margin-bottom:24px">
+        <label>Confirmar nueva contraseña</label>
+        <input type="password" id="pwd-confirmar" class="input" placeholder="••••••••">
+      </div>
+      <button class="btn btn-dark" style="width:100%" onclick="cambiarPassword()">Cambiar contraseña</button>
+    </div>
+  </div>
 </div>
 </body>
 </html>
