@@ -1448,7 +1448,7 @@ async function startApp() {
   if (!ME) { try { const r=await api('GET','/auth/me'); ME=r.user; } catch { doLogout(); return; } }
   $('screen-login').classList.remove('show'); $('screen-app').classList.add('show');
   if($('user-ava')) $('user-ava').textContent=((ME.nombre||'?')[0]+(ME.apellido||'?')[0]).toUpperCase();
-  if($('user-info')) $('user-info').textContent=((ME.nombre||'').split(' ')[0]);  // solo primer nombre
+  if($('user-info')) $('user-info').textContent=((ME.nombre||'?')[0]+(ME.apellido||'?')[0]).toUpperCase();
   if($('dash-title')) $('dash-title').textContent='Hola, '+(ME.nombre||'');
   $('dash-date').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   if (ME.rol==='admin') {
