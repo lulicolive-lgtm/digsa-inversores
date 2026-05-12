@@ -442,7 +442,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
    <!-- KPIs -->
    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-bottom:28px">
     <div class="scard">
-     <div class="scard-label">Valor de compra</div>
+     <div class="scard-label">Costo de inversión</div>
      <div class="scard-value" id="prox-compra">—</div>
     </div>
     <div class="scard scard-accent">
@@ -755,7 +755,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
       <div class="card">
        <div class="card-hd"><h3>Datos financieros</h3></div>
        <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="fld"><label>Valor de compra (€)</label><input id="prox-compra-val" type="number" placeholder="1700000"></div>
+        <div class="fld"><label>Costo de inversión (€)</label><input id="prox-compra-val" type="number" placeholder="1700000"></div>
         <div class="fld"><label>Gastos operativos (€)</label><input id="prox-gastos-val" type="number" placeholder="39200"></div>
         <div class="fld"><label>Valor estimado de venta (€)</label><input id="prox-pventa" type="number" placeholder="2220000"></div>
         <div class="fld"><label>Rentabilidad estimada (%)</label><input id="prox-rent-est" type="number" placeholder="9.6"></div>
@@ -804,7 +804,7 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
       <div class="fld"><label>Inmueble</label><input id="op-nombre" placeholder="LAGASCA 80" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
       <div class="fld"><label>Fecha de compra</label><input id="op-fcompra" type="date" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
       <div class="fld"><label>Fecha de venta estimada</label><input id="op-fventa" type="date" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
-      <div class="fld"><label>Precio de compra (€)</label><input id="op-compra" type="number" placeholder="1700000" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
+      <div class="fld"><label>Costo de inversión (€)</label><input id="op-compra" type="number" placeholder="1700000" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
       <div class="fld"><label>Gastos totales compra (€)</label><input id="op-gastos" type="number" placeholder="260000" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
       <div class="fld"><label>Precio de venta (€)</label><input id="op-venta" type="number" placeholder="2220000" oninput="calcularOperacion()" style="border-color:var(--naranja)"></div>
      </div>
@@ -1444,7 +1444,7 @@ async function startApp() {
   if (!ME) { try { const r=await api('GET','/auth/me'); ME=r.user; } catch { doLogout(); return; } }
   $('screen-login').classList.remove('show'); $('screen-app').classList.add('show');
   if($('user-ava')) $('user-ava').textContent=((ME.nombre||'?')[0]+(ME.apellido||'?')[0]).toUpperCase();
-  if($('user-info')) $('user-info').textContent=(ME.nombre||'')+' '+(ME.apellido||'');
+  if($('user-info')) $('user-info').textContent=((ME.nombre||'').split(' ')[0]);  // solo primer nombre
   if($('dash-title')) $('dash-title').textContent='Hola, '+(ME.nombre||'');
   $('dash-date').textContent=new Date().toLocaleDateString('es-ES',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   if (ME.rol==='admin') {
