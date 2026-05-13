@@ -104,7 +104,8 @@ router.post('/solicitar-reset', async (req, res) => {
     if (!user) return res.json({ ok: true });
     const crypto2 = require('crypto');
     const token = crypto2.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 60 * 60 * 1000);
+    const expires = new Date(Date.now() + 15 * 60 * 1000);
+    await supabase.from('password_reset_tokens').update({ usado: true }).eq('usuario_id', user.id).eq('usado', false);
     await supabase.from('password_reset_tokens').insert([{ usuario_id: user.id, token, expires_at: expires.toISOString(), usado: false }]);
     const link = "https://digsa-inversores-production.up.railway.app?reset=" + token;
     const { enviarResetPassword } = require('../utils/email');

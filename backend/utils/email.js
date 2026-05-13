@@ -21,7 +21,10 @@ async function enviarNotificacionEmail(email, nombre, titulo, mensaje) {
 }
 
 async function enviarResetPassword(email, nombre, link) {
-  await enviarEmail({ to: email, subject: 'Recuperar contraseña — DIGSA España', html: '<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto"><div style="background:#1a1a1a;padding:24px;text-align:center"><h2 style="color:#fff;margin:0">DIGSA España</h2></div><div style="padding:32px;background:#f9f9f9"><p>Hola <strong>' + nombre + '</strong>,</p><p>Para restablecer tu contraseña hacé click aquí:</p><p style="text-align:center;margin:32px 0"><a href="' + link + '" style="background:#FF4D0F;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:700">Restablecer contraseña</a></p><p style="color:#888;font-size:13px">Expira en 1 hora.</p></div><div style="padding:16px;text-align:center;color:#aaa;font-size:12px">Villanueva 27, Madrid · La Pampa 1517 3C, Buenos Aires</div></div>' });
+  const ahora = new Date();
+  const hora = String(ahora.getHours()).padStart(2,'0') + ':' + String(ahora.getMinutes()).padStart(2,'0');
+  const subject = 'Recuperar contraseña — DIGSA España [' + hora + ']';
+  await enviarEmail({ to: email, subject, html: '<div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto"><div style="background:#1a1a1a;padding:24px;text-align:center"><h2 style="color:#fff;margin:0">DIGSA España</h2></div><div style="padding:32px;background:#f9f9f9"><p>Hola <strong>' + nombre + '</strong>,</p><p>Para restablecer tu contraseña hacé click aquí:</p><p style="text-align:center;margin:32px 0"><a href="' + link + '" style="background:#FF4D0F;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:700">Restablecer contraseña</a></p><p style="color:#888;font-size:13px">Este link expira en 15 minutos. Si solicitaste un nuevo link, usá siempre el más reciente — los anteriores quedaron inválidos.</p></div><div style="padding:16px;text-align:center;color:#aaa;font-size:12px">Villanueva 27, Madrid · La Pampa 1517 3C, Buenos Aires</div></div>' });
 }
 
 module.exports = { enviarEmail, enviarCambioPassword, enviarNotificacionEmail, enviarResetPassword };
