@@ -3810,6 +3810,8 @@ async function cargarNotificacionesUsuario() {
     const noLeidas = notifs.filter(n => !n.leida).length;
     const badge = document.getElementById('notif-badge');
     if (badge) { badge.textContent = noLeidas; badge.style.display = noLeidas ? 'flex' : 'none'; }
+    notifs.filter(n => !n.leida).forEach(n => { api("PATCH", "/admin/notificaciones/" + n.id, { leida: true }).catch(() => {}); });
+    setTimeout(() => { const b = document.getElementById("notif-badge"); if(b) b.style.display="none"; }, 500);
     // Marcar todas como leidas
     notifs.filter(n => !n.leida).forEach(n => { api("PATCH", "/admin/notificaciones/" + n.id, { leida: true }).catch(() => {}); });
     setTimeout(() => { const b = document.getElementById("notif-badge"); if(b) b.style.display="none"; }, 500);
