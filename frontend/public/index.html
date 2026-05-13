@@ -2229,8 +2229,10 @@ function previsualizarLiq() {
   if (!prop || !prop.precio_compra) return;
   const inv = Number(prop.precio_compra);
   const util = precio - inv;
-  const fee  = Math.max(0, util) * 0.15;
-  const imp  = Math.max(0, util - fee) * 0.25;
+  const fee_pct_v = (parseFloat($('liq-fee-pct')?.value)||15)/100;
+  const imp_pct_v = (parseFloat($('liq-imp-pct')?.value)||25)/100;
+  const fee  = Math.max(0, util) * fee_pct_v;
+  const imp  = Math.max(0, util - fee) * imp_pct_v;
   const unet = util - fee - imp;
   const rent = inv > 0 ? unet / inv : 0;
   const eur = n => '€' + Math.round(n).toLocaleString('es-ES');
