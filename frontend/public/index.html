@@ -3810,6 +3810,9 @@ async function cargarNotificacionesUsuario() {
     const noLeidas = notifs.filter(n => !n.leida).length;
     const badge = document.getElementById('notif-badge');
     if (badge) { badge.textContent = noLeidas; badge.style.display = noLeidas ? 'flex' : 'none'; }
+    // Marcar todas como leidas
+    notifs.filter(n => !n.leida).forEach(n => { api("PATCH", "/admin/notificaciones/" + n.id, { leida: true }).catch(() => {}); });
+    setTimeout(() => { const b = document.getElementById("notif-badge"); if(b) b.style.display="none"; }, 500);
   } catch(e) { lista.innerHTML = '<p style="color:var(--naranja);font-size:12px;padding:12px">Error: ' + e.message + '</p>'; }
 }
 
