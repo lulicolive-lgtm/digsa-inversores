@@ -608,8 +608,13 @@ table.dtbl{width:100%;border-collapse:collapse;font-size:13px}
       <div class="card">
        <div class="form-grid" style="margin-bottom:16px">
         <div class="fld fld-full"><label>Propiedad vendida</label><select id="liq-prop-sel"></select></div>
-        <div class="fld"><label>Precio de venta real (€)</label><input type="number" id="liq-precio" placeholder="280000" oninput="previsualizarLiq()"></div>
+        <div class="fld"><label>Precio de venta real (€)</label>
+          <input type="number" id="liq-precio" placeholder="280000" oninput="previsualizarLiq();sugerirPrecio()">
+          <div id="liq-precio-sugerencia" style="font-size:11px;color:var(--naranja);margin-top:4px;display:none"></div>
+        </div>
         <div class="fld"><label>Fecha de liquidación</label><input type="date" id="liq-fecha"></div>
+        <div class="fld"><label>Fee de éxito (%)</label><input type="number" id="liq-fee-pct" value="15" min="0" max="100" step="0.1" oninput="previsualizarLiq()"></div>
+        <div class="fld"><label>Impuestos (%)</label><input type="number" id="liq-imp-pct" value="25" min="0" max="100" step="0.1" oninput="previsualizarLiq()"></div>
        </div>
        <div id="liq-preview" style="display:none;background:var(--gris);padding:14px;margin-bottom:16px;border-left:3px solid var(--naranja)">
         <div style="font-size:10px;letter-spacing:1.5px;color:var(--negro3);margin-bottom:10px;font-weight:600">PREVIEW AUTOMÁTICO</div>
@@ -2178,7 +2183,7 @@ async function ejecutarAsignacion() {
   try {
     showLoading('Registrando participaciones…');
     // Necesitamos el precio_compra del piso para calcular el porcentaje real
-    const props = await api('GET', '/propiedades');
+    const props = await api('GET', '/propiedades'); window.PROPS_CACHE = props;
     const piso = props.find(p => p.id === pisoId);
     const total_piso = piso?.precio_compra || 1;
 
@@ -2246,7 +2251,7 @@ async function generarLiquidaciones() {
   } else {
     destino_ids = Array.from(document.querySelectorAll('#liq-destino-checks input:checked')).map(cb => cb.value);
   }
-  const body={propiedad_id:$('liq-prop-sel').value, precio_venta:parseFloat($('liq-precio').value), fecha:$('liq-fecha').value, fee_exito_pct:0.15, alquileres:0, destino_ids, destino_pcts};
+  const body={propiedad_id:$('liq-prop-sel').value, precio_venta:parseFloat($('liq-precio').value), fecha:$('liq-fecha').value, fee_exito_pct:(parseFloat($("liq-fee-pct")?.value)||15)/100, imp_pct:(parseFloat($("liq-imp-pct")?.value)||25)/100, alquileres:0, destino_ids, destino_pcts};
   if (!body.propiedad_id||!body.precio_venta||!body.fecha) return showToast('Completá todos los campos','err');
   try{
     showLoading('Generando liquidaciones y PDFs…');
@@ -3734,6 +3739,30 @@ async function publicarLiquidaciones(propiedad_id) {
     showToast('Publicado a ' + r.publicadas + ' inversores');
     loadAdminLiquidaciones();
   } catch(e) { showToast('Error: ' + e.message, 'err'); }
+}
+
+
+function sugerirPrecio() {
+  const propId = $('liq-prop-sel')?.value;
+  const precio = parseFloat($('liq-precio')?.value) || 0;
+  const sug = $('liq-precio-sugerencia');
+  if (!sug || !propId || !precio) { if(sug) sug.style.display='none'; return; }
+  const prop = (window.PROPS_CACHE||[]).find(p => p.id === propId);
+  if (!prop || !prop.precio_venta) { sug.style.display='none'; return; }
+  const est = Number(prop.precio_venta);
+  const diff = precio - est;
+  const pct = ((diff/est)*100).toFixed(1);
+  sug.style.display = 'block';
+  if (Math.abs(diff) < 1000) {
+    sug.textContent = '✅ Muy cercano al estimado de €' + est.toLocaleString("es-ES");
+    sug.style.color = 'var(--verde)';
+  } else if (diff > 0) {
+    sug.textContent = '📈 +' + pct + '% sobre el estimado (€' + est.toLocaleString("es-ES") + ')';
+    sug.style.color = 'var(--verde)';
+  } else {
+    sug.textContent = '📉 ' + pct + '% bajo el estimado (€' + est.toLocaleString("es-ES") + ')';
+    sug.style.color = 'var(--naranja)';
+  }
 }
 
 function toggleDigsaMenu() {
