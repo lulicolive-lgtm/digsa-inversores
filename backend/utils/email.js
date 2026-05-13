@@ -3,7 +3,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function enviarEmail({ to, subject, html }) {
   const { data, error } = await resend.emails.send({
-    from: 'DIGSA España <onboarding@resend.dev>',
+    from: 'DIGSA España <contacto@digsa.es>',
     to,
     subject,
     html
