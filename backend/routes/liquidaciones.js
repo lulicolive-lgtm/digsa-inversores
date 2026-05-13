@@ -23,9 +23,7 @@ router.post('/publicar/:propiedad_id', authMiddleware, adminOnly, async (req, re
     await supabase.from('documentos').update({ publicado: true }).eq('propiedad_id', propiedad_id).eq('publicado', false);
     const { data: liqs } = await supabase.from('liquidaciones').select('usuario_id,total_retorno').eq('propiedad_id', propiedad_id);
     const { data: prop } = await supabase.from('propiedades').select('nombre').eq('id', propiedad_id).single();
-    for (const l of (liqs || [])) {
-      await supabase.from('notificaciones').insert([{ usuario_id: l.usuario_id, titulo: 'Liquidacion disponible: ' + (prop ? prop.nombre : ''), mensaje: 'Tu liquidacion esta lista. Retorno: EUR ' + Math.round(l.total_retorno).toLocaleString('es-ES'), tipo: 'liquidacion' }]);
-    }
+    // Notificaciones manuales desde admin - no automaticas
     res.json({ ok: true, publicadas: liqs ? liqs.length : 0 });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
