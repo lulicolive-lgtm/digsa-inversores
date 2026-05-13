@@ -1542,8 +1542,10 @@ async function loadPortfolio() {
       let neto = aporte;
       if (p.precio_compra && p.precio_venta && p.precio_compra > 0) {
         const util = (p.precio_venta - p.precio_compra) * pct_part;
-        const fee  = util * 0.15;
-        const imp  = (util - fee) * 0.25;
+        const fee_pct_val = (parseFloat($('liq-fee-pct')?.value)||15)/100;
+        const imp_pct_val = (parseFloat($('liq-imp-pct')?.value)||25)/100;
+        const fee  = util * fee_pct_val;
+        const imp  = (util - fee) * imp_pct_val;
         neto = aporte + util - fee - imp;
       }
       const rent = aporte > 0 ? '+' + (((neto - aporte) / aporte) * 100).toFixed(1) + '%' : '—';
