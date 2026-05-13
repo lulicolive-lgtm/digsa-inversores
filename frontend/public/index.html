@@ -3834,20 +3834,32 @@ if (TOKEN) startApp();
 </div>
 
 
-<div id="modal-recuperar" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
-  <div class="modal-box" style="max-width:400px">
-    <div class="modal-hd"><h3 id="recuperar-title">Recuperar contraseña</h3><button onclick="document.getElementById('modal-recuperar').style.display='none'" class="modal-close">✕</button></div>
-    <div style="padding:24px">
+<div id="modal-recuperar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px;box-sizing:border-box">
+  <div style="background:#fff;border-radius:12px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;max-height:90vh;display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #eee">
+      <h3 id="recuperar-title" style="margin:0;font-size:18px;font-weight:600;color:#1a1a1a">Recuperar contraseña</h3>
+      <button onclick="document.getElementById('modal-recuperar').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#999;padding:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='none'">✕</button>
+    </div>
+    <div style="padding:24px;overflow-y:auto">
       <div id="recuperar-paso1">
-        <p style="font-size:13px;color:var(--negro3);margin-bottom:20px">Ingresá tu email y te enviaremos un link para restablecer tu contraseña.</p>
-        <div class="fld fld-full" style="margin-bottom:20px"><label>Email</label><input type="email" id="recuperar-email" class="input" placeholder="tu@email.com"></div>
-        <button class="btn btn-dark" style="width:100%" onclick="solicitarReset()">Enviar link</button>
+        <p style="font-size:14px;color:#666;margin:0 0 20px;line-height:1.5">Ingresá tu email y te enviaremos un link para restablecer tu contraseña.</p>
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:6px;letter-spacing:0.3px">EMAIL</label>
+          <input type="email" id="recuperar-email" placeholder="tu@email.com" style="width:100%;padding:11px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;transition:border-color 0.15s" onfocus="this.style.borderColor='#1a1a1a'" onblur="this.style.borderColor='#ddd'">
+        </div>
+        <button onclick="solicitarReset()" style="width:100%;padding:12px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:opacity 0.15s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">ENVIAR LINK</button>
       </div>
       <div id="recuperar-paso2" style="display:none">
-        <p style="font-size:13px;color:var(--negro3);margin-bottom:20px">Ingresá tu nueva contraseña.</p>
-        <div class="fld fld-full" style="margin-bottom:16px"><label>Nueva contraseña</label><input type="password" id="reset-pwd-nueva" class="input" placeholder="••••••••"></div>
-        <div class="fld fld-full" style="margin-bottom:20px"><label>Confirmar</label><input type="password" id="reset-pwd-confirmar" class="input" placeholder="••••••••"></div>
-        <button class="btn btn-dark" style="width:100%" onclick="confirmarReset()">Cambiar contraseña</button>
+        <p style="font-size:14px;color:#666;margin:0 0 20px;line-height:1.5">Ingresá tu nueva contraseña.</p>
+        <div style="margin-bottom:16px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:6px;letter-spacing:0.3px">NUEVA CONTRASEÑA</label>
+          <input type="password" id="reset-pwd-nueva" placeholder="••••••••" style="width:100%;padding:11px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;transition:border-color 0.15s" onfocus="this.style.borderColor='#1a1a1a'" onblur="this.style.borderColor='#ddd'">
+        </div>
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:6px;letter-spacing:0.3px">CONFIRMAR</label>
+          <input type="password" id="reset-pwd-confirmar" placeholder="••••••••" style="width:100%;padding:11px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;box-sizing:border-box;outline:none;transition:border-color 0.15s" onfocus="this.style.borderColor='#1a1a1a'" onblur="this.style.borderColor='#ddd'">
+        </div>
+        <button onclick="confirmarReset()" style="width:100%;padding:12px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;letter-spacing:0.5px;cursor:pointer;transition:opacity 0.15s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">CAMBIAR CONTRASEÑA</button>
       </div>
     </div>
   </div>
