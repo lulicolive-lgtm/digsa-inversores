@@ -64,7 +64,7 @@ router.post('/cambiar-password', authMiddleware, async (req, res) => {
   if (password_nueva.length < 6) return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
   try {
     const { data: user } = await supabase.from('usuarios').select('id,nombre,apellido,email,password_hash').eq('id', req.user.id).single();
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const ok = await bcrypt.compare(password_actual, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Contraseña actual incorrecta' });
     const hash = await bcrypt.hash(password_nueva, 10);
@@ -82,7 +82,7 @@ router.post('/admin/reset-password', authMiddleware, adminOnly, async (req, res)
   if (!password_nueva || password_nueva.length < 6) return res.status(400).json({ error: 'Contraseña debe tener al menos 6 caracteres' });
   try {
     const { data: user } = await supabase.from('usuarios').select('id,nombre,apellido,email').eq('id', usuario_id).single();
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const hash = await bcrypt.hash(password_nueva, 10);
     await supabase.from('usuarios').update({ password_hash: hash }).eq('id', usuario_id);
     try {
@@ -121,7 +121,7 @@ router.post('/confirmar-reset', async (req, res) => {
     const { data: t } = await supabase.from('password_reset_tokens').select('*').eq('token', token).eq('usado', false).single();
     if (!t) return res.status(400).json({ error: 'Token invalido o expirado' });
     if (new Date(t.expires_at) < new Date()) return res.status(400).json({ error: 'Token expirado' });
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const hash = await bcrypt.hash(password_nueva, 10);
     await supabase.from('usuarios').update({ password_hash: hash }).eq('id', t.usuario_id);
     await supabase.from('password_reset_tokens').update({ usado: true }).eq('id', t.id);
